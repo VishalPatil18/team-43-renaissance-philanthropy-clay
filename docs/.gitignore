@@ -1,0 +1,4 @@
+# Source PDFs stay out of the repo (AWS guide is marked Amazon Confidential; Clay vision doc is internal)
+reference/*.pdf
+reference/*.txt
+.DS_Store
