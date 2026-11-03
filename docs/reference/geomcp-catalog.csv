@@ -1,0 +1,16 @@
+Server,Category,Main job,Tools,Downloads/mo,Stars,Last push,Health,Open?
+weather-mcpcommunity · open,Weather,data access/lookup,17,17.9k,48,2026-10,active,Open
+openstreetmap-mcp-servercommunity · open,Geocoding,data access/lookup,6,"2,831",5,2026-09,active,Open
+open-meteo-mcp-server (cyanheads)community · open,Weather,computation/analysis,11,"2,269",8,2026-09,active,Open
+OpenAQ MCP Servercommunity · open,Weather,computation/analysis,8,"1,399",2,2026-09,active,Open
+GeoLens MCPofficial · open,Data catalogs,catalog/search only,6,"1,349",266,2026-10,active,Open
+gis-mcpcommunity · open,GIS toolkit,computation/analysis,98,810,194,2026-08,active,Open
+MapSmithcommunity · open,GIS toolkit,computation/analysis,28,786,2,2026-09,active,Open
+stac-mcpcommunity · open,Remote sensing,catalog/search only,11,736,18,2026-10,active,Open
+OSRM MCPcommunity · open,Routing,computation/analysis,5,406,0,2026-09,active,Open
+mcp-nominatimcommunity · open,Geocoding,data access/lookup,3,350,0,2026-09,active,Open
+dynamical.org Weather & Climate Catalogofficial · open,Weather,catalog/search only,4,—,0,2026-09,active,Open
+earthdata-mcpofficial · open,Remote sensing,catalog/search only,7,—,32,2026-10,active,Open
+Overture Maps MCP Servercommunity · open,Spatial DB,computation/analysis,13,—,4,2026-03,active,Open
+postgis-mcpcommunity · open,Spatial DB,computation/analysis,14,—,18,2026-04,active,Open
+qgis-mcp (nkarasiak)community · open,Desktop GIS,UI/app control,125,—,340,2026-09,active,Open

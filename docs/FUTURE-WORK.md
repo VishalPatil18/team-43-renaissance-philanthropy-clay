@@ -1,0 +1,33 @@
+# Future Work
+
+> **For agents — what this file is:** The record of post-build features we didn't implement but would if we had more time (SCOPE D21). It ships in the repo so Clay, judges, and future contributors can see where the project goes next. **Keep it current:** whenever a feature is cut or deferred during the build, add a row to "Cut during the build" with what it is, why it was cut, and how we'd do it. Nothing in this file is promised in the MVP.
+
+## Cut during the build
+
+Fill this in as the build goes. Start empty, and add a row the moment something is dropped.
+
+| Feature | Why it was cut | How we would build it | Effort guess |
+|---|---|---|---|
+| | | | |
+
+## Planned stretch (would implement next, roughly in this order)
+
+| # | Feature | What it adds | Source |
+|---|---|---|---|
+| 1 | Sensitivity analysis | Re-run tasks while varying inputs and prompts (beyond the required model/harness/tooling comparisons, D3), and measure how stable both the agent and the eval are | Clay vision doc, Journey 2 (stretch) |
+| 2 | Multi-agent traces | Planner / executor / checker agents, each traced, scored, and summarized | Clay stretch goal |
+| 3 | Dynamic MCP tool discovery | The agent chooses tools from Clay's ~99-server catalog instead of a fixed tool set | Clay stretch goal |
+| 4 | Richer trace-summary dashboard | Full UI on top of the parameter-complete API (UI deferred, D11) | Clay stretch goal · D11 |
+| 5 | Agent-written verification code | The agent writes code that computes a dataset statistic, and the sandbox runs it to check the agent's claim | Team discussion (round 1, Q1 option b) |
+| 6 | Batch trials on AWS (Lambda/ECS) | Run large N-trial evals in parallel in the cloud | OPEN-QUESTIONS OQ9 |
+| 7 | Second Clay task: caption generation | Five-criterion caption rubric, fixed/change tasks, retrieval answer keys. Full reference in [03-out-of-scope.md](03-out-of-scope.md) | Clay vision doc, task 2 |
+| 8 | Third Clay task | The vision doc mentions three tasks but defines only two. Build it once Clay defines it | Clay vision doc |
+
+## Beyond the hackathon (outside our 2-day mandate, natural next steps for Clay)
+
+| Feature | Why it's not MVP |
+|---|---|
+| Run Clay's wider eval backlog through the sandbox | The MVP proves the loop on one task |
+| Partner-account deployment (e.g. ADB's own account) | Single sandbox account only |
+| Production observability and warehouse (Snowflake/Iceberg/Athena, Managed Grafana) | A lightweight trace store is enough to prove the loop |
+| Continental-scale builds | Too big for a 2-day sandbox |
