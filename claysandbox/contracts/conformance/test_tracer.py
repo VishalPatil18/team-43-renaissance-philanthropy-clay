@@ -10,6 +10,7 @@ import pytest
 import claysandbox.contracts.fakes
 import claysandbox.tracing.jsonl  # noqa: F401  registers JsonlTracer
 import claysandbox.tracing.otel  # noqa: F401  registers OtelTracer
+import claysandbox.tracing.tee  # noqa: F401  registers TeeTracer
 from claysandbox.contracts.fakes.sample_trace import scripted_events
 from claysandbox.contracts.registry import _REGISTRY, resolve
 from claysandbox.store.reader import read_trace

@@ -134,6 +134,14 @@ def read_otlp_events(path: str | Path) -> tuple[list[AnyEvent], bool]:
     return events, incomplete or not events or events[-1].type != "run_end"
 
 
+#: tracer name -> (trace file, reader). Handed to ``tracing.compare.compare_tracers`` by the
+#: composition root, so ``tracing`` never has to import ``store``.
+TRACE_FORMAT_READERS = {
+    "jsonl": (JSONL_FILE, read_jsonl_events),
+    "otel": (OTLP_FILE, read_otlp_events),
+}
+
+
 def read_trace(
     run_dir: str | Path, run_id: str | None = None, source: TraceSource | None = None
 ) -> Trace:

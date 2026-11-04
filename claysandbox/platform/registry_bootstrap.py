@@ -14,4 +14,4 @@ from claysandbox.runtime.models import bedrock  # noqa: F401
 # WS3 (trace and store)
 from claysandbox.store import local  # noqa: F401
 from claysandbox.summary import deterministic, llm  # noqa: F401
-from claysandbox.tracing import jsonl, otel  # noqa: F401
+from claysandbox.tracing import jsonl, otel, tee  # noqa: F401
