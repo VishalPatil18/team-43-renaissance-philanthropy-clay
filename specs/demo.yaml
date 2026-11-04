@@ -1,0 +1,43 @@
+# Demo eval: small enough to finish live in a few minutes (PRI-R3-01).
+# 2 configurations x 2 task instances x 1 trial = 4 runs on Nova Lite, a harness comparison.
+# Adjust the AOI IDs to two of the six in tasks/aois.yaml and the tool set name to the one in
+# toolsets/ once WS2 has merged them. Model IDs are the ones confirmed with scripts/check_models.py.
+spec_version: 1
+name: demo
+tasks:
+  templates: [T1]
+  aois: [us-ca-kern, us-tx-harris]
+
+baseline:
+  name: novalite-strands-T1
+  model:
+    name: bedrock
+    params: {model_id: us.amazon.nova-lite-v1:0, temperature: 0.2, max_tokens: 4096}
+  harness: {name: strands}
+  toolset: T1
+  tracer: {name: jsonl}
+
+variants:
+  - name: converse-loop # one axis changed: the harness (J3, J5)
+    override: {harness: {name: converse_loop}}
+
+evaluators:
+  - {name: workflow, version: "1"}
+  - {name: output, version: "1"}
+
+summary:
+  name: llm
+  params: {model_id: us.amazon.nova-lite-v1:0}
+
+trials: 1
+seed: 42
+
+budget:
+  run: {max_steps: 15, max_tokens: 100000, max_usd: 0.10, max_seconds: 180}
+  eval: {max_usd: 2.0}
+loop_guard: {max_identical_calls: 3}
+infra_retries: 2
+executor: {name: local, params: {max_parallel: 2}}
+store: {name: local, params: {root: ./runs, mirror_s3: null}}
+offline: false
+stats: {bootstrap_iterations: 5000, alpha: 0.05}

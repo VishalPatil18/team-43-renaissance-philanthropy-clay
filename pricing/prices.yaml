@@ -1,0 +1,80 @@
+# Versioned price table (FR-11.10). Prices are USD per 1 000 tokens, Standard tier, us-west-2.
+# Rebuild with: uv run python scripts/refresh_prices.py   (review the diff, then commit)
+# Entries with `source: pricelist` come from the AWS Price List API. `source: manual` entries
+# were typed from public pricing pages and are kept as they are by the refresh script.
+version: 2026-11-04.1
+retrieved_at: '2026-11-04'
+currency: USD
+models:
+  amazon.nova-lite-v1:0:
+    input_per_1k: 6.0e-05
+    output_per_1k: 0.00024
+    source: pricelist
+    price_list_model: Nova Lite
+  us.amazon.nova-lite-v1:0:
+    alias_of: amazon.nova-lite-v1:0
+    source: manual
+    note: Nova Micro, Lite and Pro have a single rate across inference profiles.
+  amazon.nova-pro-v1:0:
+    input_per_1k: 0.0008
+    output_per_1k: 0.0032
+    source: pricelist
+    price_list_model: Nova Pro
+  us.amazon.nova-pro-v1:0:
+    alias_of: amazon.nova-pro-v1:0
+    source: manual
+  meta.llama3-3-70b-instruct-v1:0:
+    input_per_1k: 0.00072
+    output_per_1k: 0.00072
+    source: pricelist
+    price_list_model: Llama 3.3 70B
+  us.meta.llama3-3-70b-instruct-v1:0:
+    alias_of: meta.llama3-3-70b-instruct-v1:0
+    source: manual
+  us.anthropic.claude-sonnet-4-6:
+    input_per_1k: 0.0033
+    output_per_1k: 0.0165
+    source: manual
+    note: >-
+      Claude is not in the Price List API. $3 / $15 per 1M tokens on the global profile; the
+      US geographic profile (us. prefix) costs 10% more. Checked 2026-11-04 against AWS docs and
+      cloudforecast.io (Oct 2026).
+  global.anthropic.claude-sonnet-4-6:
+    input_per_1k: 0.003
+    output_per_1k: 0.015
+    source: manual
+    note: Global cross-Region profile rate.
+  us.anthropic.claude-sonnet-4-5-20250929-v1:0:
+    input_per_1k: 0.0033
+    output_per_1k: 0.0165
+    source: manual
+    note: Legacy model (end of life 2027-04-08). Same rates as Sonnet 4.6 on the US profile.
+data:
+  s3_requester_pays_per_gb: 0.09
+fargate:
+  vcpu_hour: 0.04048
+  gb_hour: 0.004445
+defaults:
+  # Token totals per run when no stored runs exist. These are guesses, flagged in every estimate.
+  tokens_per_run:
+    T1: 20000
+    T2: 20000
+    T3: 30000
+    T4: 20000
+    T5: 15000
+  input_share: 0.85
+  # Wall-clock seconds of Fargate compute per run when estimating (a guess).
+  run_seconds: 120
+  summary_tokens:
+    input: 6000
+    output: 800
+  llm_evaluator_tokens:
+    input: 8000
+    output: 600
+  # Requester-Pays data read per run, in GB (0 = none expected).
+  requester_pays_gb_per_run:
+    T1: 0.0
+    T2: 0.0
+    T3: 0.0
+    T4: 0.0
+    T5: 0.0
