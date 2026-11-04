@@ -101,7 +101,7 @@ class LocalRunStore:
 
     # ---------------------------------------------------------------- locating runs
     def run_dir(self, run_id: str) -> Path:
-        """Folder holding the run's manifest and trace: writable root first, then read-only roots."""
+        """Folder with the run's manifest and trace: writable root first, then read-only roots."""
         _safe_name(run_id)
         own = self.root / run_id
         if (own / MANIFEST).exists():
@@ -215,9 +215,7 @@ class LocalRunStore:
             ) as fh:  # never overwrite
                 fh.write(_dump(assessment))
         except FileExistsError:
-            raise StoreWriteRefused(
-                f"assessment {aid} already exists for run {run_id}"
-            ) from None
+            raise StoreWriteRefused(f"assessment {aid} already exists for run {run_id}") from None
 
     def list_assessments(self, run_id: str) -> list[dict]:
         out: dict[str, dict] = {}
@@ -240,7 +238,7 @@ class LocalRunStore:
     def query(self, sql: str, params: dict | None = None) -> list[dict]:
         raise NotImplementedError("DuckDB queries arrive in SHI-R2-03")
 
-    # ---------------------------------------------------------------- eval artefacts (open point 10)
+    # ------------------------------------------------------- eval artefacts (open point 10)
     def create_eval(self, eval_id: str, spec: Any) -> Path:
         d = self.evals_root / _safe_name(eval_id)
         try:

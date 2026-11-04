@@ -73,9 +73,7 @@ def test_eval_artifacts(name, tmp_path):
         "e1", "plan.json", json.dumps({"runs": [{"run_id": "r1"}, {"run_id": "r2"}]})
     )
     assert s.list_eval_runs("e1") == ["r1", "r2"]
-    assert (
-        json.loads(s.read_eval_artifact("e1", "plan.json"))["runs"][0]["run_id"] == "r1"
-    )
+    assert json.loads(s.read_eval_artifact("e1", "plan.json"))["runs"][0]["run_id"] == "r1"
     with pytest.raises(StoreWriteRefused):
         s.create_eval("e1", {})
     with pytest.raises(StoreWriteRefused):

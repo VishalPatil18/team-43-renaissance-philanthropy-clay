@@ -41,9 +41,7 @@ def test_blob_dedupe(tmp_path):
 def test_large_result_goes_to_blob_with_preview(tmp_path):
     sink = RunEventSink("r", tmp_path, MemoryTracer(), preview_chars=100)
     fields = sink.result_fields("y" * 1000)
-    assert fields["result_ref"].startswith("blobs/") and fields[
-        "result_preview"
-    ].endswith("…")
+    assert fields["result_ref"].startswith("blobs/") and fields["result_preview"].endswith("…")
     assert (tmp_path / fields["result_ref"]).read_text() == "y" * 1000
     assert sink.result_fields("short")["result_ref"] is None
 
@@ -65,7 +63,8 @@ def test_tracer_failure_does_not_break_the_sink(tmp_path):
 def test_redaction_patterns(monkeypatch):
     monkeypatch.setenv("MY_API_TOKEN", "tok-1234567890abcdef")
     text = (
-        "key AKIAIOSFODNN7EXAMPLE and aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY "
+        "key AKIAIOSFODNN7EXAMPLE and "
+        "aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY "
         "Authorization: Bearer abc.def.ghi and token tok-1234567890abcdef"
     )
     out = redact_text(text)
@@ -93,9 +92,7 @@ def test_redaction_in_events(tmp_path):
                 "nested": {"password": "hunter22"},
             },
             result_preview="ASIAABCDEFGHIJKLMNOP leaked",
-            error=ErrorInfo(
-                source="tool", kind="tool_error", message="Bearer abcdefghijkl failed"
-            ),
+            error=ErrorInfo(source="tool", kind="tool_error", message="Bearer abcdefghijkl failed"),
         )
     )
     e = tracer.events[0]

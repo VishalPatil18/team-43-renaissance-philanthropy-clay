@@ -107,17 +107,13 @@ class MemoryRunStore:
     def create_eval(self, eval_id: str, spec: Any) -> Path:
         if eval_id in self.evals:
             raise StoreWriteRefused(f"eval {eval_id} already exists")
-        self.evals[eval_id] = {
-            "spec.yaml": json.dumps(_plain(spec), default=str).encode()
-        }
+        self.evals[eval_id] = {"spec.yaml": json.dumps(_plain(spec), default=str).encode()}
         return Path("memory") / "evals" / eval_id
 
     def write_eval_artifact(self, eval_id: str, name: str, data: bytes | str) -> None:
         if name == "spec.yaml":
             raise StoreWriteRefused("spec.yaml is written once by create_eval")
-        self.evals.setdefault(eval_id, {})[name] = (
-            data.encode() if isinstance(data, str) else data
-        )
+        self.evals.setdefault(eval_id, {})[name] = data.encode() if isinstance(data, str) else data
 
     def read_eval_artifact(self, eval_id: str, name: str) -> bytes:
         return self.evals[eval_id][name]

@@ -20,9 +20,6 @@ class EchoSummarizer:
     def summarize(self, trace: Trace, manifest: Any = None) -> Summary:
         return Summary(
             run_id=trace.run_id,
-            claims=[
-                Claim(claim=digest_line(e), event_ids=[e.event_id])
-                for e in trace.events
-            ],
+            claims=[Claim(claim=digest_line(e), event_ids=[e.event_id]) for e in trace.events],
             summarizer={"name": self.name, "version": self.version, "params": {}},
         )

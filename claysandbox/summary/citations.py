@@ -15,7 +15,10 @@ def error_line(e: AnyEvent) -> str:
     err = e.error
     where = f"{e.server}.{e.tool}" if isinstance(e, ToolCall) else e.type
     if isinstance(e, GuardStop):
-        return f"Run stopped by the {e.limit} guard (limit {e.limit_value:g}, observed {e.observed_value:g})."
+        return (
+            f"Run stopped by the {e.limit} guard "
+            f"(limit {e.limit_value:g}, observed {e.observed_value:g})."
+        )
     if err is None:
         return f"Error at {where}."
     retry = " (retryable)" if err.retryable else ""
@@ -37,7 +40,5 @@ def check(claims: list[Claim], trace: Trace) -> tuple[list[Claim], int]:
     cited = {i for c in kept for i in c.event_ids}
     for e in trace.events:
         if is_error_event(e) and e.event_id not in cited:
-            kept.append(
-                Claim(claim=error_line(e), event_ids=[e.event_id], deterministic=True)
-            )
+            kept.append(Claim(claim=error_line(e), event_ids=[e.event_id], deterministic=True))
     return kept, dropped

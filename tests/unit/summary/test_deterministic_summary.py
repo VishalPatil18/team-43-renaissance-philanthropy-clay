@@ -42,18 +42,14 @@ def test_guard_stop_and_unrecovered_error():
             limit="max_steps",
             limit_value=1,
             observed_value=2,
-            error=ErrorInfo(
-                source="budget", kind="budget_exceeded", message="max_steps reached"
-            ),
+            error=ErrorInfo(source="budget", kind="budget_exceeded", message="max_steps reached"),
         ),
         RunEnd(state="budget_stopped", totals={"steps": 1}),
     ]
     s = DeterministicSummarizer().summarize(recorded(events))
     text = s.text()
     assert (
-        "never recovered" in text
-        and "max_steps guard" in text
-        and "with no final output" in text
+        "never recovered" in text and "max_steps guard" in text and "with no final output" in text
     )
 
 
@@ -74,9 +70,7 @@ def test_recovery_needs_the_same_server_and_tool():
     from claysandbox.contracts.trace import ToolCall
 
     events = scripted_events()
-    other_server_ok = ToolCall(
-        server="roda", tool="search_items", status="ok", result_preview="{}"
-    )
+    other_server_ok = ToolCall(server="roda", tool="search_items", status="ok", result_preview="{}")
     # failed stac.search_items, then an ok roda.search_items only
     events = events[:3] + [other_server_ok, events[-2], events[-1]]
     text = DeterministicSummarizer().summarize(recorded(events)).text()

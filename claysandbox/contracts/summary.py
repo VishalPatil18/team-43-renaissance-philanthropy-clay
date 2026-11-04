@@ -11,9 +11,7 @@ from .trace import Trace
 
 class Claim(BaseModel):
     claim: str
-    event_ids: list[str] = Field(
-        default_factory=list
-    )  # FR-3.2: at least one existing event
+    event_ids: list[str] = Field(default_factory=list)  # FR-3.2: at least one existing event
     deterministic: bool = False  # True for lines added by the citation checker (FR-3.3)
 
 

@@ -28,11 +28,7 @@ from .citations import check, error_line, is_error_event
 
 
 def _short(value: Any, n: int = 80) -> str:
-    s = (
-        value
-        if isinstance(value, str)
-        else json.dumps(value, separators=(",", ":"), default=str)
-    )
+    s = value if isinstance(value, str) else json.dumps(value, separators=(",", ":"), default=str)
     return s if len(s) <= n else s[: n - 1] + "…"
 
 
@@ -124,23 +120,15 @@ class DeterministicSummarizer:
                 else:
                     text = text.rstrip(".") + "; never recovered."
             claims.append(Claim(claim=text, event_ids=ids, deterministic=True))
-        out = next(
-            (e for e in reversed(trace.events) if isinstance(e, FinalOutput)), None
-        )
+        out = next((e for e in reversed(trace.events) if isinstance(e, FinalOutput)), None)
         end = next((e for e in reversed(trace.events) if isinstance(e, RunEnd)), None)
         if end is not None:
             totals = end.totals or {}
             bits = ", ".join(
-                f"{k} {v}"
-                for k, v in totals.items()
-                if k in ("steps", "cost_usd", "wall_ms")
+                f"{k} {v}" for k, v in totals.items() if k in ("steps", "cost_usd", "wall_ms")
             )
             text = f"Run ended {end.state}" + (f" ({bits})" if bits else "")
-            text += (
-                f" with output {_short(out.output)}."
-                if out
-                else " with no final output."
-            )
+            text += f" with output {_short(out.output)}." if out else " with no final output."
             claims.append(
                 Claim(
                     claim=text,
@@ -152,7 +140,9 @@ class DeterministicSummarizer:
             if last:
                 claims.append(
                     Claim(
-                        claim="The trace stops before run_end (the run crashed or is still running).",
+                        claim=(
+                            "The trace stops before run_end (the run crashed or is still running)."
+                        ),
                         event_ids=[last],
                     )
                 )

@@ -119,9 +119,10 @@ TraceEvent = Annotated[
 ]
 TRACE_EVENT_ADAPTER: TypeAdapter[TraceEvent] = TypeAdapter(TraceEvent)
 
-AnyEvent = (
-    RunStart | ModelCall | ToolCall | GuardStop | ErrorEvent | FinalOutput | RunEnd
-)
+AnyEvent = RunStart | ModelCall | ToolCall | GuardStop | ErrorEvent | FinalOutput | RunEnd
+# WS1's stand-in trace.py called this union ``EventT`` and its fakes and wrappers
+# import that name, so keep it as an alias.
+EventT = AnyEvent
 
 
 def parse_event(data: str | bytes | dict) -> AnyEvent:
@@ -139,8 +140,12 @@ class EventSink(Protocol):
         """Assign seq, event_id and run_id, redact, hand to the tracer. Never raises."""
         ...
 
-    def put_blob(self, data: bytes | str) -> tuple[str, str]:
-        """Store a full payload once; return ("blobs/<sha256>", sha256)."""
+    def put_blob(self, data: bytes) -> tuple[str, str]:
+        """Store a full payload once; return ("blobs/<sha256>", sha256).
+
+        The contract takes bytes (WS1's fakes implement exactly this). ``RunEventSink``
+        also accepts ``str`` as a convenience, which still satisfies this protocol.
+        """
         ...
 
     @property
@@ -176,11 +181,7 @@ class Trace(BaseModel):
 
 # ---------------------------------------------------------------- digest (open point 12)
 def _clip(value: object, n: int) -> str:
-    s = (
-        value
-        if isinstance(value, str)
-        else json.dumps(value, default=str, separators=(",", ":"))
-    )
+    s = value if isinstance(value, str) else json.dumps(value, default=str, separators=(",", ":"))
     return s if len(s) <= n else s[: n - 1] + "…"
 
 
@@ -188,9 +189,7 @@ def digest_line(e: AnyEvent) -> str:
     err = f" | {e.error.source}/{e.error.kind}" if e.error else ""
     head = f"[{e.event_id}] {e.type}"
     if isinstance(e, ModelCall):
-        asked = ", ".join(
-            str(r.get("name") or r.get("tool") or "?") for r in e.tool_use_requests
-        )
+        asked = ", ".join(str(r.get("name") or r.get("tool") or "?") for r in e.tool_use_requests)
         return (
             f"{head} {e.model_id} {e.input_tokens}→{e.output_tokens} tok"
             f"{' requested: ' + asked if asked else ''}{err}"
@@ -201,11 +200,10 @@ def digest_line(e: AnyEvent) -> str:
             if e.status == "ok"
             else (e.error.message if e.error else e.result_preview)
         )
-        return f"{head} {e.server}.{e.tool}({_clip(e.args, 200)}) -> {e.status}/{_clip(result or '', 200)}{err}"
+        call = f"{e.server}.{e.tool}({_clip(e.args, 200)})"
+        return f"{head} {call} -> {e.status}/{_clip(result or '', 200)}{err}"
     if isinstance(e, GuardStop):
-        return (
-            f"{head} {e.limit} limit {e.limit_value} observed {e.observed_value}{err}"
-        )
+        return f"{head} {e.limit} limit {e.limit_value} observed {e.observed_value}{err}"
     if isinstance(e, FinalOutput):
         return f"{head} {_clip(e.output, 200)}{err}"
     if isinstance(e, RunEnd):

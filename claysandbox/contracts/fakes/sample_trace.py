@@ -29,9 +29,7 @@ def at(seconds: float) -> datetime:
 def scripted_events() -> list[AnyEvent]:
     """Without parent_id: the sink assigns event IDs, so parents are linked by position in tests."""
     return [
-        RunStart(
-            ts_start=at(0), task_instance_id="T1:kern", config_name="fake-baseline"
-        ),
+        RunStart(ts_start=at(0), task_instance_id="T1:kern", config_name="fake-baseline"),
         ModelCall(
             ts_start=at(0.1),
             ts_end=at(1.0),
@@ -40,9 +38,7 @@ def scripted_events() -> list[AnyEvent]:
             input_tokens=420,
             output_tokens=60,
             stop_reason="tool_use",
-            tool_use_requests=[
-                {"name": "stac__search_items", "input": {"collection": "naip"}}
-            ],
+            tool_use_requests=[{"name": "stac__search_items", "input": {"collection": "naip"}}],
             cost_usd=0.0004,
             price_table_version="fixed-1",
         ),
@@ -71,9 +67,7 @@ def scripted_events() -> list[AnyEvent]:
             input_tokens=510,
             output_tokens=55,
             stop_reason="tool_use",
-            tool_use_requests=[
-                {"name": "stac__search_items", "input": {"collection": "naip"}}
-            ],
+            tool_use_requests=[{"name": "stac__search_items", "input": {"collection": "naip"}}],
             cost_usd=0.0005,
             price_table_version="fixed-1",
         ),
@@ -100,9 +94,7 @@ def scripted_events() -> list[AnyEvent]:
             cost_usd=0.0008,
             price_table_version="fixed-1",
         ),
-        FinalOutput(
-            ts_start=at(4.4), output={"items": ["ca_m_3511801_ne"], "count": 41}
-        ),
+        FinalOutput(ts_start=at(4.4), output={"items": ["ca_m_3511801_ne"], "count": 41}),
         RunEnd(
             ts_start=at(4.5),
             state="completed",

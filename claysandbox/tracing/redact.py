@@ -31,15 +31,11 @@ _PATTERNS: list[re.Pattern[str]] = [
     ),
     # Authorization header: scheme (may contain digits and hyphens, e.g. AWS4-HMAC-SHA256)
     # plus its first value; also the JSON form `"Authorization": "Bearer ..."`.
-    re.compile(
-        r"(?i)(authorization[\"']?\s*:\s*[\"']?)(?:[A-Za-z0-9-]+\s+)?[^\s,;\"']+"
-    ),
+    re.compile(r"(?i)(authorization[\"']?\s*:\s*[\"']?)(?:[A-Za-z0-9-]+\s+)?[^\s,;\"']+"),
     re.compile(r"(?i)\b(bearer\s+)[A-Za-z0-9._~+/=-]{8,}"),
     # SigV4 `Signature=` (header form) and `X-Amz-Signature=` (presigned URL form).
     re.compile(r"(?i)\b((?:x-amz-)?signature=)[0-9a-f]{16,}"),
-    re.compile(
-        r"(?i)\b((?:access_token|id_token|refresh_token|api_key|apikey)=)[^&\s\"']+"
-    ),
+    re.compile(r"(?i)\b((?:access_token|id_token|refresh_token|api_key|apikey)=)[^&\s\"']+"),
 ]
 _SECRET_KEY_NAME = re.compile(
     r"(?i)(secret|token|password|passwd|api[_-]?key|access[_-]?key|authorization|credential)"
@@ -65,9 +61,7 @@ def _env_secrets() -> list[str]:
         for k, v in os.environ.items()
         if _ENV_NAME.search(k) and v and len(v) >= _MIN_ENV_SECRET_LEN
     ]
-    return sorted(
-        set(vals), key=len, reverse=True
-    )  # longest first, so substrings don't win
+    return sorted(set(vals), key=len, reverse=True)  # longest first, so substrings don't win
 
 
 def redact_text(text: str, env_secrets: list[str] | None = None) -> str:

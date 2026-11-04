@@ -1,0 +1,19 @@
+{
+  "app": "uv run --group infra python app.py",
+  "watch": {
+    "include": ["**"],
+    "exclude": ["cdk.out", "outputs.json", "__pycache__", "tests"]
+  },
+  "context": {
+    "bedrockModelIds": [
+      "us.amazon.nova-lite-v1:0",
+      "us.amazon.nova-pro-v1:0",
+      "us.anthropic.claude-sonnet-4-6",
+      "us.meta.llama3-3-70b-instruct-v1:0"
+    ],
+    "naipBuckets": ["naip-source", "naip-analytic", "naip-visualization"],
+    "imageTag": "latest",
+    "taskCpu": 1024,
+    "taskMemoryMiB": 2048
+  }
+}

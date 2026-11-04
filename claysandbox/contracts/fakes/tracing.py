@@ -31,6 +31,4 @@ class MemoryTracer:
 
     def trace(self) -> Trace:
         done = bool(self.events) and self.events[-1].type == "run_end"
-        return Trace(
-            run_id=self.run_id or "", events=list(self.events), incomplete=not done
-        )
+        return Trace(run_id=self.run_id or "", events=list(self.events), incomplete=not done)

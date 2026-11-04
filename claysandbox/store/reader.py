@@ -29,9 +29,7 @@ def _version_key(v: str) -> tuple[int, ...]:
     try:
         return tuple(int(p) for p in v.split("."))
     except ValueError:
-        raise UnsupportedTraceVersion(
-            f"unreadable trace schema version {v!r}"
-        ) from None
+        raise UnsupportedTraceVersion(f"unreadable trace schema version {v!r}") from None
 
 
 def upgrade_event(raw: dict) -> dict:
@@ -39,7 +37,8 @@ def upgrade_event(raw: dict) -> dict:
     if version not in UPGRADES:
         if _version_key(version) > _version_key(SCHEMA_VERSION):
             raise UnsupportedTraceVersion(
-                f"trace schema {version} is newer than this reader ({SCHEMA_VERSION}); update claysandbox"
+                f"trace schema {version} is newer than this reader ({SCHEMA_VERSION}); "
+                "update claysandbox"
             )
         raise UnsupportedTraceVersion(f"unknown trace schema version {version}")
     while version != SCHEMA_VERSION:
@@ -65,9 +64,7 @@ def read_trace(run_dir: str | Path, run_id: str | None = None) -> Trace:
     path = next((run_dir / f for f in TRACE_FILES if (run_dir / f).exists()), None)
     rid = run_id or run_dir.name
     if path is None:
-        return Trace(run_id=rid, events=[], incomplete=True).with_blobs(
-            blob_loader(run_dir)
-        )
+        return Trace(run_id=rid, events=[], incomplete=True).with_blobs(blob_loader(run_dir))
     events, incomplete = [], False
     with path.open("r", encoding="utf-8") as fh:
         for line in fh:
@@ -87,6 +84,4 @@ def read_trace(run_dir: str | Path, run_id: str | None = None) -> Trace:
         incomplete = True
     if events:
         rid = events[0].run_id or rid
-    return Trace(run_id=rid, events=events, incomplete=incomplete).with_blobs(
-        blob_loader(run_dir)
-    )
+    return Trace(run_id=rid, events=events, incomplete=incomplete).with_blobs(blob_loader(run_dir))

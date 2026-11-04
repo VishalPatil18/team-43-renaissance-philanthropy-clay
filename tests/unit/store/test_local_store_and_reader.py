@@ -64,9 +64,7 @@ def test_status_writes_are_atomic(tmp_path):
     store.create_run(MANIFEST)
     for state in ("running", "running", "completed"):
         store.write_status("r1", state)
-    leftovers = [
-        p.name for p in store.run_dir("r1").iterdir() if p.name.startswith(".")
-    ]
+    leftovers = [p.name for p in store.run_dir("r1").iterdir() if p.name.startswith(".")]
     assert leftovers == []
 
 
@@ -90,9 +88,7 @@ def test_reader_truncated_line_keeps_earlier_events(tmp_path):
     sent = record(store, finish=False)
     path = store.trace_path("r1")
     lines = path.read_text().splitlines()
-    path.write_text(
-        "\n".join(lines[:4]) + "\n" + lines[4][:30]
-    )  # crash mid-write of event 4
+    path.write_text("\n".join(lines[:4]) + "\n" + lines[4][:30])  # crash mid-write of event 4
     trace = read_trace(path.parent)
     assert trace.incomplete is True
     assert trace.events == sent[:4]
@@ -108,9 +104,7 @@ def test_reader_rejects_newer_schema(tmp_path):
     store = LocalRunStore(tmp_path / "runs", tmp_path / "evals")
     record(store, finish=False)
     path = store.trace_path("r1")
-    path.write_text(
-        path.read_text().replace('"schema_version":"1.0"', '"schema_version":"9.0"', 1)
-    )
+    path.write_text(path.read_text().replace('"schema_version":"1.0"', '"schema_version":"9.0"', 1))
     with pytest.raises(UnsupportedTraceVersion):
         read_trace(path.parent)
 
@@ -188,8 +182,6 @@ def test_reader_unreadable_schema_version_is_a_clear_error(tmp_path):
     store = LocalRunStore(tmp_path / "runs", tmp_path / "evals")
     record(store, finish=False)
     path = store.trace_path("r1")
-    path.write_text(
-        path.read_text().replace('"schema_version":"1.0"', '"schema_version":"abc"', 1)
-    )
+    path.write_text(path.read_text().replace('"schema_version":"1.0"', '"schema_version":"abc"', 1))
     with pytest.raises(UnsupportedTraceVersion):
         read_trace(path.parent)

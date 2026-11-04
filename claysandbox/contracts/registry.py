@@ -1,19 +1,21 @@
-"""Component registry (arch §7.6).
-
-PLACEHOLDER copied verbatim from the architecture sketch so WS3 code can
-register its components before the scaffold lands. The owner is WS5 (5th
-member): if their registry merges first, delete this file in favour of theirs.
-"""
+"""Plugin registry (architecture §7.6). Everything that varies is registered by (kind, name)."""
 
 from __future__ import annotations
 
-from typing import Any
+from collections.abc import Callable
+from typing import Any, TypeVar
+
+from .errors import ConfigError
+
+T = TypeVar("T", bound=type)
 
 _REGISTRY: dict[tuple[str, str], type] = {}
 
 
-def register(kind: str, name: str):
-    def deco(cls):
+def register(kind: str, name: str) -> Callable[[T], T]:
+    """Class decorator that registers ``cls`` under ``(kind, name)``."""
+
+    def deco(cls: T) -> T:
         _REGISTRY[(kind, name)] = cls
         return cls
 
@@ -21,25 +23,23 @@ def register(kind: str, name: str):
 
 
 def resolve(kind: str, name: str) -> type:
+    """Return the class registered under ``(kind, name)``."""
     try:
         return _REGISTRY[(kind, name)]
     except KeyError:
-        known = sorted(n for k, n in _REGISTRY if k == kind)
-        raise KeyError(f"no {kind} named {name!r}; registered: {known}") from None
+        known = sorted(n for (k, n) in _REGISTRY if k == kind)
+        raise ConfigError(
+            f"No {kind} named {name!r} is registered. Known: {known}", kind="unknown_component"
+        ) from None
 
 
 def list_components(kind: str | None = None) -> list[dict[str, Any]]:
-    out = []
+    """Describe registered components: kind, name, version and parameter JSON Schema."""
+    out: list[dict[str, Any]] = []
     for (k, n), cls in sorted(_REGISTRY.items()):
-        if kind and k != kind:
+        if kind is not None and k != kind:
             continue
-        params = getattr(cls, "Params", None)
-        out.append(
-            {
-                "kind": k,
-                "name": n,
-                "version": getattr(cls, "version", ""),
-                "params_schema": params.model_json_schema() if params else {},
-            }
-        )
+        params_model = getattr(cls, "Params", None)
+        schema = params_model.model_json_schema() if params_model is not None else {}
+        out.append({"kind": k, "name": n, "version": getattr(cls, "version", ""), "params": schema})
     return out

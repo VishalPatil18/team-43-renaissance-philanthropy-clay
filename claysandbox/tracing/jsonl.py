@@ -32,9 +32,7 @@ class JsonlTracer:
         file_name: str = TRACE_FILE
 
     def __init__(self, params: JsonlTracer.Params | dict | None = None):
-        self.params = (
-            params if isinstance(params, self.Params) else self.Params(**(params or {}))
-        )
+        self.params = params if isinstance(params, self.Params) else self.Params(**(params or {}))
         self.run_id: str | None = None
         self.path: Path | None = None
         self.incomplete = False
