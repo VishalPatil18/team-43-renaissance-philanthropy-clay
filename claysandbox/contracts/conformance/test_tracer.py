@@ -8,20 +8,21 @@ from pathlib import Path
 import pytest
 
 import claysandbox.contracts.fakes
-import claysandbox.tracing.jsonl  # noqa: F401  registers JsonlTracer (registry_bootstrap does this later)
+import claysandbox.tracing.jsonl  # noqa: F401  registers JsonlTracer
+import claysandbox.tracing.otel  # noqa: F401  registers OtelTracer
 from claysandbox.contracts.fakes.sample_trace import scripted_events
 from claysandbox.contracts.registry import _REGISTRY, resolve
-from claysandbox.contracts.trace import parse_event
+from claysandbox.store.reader import read_trace
 from claysandbox.tracing.sink import RunEventSink
 
 TRACERS = sorted(name for kind, name in _REGISTRY if kind == "tracer")
 
 
 def read_back(tracer, run_dir: Path):
+    """Events as a replay would see them: the in-memory list, or the store's reader."""
     if hasattr(tracer, "events"):
         return list(tracer.events)
-    path = Path(run_dir) / "trace.jsonl"
-    return [parse_event(line) for line in path.read_text().splitlines() if line.strip()]
+    return list(read_trace(run_dir).events)
 
 
 @pytest.mark.parametrize("name", TRACERS)

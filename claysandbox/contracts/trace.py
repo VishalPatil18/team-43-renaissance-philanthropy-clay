@@ -23,6 +23,11 @@ from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, TypeAdapter
 
 SCHEMA_VERSION = "1.0"
 
+# The OTel tracer stores each canonical event, as JSON, under this span attribute, and the
+# store's reader rebuilds events from it. Both sides import the name from here so that
+# neither package has to import the other (arch §4.1).
+OTEL_EVENT_ATTR = "clay.event"
+
 ErrorSource = Literal["agent", "tool", "budget", "infra"]
 RunState = Literal["completed", "budget_stopped", "agent_failed", "infra_error"]
 
