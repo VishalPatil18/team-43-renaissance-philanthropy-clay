@@ -8,6 +8,7 @@ import pytest
 
 import claysandbox.contracts.fakes
 import claysandbox.store.local  # noqa: F401  registers LocalRunStore
+import claysandbox.store.s3  # noqa: F401  registers S3MirrorRunStore
 from claysandbox.contracts.registry import _REGISTRY, resolve
 from claysandbox.contracts.store import StoreWriteRefused
 
