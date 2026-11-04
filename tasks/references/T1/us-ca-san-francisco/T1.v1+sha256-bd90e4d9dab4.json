@@ -1,0 +1,314 @@
+{
+  "schema_version": "1.0",
+  "template": "T1",
+  "aoi": {
+    "id": "us-ca-san-francisco",
+    "name": "San Francisco County",
+    "state": "California",
+    "state_code": "CA",
+    "fips": "06075",
+    "bbox": [
+      -123.17383,
+      37.64178,
+      -122.28178,
+      37.92982
+    ],
+    "geometry": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -122.40537,
+              37.70829
+            ],
+            [
+              -122.28178,
+              37.70823
+            ],
+            [
+              -122.37378,
+              37.88373
+            ],
+            [
+              -122.43228,
+              37.92982
+            ],
+            [
+              -122.41867,
+              37.8525
+            ],
+            [
+              -122.4991,
+              37.81988
+            ],
+            [
+              -122.61229,
+              37.81522
+            ],
+            [
+              -122.58817,
+              37.78936
+            ],
+            [
+              -122.57519,
+              37.70672
+            ],
+            [
+              -122.40537,
+              37.70829
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              -123.17383,
+              37.77573
+            ],
+            [
+              -123.15676,
+              37.73784
+            ],
+            [
+              -123.09285,
+              37.71369
+            ],
+            [
+              -123.0407,
+              37.65033
+            ],
+            [
+              -122.98675,
+              37.64178
+            ],
+            [
+              -122.94136,
+              37.67658
+            ],
+            [
+              -122.94998,
+              37.73219
+            ],
+            [
+              -123.07049,
+              37.81383
+            ],
+            [
+              -123.13227,
+              37.81968
+            ],
+            [
+              -123.17383,
+              37.77573
+            ]
+          ]
+        ]
+      ]
+    },
+    "tags": [
+      "no_solar"
+    ],
+    "template_params": {
+      "T1": {
+        "area_name": "central San Francisco",
+        "area_bbox": [
+          -122.49,
+          37.71,
+          -122.39,
+          37.81
+        ]
+      }
+    },
+    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
+  },
+  "instance_id": "T1@us-ca-san-francisco",
+  "version": "T1.v1+sha256:bd90e4d9dab4",
+  "method": "script",
+  "builder": "builders/t1_naip_items.py",
+  "builder_sha256": "f151cf4b5493b19c892f80f8a1a61e9f27576de25ba7ef8ee6ac1cb227ab12b7",
+  "inputs": {
+    "stac_api": "https://planetarycomputer.microsoft.com/api/stac/v1",
+    "collection": "naip",
+    "year": 2022,
+    "area_name": "central San Francisco",
+    "bbox": [
+      -122.49,
+      37.71,
+      -122.39,
+      37.81
+    ],
+    "match": "item intersects the search box"
+  },
+  "built_at": "2026-11-04T16:35:53.105796Z",
+  "checked_by": null,
+  "checked_at": null,
+  "notes": [],
+  "workflow": {
+    "required": [
+      "imagery_search"
+    ],
+    "forbidden": [],
+    "ordering": [
+      {
+        "kind": "before",
+        "before": "geocode",
+        "after": "imagery_search",
+        "optional_first": true
+      }
+    ],
+    "argument_constraints": [
+      {
+        "capability": "imagery_search",
+        "check": "bbox_intersects_aoi",
+        "arg_names": [
+          "bbox"
+        ],
+        "values": null,
+        "value": {
+          "type": "MultiPolygon",
+          "coordinates": [
+            [
+              [
+                [
+                  -122.40537,
+                  37.70829
+                ],
+                [
+                  -122.28178,
+                  37.70823
+                ],
+                [
+                  -122.37378,
+                  37.88373
+                ],
+                [
+                  -122.43228,
+                  37.92982
+                ],
+                [
+                  -122.41867,
+                  37.8525
+                ],
+                [
+                  -122.4991,
+                  37.81988
+                ],
+                [
+                  -122.61229,
+                  37.81522
+                ],
+                [
+                  -122.58817,
+                  37.78936
+                ],
+                [
+                  -122.57519,
+                  37.70672
+                ],
+                [
+                  -122.40537,
+                  37.70829
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  -123.17383,
+                  37.77573
+                ],
+                [
+                  -123.15676,
+                  37.73784
+                ],
+                [
+                  -123.09285,
+                  37.71369
+                ],
+                [
+                  -123.0407,
+                  37.65033
+                ],
+                [
+                  -122.98675,
+                  37.64178
+                ],
+                [
+                  -122.94136,
+                  37.67658
+                ],
+                [
+                  -122.94998,
+                  37.73219
+                ],
+                [
+                  -123.07049,
+                  37.81383
+                ],
+                [
+                  -123.13227,
+                  37.81968
+                ],
+                [
+                  -123.17383,
+                  37.77573
+                ]
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "capability": "imagery_search",
+        "check": "collection_in",
+        "arg_names": [
+          "collections"
+        ],
+        "values": [
+          "naip"
+        ],
+        "value": null
+      },
+      {
+        "capability": "imagery_search",
+        "check": "datetime_within_year",
+        "arg_names": [
+          "datetime"
+        ],
+        "values": null,
+        "value": 2022
+      }
+    ],
+    "expected_steps": 4,
+    "step_limit": 15,
+    "done": "output_matches_schema_nonempty",
+    "recovery": {
+      "recovered_penalty": 0.25
+    }
+  },
+  "output_reference": {
+    "items": [
+      "ca_m_3712213_se_10_060_20220518",
+      "ca_m_3712213_sw_10_060_20220518",
+      "ca_m_3712221_ne_10_060_20220518",
+      "ca_m_3712221_nw_10_060_20220518"
+    ]
+  },
+  "weights": {},
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "items"
+    ],
+    "properties": {
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "process_rubric": "# Process rubric: T1 (NAIP imagery for a search box and year)\n\nThe agent was asked for every NAIP item of one year that intersects a given 0.1° bounding box in\na US county, returned as `{\"items\": [...]}`. Judge **how** it worked, not whether the final list is\ncomplete (the output metric measures that separately). Score each item from 0 to 1 and cite the\ntrace event IDs your score is based on.\n\n## planning\n\nDid the agent work out what it needed (the NAIP collection, the box, the year) and go straight\nfor it, without wandering?\n\n- **1.0**: one imagery search with `collections: [\"naip\"]`, the given bbox and a datetime\n  range for the given year, then pages through results if `has_more` is true.\n- **0.5**: gets there, but with unneeded steps (geocoding a place whose bbox was already given,\n  listing every collection first, repeated near-identical searches).\n- **0.0**: never searches for imagery, or searches something unrelated (another collection, the\n  whole state, another year).\n\n## tool_choice\n\nDid it use the right tool with sensible arguments?\n\n- **1.0**: uses the imagery search tool (`stac.search_items`) with the given bbox, `naip` and the\n  year; optionally a dataset-discovery call to confirm NAIP exists.\n- **0.5**: uses the right tool but with a wrong or missing argument that it later fixes (no\n  datetime, bbox in the wrong order).\n- **0.0**: answers from memory, or uses tools that can't return NAIP item IDs.\n\n## error_recovery\n\nWhen a call failed (error result, timeout, unavailable server), did it react sensibly?\n\n- **1.0**: reads the error, corrects the call or switches to an equivalent tool, and continues.\n  Also 1.0 if no call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: repeats the same failing call until stopped, or gives up after the first error while\n  other options were available.\n\n## honesty\n\nIs the final answer honest about what was found?\n\n- **1.0**: returns only IDs that appeared in tool results, and says so (or returns an empty list)\n  if the search returned nothing.\n- **0.5**: returns real IDs but claims completeness it didn't check (stopped at the first page\n  while `has_more` was true).\n- **0.0**: invents item IDs, or returns IDs from another year or area as if they matched.\n"
+}

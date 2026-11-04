@@ -1,0 +1,490 @@
+{
+  "schema_version": "1.0",
+  "template": "T1",
+  "aoi": {
+    "id": "us-ca-kern",
+    "name": "Kern County",
+    "state": "California",
+    "state_code": "CA",
+    "fips": "06029",
+    "bbox": [
+      -120.19437,
+      34.78866,
+      -117.61652,
+      35.79836
+    ],
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            -118.88168,
+            34.81785
+          ],
+          [
+            -118.87212,
+            34.80317
+          ],
+          [
+            -118.85411,
+            34.80328
+          ],
+          [
+            -118.85401,
+            34.81776
+          ],
+          [
+            -117.63215,
+            34.82227
+          ],
+          [
+            -117.63435,
+            35.65157
+          ],
+          [
+            -117.61652,
+            35.65161
+          ],
+          [
+            -117.61652,
+            35.68069
+          ],
+          [
+            -117.65218,
+            35.68077
+          ],
+          [
+            -117.65214,
+            35.70986
+          ],
+          [
+            -117.63431,
+            35.70983
+          ],
+          [
+            -117.63429,
+            35.79766
+          ],
+          [
+            -117.92441,
+            35.79836
+          ],
+          [
+            -117.93839,
+            35.78658
+          ],
+          [
+            -120.19437,
+            35.78936
+          ],
+          [
+            -120.19399,
+            35.61439
+          ],
+          [
+            -120.08618,
+            35.6144
+          ],
+          [
+            -120.08677,
+            35.52643
+          ],
+          [
+            -119.99745,
+            35.46871
+          ],
+          [
+            -119.99315,
+            35.43947
+          ],
+          [
+            -119.88005,
+            35.43913
+          ],
+          [
+            -119.88036,
+            35.35112
+          ],
+          [
+            -119.80921,
+            35.35094
+          ],
+          [
+            -119.80941,
+            35.26369
+          ],
+          [
+            -119.66659,
+            35.26263
+          ],
+          [
+            -119.6673,
+            35.17498
+          ],
+          [
+            -119.55382,
+            35.18012
+          ],
+          [
+            -119.56175,
+            35.08783
+          ],
+          [
+            -119.49038,
+            35.09165
+          ],
+          [
+            -119.49054,
+            35.07668
+          ],
+          [
+            -119.47255,
+            35.07667
+          ],
+          [
+            -119.47249,
+            34.90138
+          ],
+          [
+            -119.3837,
+            34.90082
+          ],
+          [
+            -119.38185,
+            34.87399
+          ],
+          [
+            -119.27643,
+            34.87248
+          ],
+          [
+            -119.27724,
+            34.85728
+          ],
+          [
+            -119.24258,
+            34.8576
+          ],
+          [
+            -119.24253,
+            34.81432
+          ],
+          [
+            -118.97793,
+            34.81171
+          ],
+          [
+            -118.97802,
+            34.78981
+          ],
+          [
+            -118.88041,
+            34.78866
+          ],
+          [
+            -118.89463,
+            34.81797
+          ],
+          [
+            -118.88168,
+            34.81785
+          ]
+        ]
+      ]
+    },
+    "tags": [
+      "has_solar"
+    ],
+    "template_params": {
+      "T1": {
+        "area_name": "Bakersfield",
+        "area_bbox": [
+          -119.069,
+          35.323,
+          -118.969,
+          35.423
+        ]
+      }
+    },
+    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
+  },
+  "instance_id": "T1@us-ca-kern",
+  "version": "T1.v2+sha256:cfebf696c13c",
+  "method": "script",
+  "builder": "builders/t1_naip_items.py",
+  "builder_sha256": "f151cf4b5493b19c892f80f8a1a61e9f27576de25ba7ef8ee6ac1cb227ab12b7",
+  "inputs": {
+    "stac_api": "https://planetarycomputer.microsoft.com/api/stac/v1",
+    "collection": "naip",
+    "year": 2022,
+    "area_name": "Bakersfield",
+    "bbox": [
+      -119.069,
+      35.323,
+      -118.969,
+      35.423
+    ],
+    "match": "item intersects the search box"
+  },
+  "built_at": "2026-11-04T16:35:48.590625Z",
+  "checked_by": "Vishal (agent-assisted)",
+  "checked_at": "2026-11-04T16:36:13.665333Z",
+  "notes": [
+    "spot-check: item IDs compared with an independent search of Element 84 Earth Search (same bbox, collection naip, 2022): identical 6 IDs"
+  ],
+  "workflow": {
+    "required": [
+      "imagery_search"
+    ],
+    "forbidden": [],
+    "ordering": [
+      {
+        "kind": "before",
+        "before": "geocode",
+        "after": "imagery_search",
+        "optional_first": true
+      }
+    ],
+    "argument_constraints": [
+      {
+        "capability": "imagery_search",
+        "check": "bbox_intersects_aoi",
+        "arg_names": [
+          "bbox"
+        ],
+        "values": null,
+        "value": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -118.88168,
+                34.81785
+              ],
+              [
+                -118.87212,
+                34.80317
+              ],
+              [
+                -118.85411,
+                34.80328
+              ],
+              [
+                -118.85401,
+                34.81776
+              ],
+              [
+                -117.63215,
+                34.82227
+              ],
+              [
+                -117.63435,
+                35.65157
+              ],
+              [
+                -117.61652,
+                35.65161
+              ],
+              [
+                -117.61652,
+                35.68069
+              ],
+              [
+                -117.65218,
+                35.68077
+              ],
+              [
+                -117.65214,
+                35.70986
+              ],
+              [
+                -117.63431,
+                35.70983
+              ],
+              [
+                -117.63429,
+                35.79766
+              ],
+              [
+                -117.92441,
+                35.79836
+              ],
+              [
+                -117.93839,
+                35.78658
+              ],
+              [
+                -120.19437,
+                35.78936
+              ],
+              [
+                -120.19399,
+                35.61439
+              ],
+              [
+                -120.08618,
+                35.6144
+              ],
+              [
+                -120.08677,
+                35.52643
+              ],
+              [
+                -119.99745,
+                35.46871
+              ],
+              [
+                -119.99315,
+                35.43947
+              ],
+              [
+                -119.88005,
+                35.43913
+              ],
+              [
+                -119.88036,
+                35.35112
+              ],
+              [
+                -119.80921,
+                35.35094
+              ],
+              [
+                -119.80941,
+                35.26369
+              ],
+              [
+                -119.66659,
+                35.26263
+              ],
+              [
+                -119.6673,
+                35.17498
+              ],
+              [
+                -119.55382,
+                35.18012
+              ],
+              [
+                -119.56175,
+                35.08783
+              ],
+              [
+                -119.49038,
+                35.09165
+              ],
+              [
+                -119.49054,
+                35.07668
+              ],
+              [
+                -119.47255,
+                35.07667
+              ],
+              [
+                -119.47249,
+                34.90138
+              ],
+              [
+                -119.3837,
+                34.90082
+              ],
+              [
+                -119.38185,
+                34.87399
+              ],
+              [
+                -119.27643,
+                34.87248
+              ],
+              [
+                -119.27724,
+                34.85728
+              ],
+              [
+                -119.24258,
+                34.8576
+              ],
+              [
+                -119.24253,
+                34.81432
+              ],
+              [
+                -118.97793,
+                34.81171
+              ],
+              [
+                -118.97802,
+                34.78981
+              ],
+              [
+                -118.88041,
+                34.78866
+              ],
+              [
+                -118.89463,
+                34.81797
+              ],
+              [
+                -118.88168,
+                34.81785
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "capability": "imagery_search",
+        "check": "collection_in",
+        "arg_names": [
+          "collections"
+        ],
+        "values": [
+          "naip"
+        ],
+        "value": null
+      },
+      {
+        "capability": "imagery_search",
+        "check": "datetime_within_year",
+        "arg_names": [
+          "datetime"
+        ],
+        "values": null,
+        "value": 2022
+      }
+    ],
+    "expected_steps": 4,
+    "step_limit": 15,
+    "done": "output_matches_schema_nonempty",
+    "recovery": {
+      "recovered_penalty": 0.25
+    }
+  },
+  "output_reference": {
+    "items": [
+      "ca_m_3511833_sw_11_060_20220607",
+      "ca_m_3511841_nw_11_060_20220607",
+      "ca_m_3511940_se_11_060_20220607",
+      "ca_m_3511940_sw_11_060_20220607",
+      "ca_m_3511948_ne_11_060_20220607",
+      "ca_m_3511948_nw_11_060_20220607"
+    ]
+  },
+  "weights": {},
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "items"
+    ],
+    "properties": {
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "process_rubric": "# Process rubric: T1 (NAIP imagery for a search box and year)\n\nThe agent was asked for every NAIP item of one year that intersects a given 0.1° bounding box in\na US county, returned as `{\"items\": [...]}`. Judge **how** it worked, not whether the final list is\ncomplete (the output metric measures that separately). Score each item from 0 to 1 and cite the\ntrace event IDs your score is based on.\n\n## planning\n\nDid the agent work out what it needed (the NAIP collection, the box, the year) and go straight\nfor it, without wandering?\n\n- **1.0**: one imagery search with `collections: [\"naip\"]`, the given bbox and a datetime\n  range for the given year, then pages through results if `has_more` is true.\n- **0.5**: gets there, but with unneeded steps (geocoding a place whose bbox was already given,\n  listing every collection first, repeated near-identical searches).\n- **0.0**: never searches for imagery, or searches something unrelated (another collection, the\n  whole state, another year).\n\n## tool_choice\n\nDid it use the right tool with sensible arguments?\n\n- **1.0**: uses the imagery search tool (`stac.search_items`) with the given bbox, `naip` and the\n  year; optionally a dataset-discovery call to confirm NAIP exists.\n- **0.5**: uses the right tool but with a wrong or missing argument that it later fixes (no\n  datetime, bbox in the wrong order).\n- **0.0**: answers from memory, or uses tools that can't return NAIP item IDs.\n\n## error_recovery\n\nWhen a call failed (error result, timeout, unavailable server), did it react sensibly?\n\n- **1.0**: reads the error, corrects the call or switches to an equivalent tool, and continues.\n  Also 1.0 if no call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: repeats the same failing call until stopped, or gives up after the first error while\n  other options were available.\n\n## honesty\n\nIs the final answer honest about what was found?\n\n- **1.0**: returns only IDs that appeared in tool results, and says so (or returns an empty list)\n  if the search returned nothing.\n- **0.5**: returns real IDs but claims completeness it didn't check (stopped at the first page\n  while `has_more` was true).\n- **0.0**: invents item IDs, or returns IDs from another year or area as if they matched.\n"
+}

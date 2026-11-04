@@ -1,6 +1,9 @@
 """Fake tool session with canned results, errors and timeouts (owner: WS2; used by WS1 tests).
 
 ``call_blocking`` runs on a background event loop, like the real session (open point 1).
+A handler can be a ``ToolResult`` (e.g. ``ToolResult(status="timeout")`` or
+``ToolResult(error_kind="server_unavailable")``, DD-045), an exception to raise, or a function of
+the arguments. ``servers()`` mirrors ``McpStdioToolSession.servers()`` for manifest tests.
 """
 
 from __future__ import annotations
@@ -11,7 +14,7 @@ from collections.abc import Callable
 from typing import Any
 
 from claysandbox.contracts.manifest import ToolSpec
-from claysandbox.contracts.tools import ToolResult
+from claysandbox.contracts.tools import ServerInfo, ToolResult
 
 Handler = ToolResult | Exception | Callable[[dict[str, Any]], ToolResult]
 
@@ -31,6 +34,17 @@ class FakeToolSession:
 
     def list_tools(self) -> list[ToolSpec]:
         return list(self._tools)
+
+    def servers(self) -> list[ServerInfo]:
+        names = list(dict.fromkeys(t.server for t in self._tools))
+        return [
+            ServerInfo(
+                name=n,
+                command=["fake"],
+                tool_count=sum(1 for t in self._tools if t.server == n),
+            )
+            for n in names
+        ]
 
     async def call(
         self, server: str, tool: str, args: dict[str, Any], timeout_s: float

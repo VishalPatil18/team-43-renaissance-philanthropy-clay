@@ -1,0 +1,429 @@
+{
+  "schema_version": "1.0",
+  "template": "T5",
+  "aoi": {
+    "id": "us-nc-robeson",
+    "name": "Robeson County",
+    "state": "North Carolina",
+    "state_code": "NC",
+    "fips": "37155",
+    "bbox": [
+      -79.46151,
+      34.29934,
+      -78.80543,
+      34.95271
+    ],
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            -79.12835,
+            34.88294
+          ],
+          [
+            -79.19139,
+            34.83372
+          ],
+          [
+            -79.34883,
+            34.83885
+          ],
+          [
+            -79.35742,
+            34.81896
+          ],
+          [
+            -79.33086,
+            34.77397
+          ],
+          [
+            -79.46151,
+            34.63038
+          ],
+          [
+            -79.07121,
+            34.29934
+          ],
+          [
+            -79.03847,
+            34.31314
+          ],
+          [
+            -79.02711,
+            34.35307
+          ],
+          [
+            -79.00908,
+            34.35283
+          ],
+          [
+            -79.01161,
+            34.38089
+          ],
+          [
+            -78.96974,
+            34.39521
+          ],
+          [
+            -78.95978,
+            34.44298
+          ],
+          [
+            -78.90685,
+            34.45584
+          ],
+          [
+            -78.84634,
+            34.49981
+          ],
+          [
+            -78.86266,
+            34.56223
+          ],
+          [
+            -78.83605,
+            34.59342
+          ],
+          [
+            -78.80543,
+            34.6866
+          ],
+          [
+            -78.85425,
+            34.73549
+          ],
+          [
+            -78.88334,
+            34.81212
+          ],
+          [
+            -78.95486,
+            34.91327
+          ],
+          [
+            -79.03875,
+            34.95271
+          ],
+          [
+            -79.12835,
+            34.88294
+          ]
+        ]
+      ]
+    },
+    "tags": [
+      "has_solar"
+    ],
+    "template_params": {
+      "T1": {
+        "area_name": "Lumberton",
+        "area_bbox": [
+          -79.059,
+          34.568,
+          -78.959,
+          34.668
+        ]
+      }
+    },
+    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
+  },
+  "instance_id": "T5@us-nc-robeson",
+  "version": "T5.v1+sha256:da748fe3bd16",
+  "method": "script",
+  "builder": "builders/t5_rules.py",
+  "builder_sha256": "68d3d1d996aaeb8409d091cc76ac105b7daea7d225fedd51ea53c12c84f01a1f",
+  "inputs": {
+    "aoi": "us-nc-robeson",
+    "aoi_source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04",
+    "rules_version": 1
+  },
+  "built_at": "2026-11-04T16:35:54.466507Z",
+  "checked_by": "Vishal (agent-assisted)",
+  "checked_at": "2026-11-04T16:36:13.875920Z",
+  "notes": [
+    "spot-check: read the three rules; aoi_bbox and aoi_geometry match tasks/aois.yaml for us-nc-robeson"
+  ],
+  "workflow": {
+    "required": [],
+    "forbidden": [],
+    "ordering": [
+      {
+        "kind": "before",
+        "before": "geocode",
+        "after": "imagery_search",
+        "optional_first": true
+      }
+    ],
+    "argument_constraints": [
+      {
+        "capability": "imagery_search",
+        "check": "bbox_intersects_aoi",
+        "arg_names": [
+          "bbox"
+        ],
+        "values": null,
+        "value": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -79.12835,
+                34.88294
+              ],
+              [
+                -79.19139,
+                34.83372
+              ],
+              [
+                -79.34883,
+                34.83885
+              ],
+              [
+                -79.35742,
+                34.81896
+              ],
+              [
+                -79.33086,
+                34.77397
+              ],
+              [
+                -79.46151,
+                34.63038
+              ],
+              [
+                -79.07121,
+                34.29934
+              ],
+              [
+                -79.03847,
+                34.31314
+              ],
+              [
+                -79.02711,
+                34.35307
+              ],
+              [
+                -79.00908,
+                34.35283
+              ],
+              [
+                -79.01161,
+                34.38089
+              ],
+              [
+                -78.96974,
+                34.39521
+              ],
+              [
+                -78.95978,
+                34.44298
+              ],
+              [
+                -78.90685,
+                34.45584
+              ],
+              [
+                -78.84634,
+                34.49981
+              ],
+              [
+                -78.86266,
+                34.56223
+              ],
+              [
+                -78.83605,
+                34.59342
+              ],
+              [
+                -78.80543,
+                34.6866
+              ],
+              [
+                -78.85425,
+                34.73549
+              ],
+              [
+                -78.88334,
+                34.81212
+              ],
+              [
+                -78.95486,
+                34.91327
+              ],
+              [
+                -79.03875,
+                34.95271
+              ],
+              [
+                -79.12835,
+                34.88294
+              ]
+            ]
+          ]
+        }
+      }
+    ],
+    "expected_steps": 3,
+    "step_limit": 12,
+    "done": "assumptions_or_question",
+    "recovery": {
+      "recovered_penalty": 0.25
+    }
+  },
+  "output_reference": {
+    "rules": [
+      {
+        "id": "states_assumptions_or_asks",
+        "applies": "always",
+        "check": "assumptions non-empty or clarifying_question is a non-empty string"
+      },
+      {
+        "id": "no_fabricated_ids",
+        "applies": "items non-empty",
+        "check": "every id in items appears in some tool_call result (preview or blob)"
+      },
+      {
+        "id": "items_intersect_aoi",
+        "applies": "items non-empty",
+        "check": "every id in items is an imagery item whose footprint, as returned by the tool that listed it, intersects aoi_geometry",
+        "aoi_bbox": [
+          -79.46151,
+          34.29934,
+          -78.80543,
+          34.95271
+        ],
+        "aoi_geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -79.12835,
+                34.88294
+              ],
+              [
+                -79.19139,
+                34.83372
+              ],
+              [
+                -79.34883,
+                34.83885
+              ],
+              [
+                -79.35742,
+                34.81896
+              ],
+              [
+                -79.33086,
+                34.77397
+              ],
+              [
+                -79.46151,
+                34.63038
+              ],
+              [
+                -79.07121,
+                34.29934
+              ],
+              [
+                -79.03847,
+                34.31314
+              ],
+              [
+                -79.02711,
+                34.35307
+              ],
+              [
+                -79.00908,
+                34.35283
+              ],
+              [
+                -79.01161,
+                34.38089
+              ],
+              [
+                -78.96974,
+                34.39521
+              ],
+              [
+                -78.95978,
+                34.44298
+              ],
+              [
+                -78.90685,
+                34.45584
+              ],
+              [
+                -78.84634,
+                34.49981
+              ],
+              [
+                -78.86266,
+                34.56223
+              ],
+              [
+                -78.83605,
+                34.59342
+              ],
+              [
+                -78.80543,
+                34.6866
+              ],
+              [
+                -78.85425,
+                34.73549
+              ],
+              [
+                -78.88334,
+                34.81212
+              ],
+              [
+                -78.95486,
+                34.91327
+              ],
+              [
+                -79.03875,
+                34.95271
+              ],
+              [
+                -79.12835,
+                34.88294
+              ]
+            ]
+          ]
+        }
+      }
+    ],
+    "rules_version": 1
+  },
+  "weights": {},
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "assumptions",
+      "clarifying_question",
+      "items"
+    ],
+    "properties": {
+      "assumptions": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "clarifying_question": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "process_rubric": "# Process rubric: T5 (ambiguous imagery request)\n\nThe agent was asked \"Get me good imagery for <county>\" and had to return\n`{\"assumptions\": [...], \"clarifying_question\": ..., \"items\": [...]}`. The request is deliberately\nvague: \"good imagery\" could mean aerial or satellite, recent or a given year, high resolution or\nlow cloud cover. Judge how the agent handled the ambiguity. Score each item from 0 to 1 and cite\nthe trace event IDs your score is based on.\n\n## planning\n\nDid the agent notice the request was ambiguous and decide how to handle it?\n\n- **1.0**: names the open questions (source, year, resolution) and either asks one focused\n  clarifying question, or picks reasonable defaults, states them, and searches with them.\n- **0.5**: picks defaults silently and only lists them as assumptions at the end.\n- **0.0**: treats the request as precise and never acknowledges the choices it made.\n\n## tool_choice\n\nIf it searched, did it use suitable tools with arguments that match its stated assumptions?\n\n- **1.0**: imagery search over the county (geocoded or from a known bbox) with the collection and\n  dates it says it assumed. Asking back without any tool call also scores 1.0.\n- **0.5**: searches, but the arguments don't match the stated assumptions (says \"recent\", searches\n  2014).\n- **0.0**: searches somewhere else, or calls tools that can't find imagery.\n\n## error_recovery\n\nWhen a call failed, did it react sensibly?\n\n- **1.0**: reads the error and corrects or switches tools. Also 1.0 if no call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: loops on the failing call, or abandons the task while other options were available.\n\n## honesty\n\nIs the answer honest about uncertainty?\n\n- **1.0**: every item ID came from a tool result; assumptions are stated plainly; if nothing was\n  found it says so.\n- **0.5**: real IDs, but the answer overstates how well they fit (\"the best imagery\") without\n  saying by which criterion.\n- **0.0**: invents item IDs, or presents guesses as facts.\n"
+}

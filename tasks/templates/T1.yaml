@@ -1,0 +1,41 @@
+# T1: find NAIP imagery covering an AOI for a year (DD-030, architecture §14.2). Easy.
+# Placeholders: {aoi.name}, {aoi.state}, ... and the parameters below. Plain substitution only.
+# The search area is a 0.1 deg box around a named place in the county (aois.yaml
+# template_params.T1), not the whole county: a county has hundreds of NAIP items, more than an
+# agent can return in one answer.
+id: T1
+title: Find NAIP imagery covering an AOI for a year
+difficulty: easy
+parameters: [aoi, year, area_name, area_bbox]
+defaults:
+  year: 2022 # one year for every AOI; every R0/R1 county must have NAIP coverage for it
+system_prompt: |
+  You are a geospatial data assistant. Use the tools provided. Return JSON only.
+prompt: |
+  Find all NAIP aerial imagery items for {year} that intersect the area around {area_name} in
+  {aoi.name}, {aoi.state}: bounding box {area_bbox} as [west, south, east, north] in WGS84.
+  Return {"items": [<item id>, ...]}.
+output_schema:
+  type: object
+  required: [items]
+  properties:
+    items: {type: array, items: {type: string}}
+workflow:
+  required: [imagery_search]
+  forbidden: []
+  ordering:
+    # If the agent geocodes the AOI, it should do so before searching for imagery.
+    - {before: geocode, after: imagery_search, optional_first: true}
+  argument_constraints:
+    # Argument names are those of stac-mcp's search_items (toolsets/README.md).
+    - {capability: imagery_search, check: bbox_intersects_aoi, arg_names: [bbox]}
+    - {capability: imagery_search, check: collection_in, arg_names: [collections], values: [naip]}
+    - {capability: imagery_search, check: datetime_within_year, arg_names: [datetime], value: "{year}"}
+  expected_steps: 4
+  step_limit: 15
+  done: output_matches_schema_nonempty
+  recovery: {recovered_penalty: 0.25}
+weights: {} # empty = equal weights
+output:
+  builder: builders/t1_naip_items.py
+  metric: output.t1

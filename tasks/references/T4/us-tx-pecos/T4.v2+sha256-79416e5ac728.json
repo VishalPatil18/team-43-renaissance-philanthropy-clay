@@ -1,0 +1,490 @@
+{
+  "schema_version": "1.0",
+  "template": "T4",
+  "instance_id": "T4@us-tx-pecos",
+  "version": "T4.v2+sha256:79416e5ac728",
+  "method": "script",
+  "builder": "builders/t4_similar_places.py",
+  "builder_sha256": "f841f57a4808f53b64c0a0f94c8491e241b63b2725a66186b299ec0a0156479f",
+  "inputs": {
+    "function": "clay_embeddings.core.similar_places",
+    "query": {
+      "lat": 30.99704,
+      "lon": -102.27605,
+      "name": "solar PV installation (Global Renewables Watch feature 78324)"
+    },
+    "year": 2024,
+    "month": 7,
+    "k": 10,
+    "search_bbox": [
+      -103.58508,
+      30.05281,
+      -101.76838,
+      31.37131
+    ],
+    "staged_sha256": "265c44c47ff5d38d0d982e7dd95859c7ece7a52a2938dea05ee7db564541f541",
+    "staged_months": [
+      "2024-01",
+      "2024-07"
+    ],
+    "attribution": "Clay v1.5 embeddings by LGND (Sentinel-2 L2A, monthly aggregated, 1280 m chips, 256 dimensions), CC BY 4.0, https://source.coop/clay/lgnd-embeddings"
+  },
+  "built_at": "2026-11-04T17:38:00.934930Z",
+  "checked_by": null,
+  "checked_at": null,
+  "notes": [],
+  "workflow": {
+    "required": [
+      "embedding_similarity"
+    ],
+    "forbidden": [],
+    "ordering": [],
+    "argument_constraints": [
+      {
+        "capability": "embedding_similarity",
+        "check": "point_within_aoi",
+        "arg_names": [
+          "lat",
+          "lon"
+        ],
+        "values": null,
+        "value": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -102.20872,
+                30.59796
+              ],
+              [
+                -102.13841,
+                30.59752
+              ],
+              [
+                -102.13778,
+                30.65598
+              ],
+              [
+                -101.76838,
+                30.65294
+              ],
+              [
+                -101.77982,
+                30.68599
+              ],
+              [
+                -101.81005,
+                30.70239
+              ],
+              [
+                -101.81583,
+                30.75202
+              ],
+              [
+                -101.83876,
+                30.76333
+              ],
+              [
+                -101.83147,
+                30.80173
+              ],
+              [
+                -101.8499,
+                30.85687
+              ],
+              [
+                -101.8911,
+                30.89016
+              ],
+              [
+                -101.87898,
+                30.92173
+              ],
+              [
+                -101.91863,
+                30.93463
+              ],
+              [
+                -101.9841,
+                30.98734
+              ],
+              [
+                -102.01167,
+                30.97934
+              ],
+              [
+                -102.04918,
+                31.00364
+              ],
+              [
+                -102.1099,
+                30.99032
+              ],
+              [
+                -102.18089,
+                31.0167
+              ],
+              [
+                -102.18999,
+                31.00337
+              ],
+              [
+                -102.20203,
+                31.03103
+              ],
+              [
+                -102.28479,
+                31.03381
+              ],
+              [
+                -102.32989,
+                31.06834
+              ],
+              [
+                -102.40615,
+                31.08787
+              ],
+              [
+                -102.43028,
+                31.12927
+              ],
+              [
+                -102.42508,
+                31.17826
+              ],
+              [
+                -102.44209,
+                31.2127
+              ],
+              [
+                -102.52077,
+                31.26281
+              ],
+              [
+                -102.59649,
+                31.26401
+              ],
+              [
+                -102.67574,
+                31.33001
+              ],
+              [
+                -102.72487,
+                31.30842
+              ],
+              [
+                -102.73924,
+                31.2826
+              ],
+              [
+                -102.77441,
+                31.29532
+              ],
+              [
+                -102.82673,
+                31.26688
+              ],
+              [
+                -102.91373,
+                31.33901
+              ],
+              [
+                -103.01104,
+                31.37131
+              ],
+              [
+                -103.58508,
+                30.76647
+              ],
+              [
+                -102.56705,
+                30.05281
+              ],
+              [
+                -102.56694,
+                30.28327
+              ],
+              [
+                -102.34308,
+                30.28412
+              ],
+              [
+                -102.34299,
+                30.59876
+              ],
+              [
+                -102.20872,
+                30.59796
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "capability": "embedding_similarity",
+        "check": "k_at_most",
+        "arg_names": [
+          "k"
+        ],
+        "values": null,
+        "value": 10
+      }
+    ],
+    "expected_steps": 2,
+    "step_limit": 10,
+    "done": "output_matches_schema_nonempty",
+    "recovery": {
+      "recovered_penalty": 0.25
+    }
+  },
+  "output_reference": {
+    "top_k": [
+      "58d2e931be1073b4df6adc1ef5bcc03b",
+      "6792db4e3b430d6a08a18012fc908100",
+      "9fb8828762a8b2be8f9ed331c5a0700f",
+      "8d74892409555f75a77d5bcf5d652bfe",
+      "ca03b1a42530982445d9597a1b96bce1",
+      "1262fafe281be69d683be6c7caa9b3e0",
+      "6db87438be181049e05f2c9229efec6a",
+      "0a925d71b4aced34bc8935f7d80646c6",
+      "4cdac4dc199fa6348b2dc9996e2a3eda",
+      "17703c683dfc28833c4db7a8a4aad17a"
+    ],
+    "k": 10,
+    "query_chip": "250bbd314acaf122f25b0a76bab62634",
+    "similarities": [
+      0.9754850268363953,
+      0.9528130292892456,
+      0.92500901222229,
+      0.9125099778175354,
+      0.9099209904670715,
+      0.9079700112342834,
+      0.9066150188446045,
+      0.9048759937286377,
+      0.9043859839439392,
+      0.8982009887695312
+    ],
+    "candidates": 15392
+  },
+  "weights": {},
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "chips"
+    ],
+    "properties": {
+      "chips": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 10
+      }
+    }
+  },
+  "process_rubric": "# Process rubric: T4 (places similar to a given place)\n\nThe agent was given a query point, a month, k and a search box, and asked for the k most similar\nplaces by Clay embeddings, as `{\"chips\": [chips_id, ...]}` with the most similar first. The\nanswer can be found with one correct call of the `similar_places` tool. Judge **how faithfully**\nthe agent used the tool; the output metric scores the chip list. Score each item from 0 to 1 and\ncite the trace event IDs your score is based on.\n\n## planning\n\nDid the agent recognise that one embedding-similarity search with the given inputs answers the\ntask?\n\n- **1.0**: calls `similar_places` with the given point, year, month, k and search box (optionally\n  `embedding_at` first to look at the query chip), then answers.\n- **0.5**: gets there after unneeded detours (geocoding the given point, several exploratory\n  searches with other months or boxes).\n- **0.0**: never uses the embeddings tool.\n\n## tool_choice\n\nWere the arguments the ones the prompt gave?\n\n- **1.0**: lat/lon, year, month, k and search_bbox exactly as given.\n- **0.5**: one argument changed or missing (no search_bbox, a different k) without a reason.\n- **0.0**: arguments unrelated to the prompt (another place or month).\n\n## error_recovery\n\nWhen a call failed, did it react sensibly?\n\n- **1.0**: reads the error (e.g. \"month not staged\", \"no chip at this point\") and corrects the\n  call. Also 1.0 if no call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: loops on the failing call, or abandons the task.\n\n## honesty\n\nIs the answer faithful to the tool result?\n\n- **1.0**: returns exactly the chip IDs the tool returned, in its order, without the query chip.\n- **0.5**: real chip IDs, but reordered, truncated or mixed with results from another call\n  without saying so.\n- **0.0**: invents chip IDs, or returns coordinates or names instead of chip IDs.\n",
+  "aoi": {
+    "id": "us-tx-pecos",
+    "name": "Pecos County",
+    "state": "Texas",
+    "state_code": "TX",
+    "fips": "48371",
+    "bbox": [
+      -103.58508,
+      30.05281,
+      -101.76838,
+      31.37131
+    ],
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            -102.20872,
+            30.59796
+          ],
+          [
+            -102.13841,
+            30.59752
+          ],
+          [
+            -102.13778,
+            30.65598
+          ],
+          [
+            -101.76838,
+            30.65294
+          ],
+          [
+            -101.77982,
+            30.68599
+          ],
+          [
+            -101.81005,
+            30.70239
+          ],
+          [
+            -101.81583,
+            30.75202
+          ],
+          [
+            -101.83876,
+            30.76333
+          ],
+          [
+            -101.83147,
+            30.80173
+          ],
+          [
+            -101.8499,
+            30.85687
+          ],
+          [
+            -101.8911,
+            30.89016
+          ],
+          [
+            -101.87898,
+            30.92173
+          ],
+          [
+            -101.91863,
+            30.93463
+          ],
+          [
+            -101.9841,
+            30.98734
+          ],
+          [
+            -102.01167,
+            30.97934
+          ],
+          [
+            -102.04918,
+            31.00364
+          ],
+          [
+            -102.1099,
+            30.99032
+          ],
+          [
+            -102.18089,
+            31.0167
+          ],
+          [
+            -102.18999,
+            31.00337
+          ],
+          [
+            -102.20203,
+            31.03103
+          ],
+          [
+            -102.28479,
+            31.03381
+          ],
+          [
+            -102.32989,
+            31.06834
+          ],
+          [
+            -102.40615,
+            31.08787
+          ],
+          [
+            -102.43028,
+            31.12927
+          ],
+          [
+            -102.42508,
+            31.17826
+          ],
+          [
+            -102.44209,
+            31.2127
+          ],
+          [
+            -102.52077,
+            31.26281
+          ],
+          [
+            -102.59649,
+            31.26401
+          ],
+          [
+            -102.67574,
+            31.33001
+          ],
+          [
+            -102.72487,
+            31.30842
+          ],
+          [
+            -102.73924,
+            31.2826
+          ],
+          [
+            -102.77441,
+            31.29532
+          ],
+          [
+            -102.82673,
+            31.26688
+          ],
+          [
+            -102.91373,
+            31.33901
+          ],
+          [
+            -103.01104,
+            31.37131
+          ],
+          [
+            -103.58508,
+            30.76647
+          ],
+          [
+            -102.56705,
+            30.05281
+          ],
+          [
+            -102.56694,
+            30.28327
+          ],
+          [
+            -102.34308,
+            30.28412
+          ],
+          [
+            -102.34299,
+            30.59876
+          ],
+          [
+            -102.20872,
+            30.59796
+          ]
+        ]
+      ]
+    },
+    "tags": [
+      "has_solar"
+    ],
+    "template_params": {
+      "T1": {
+        "area_name": "Fort Stockton",
+        "area_bbox": [
+          -102.929,
+          30.844,
+          -102.829,
+          30.944
+        ]
+      },
+      "T4": {
+        "query_name": "solar PV installation (Global Renewables Watch feature 78324)",
+        "query_lat": 30.99704,
+        "query_lon": -102.27605
+      }
+    },
+    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
+  }
+}

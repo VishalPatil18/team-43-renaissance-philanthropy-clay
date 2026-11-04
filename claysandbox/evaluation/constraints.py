@@ -10,6 +10,10 @@ Each check is ``(args, constraint, reference) -> bool | None``:
 Tools name their arguments differently, so each check looks for the first present name in
 ``constraint.args`` or, when that is unset, the check's defaults in ``DEFAULT_ARGS``.
 Geometry is EPSG:4326 and compared with shapely; touching the AOI boundary counts as inside.
+
+``point_within_aoi`` also accepts a point given as two separate arguments (clay-embeddings'
+``similar_places(lat, lon, ...)``): ``constraint.args`` naming exactly two arguments (e.g.
+``[lat, lon]``), or, with no ``args``, a latitude and a longitude argument under the usual names.
 """
 
 from __future__ import annotations
@@ -34,6 +38,8 @@ DEFAULT_ARGS: dict[str, list[str]] = {
 }
 
 _MISSING = object()
+_LAT_NAMES = ("lat", "latitude")
+_LON_NAMES = ("lon", "lng", "longitude")
 
 
 def _arg(args: dict[str, Any], constraint: ArgumentConstraint) -> Any:
@@ -108,10 +114,29 @@ def bbox_intersects_aoi(
     return geom is not None and geom.intersects(aoi)
 
 
+def _separate_lat_lon(args: dict[str, Any], constraint: ArgumentConstraint) -> Any:
+    """``{"lat": .., "lon": ..}`` when the point comes as two arguments, else ``_MISSING``."""
+    names = list(constraint.args or [])
+    if len(names) == 2:
+        lat_name = next((n for n in names if n.lower() in _LAT_NAMES), names[0])
+        lon_name = next(n for n in names if n != lat_name)
+        if lat_name in args and lon_name in args:
+            return {"lat": args[lat_name], "lon": args[lon_name]}
+        return _MISSING
+    if not names:
+        lat = next((args[n] for n in _LAT_NAMES if n in args), _MISSING)
+        lon = next((args[n] for n in _LON_NAMES if n in args), _MISSING)
+        if lat is not _MISSING and lon is not _MISSING:
+            return {"lat": lat, "lon": lon}
+    return _MISSING
+
+
 def point_within_aoi(
     args: dict[str, Any], constraint: ArgumentConstraint, reference: TaskReference
 ) -> bool | None:
-    value = _arg(args, constraint)
+    value = _separate_lat_lon(args, constraint)
+    if value is _MISSING:
+        value = _arg(args, constraint)
     aoi = _aoi_geometry(reference)
     if value is _MISSING or aoi is None:
         return None

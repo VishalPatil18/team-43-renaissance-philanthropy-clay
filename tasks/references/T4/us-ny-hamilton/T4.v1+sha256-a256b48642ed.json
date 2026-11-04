@@ -1,0 +1,322 @@
+{
+  "schema_version": "1.0",
+  "template": "T4",
+  "aoi": {
+    "id": "us-ny-hamilton",
+    "name": "Hamilton County",
+    "state": "New York",
+    "state_code": "NY",
+    "fips": "36041",
+    "bbox": [
+      -74.86771,
+      43.21468,
+      -74.04687,
+      44.12055
+    ],
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            -74.20976,
+            43.24926
+          ],
+          [
+            -74.14015,
+            43.25398
+          ],
+          [
+            -74.21462,
+            43.7287
+          ],
+          [
+            -74.05701,
+            43.74451
+          ],
+          [
+            -74.04687,
+            43.79535
+          ],
+          [
+            -74.14908,
+            43.82961
+          ],
+          [
+            -74.21373,
+            43.81087
+          ],
+          [
+            -74.33683,
+            43.92522
+          ],
+          [
+            -74.256,
+            43.9698
+          ],
+          [
+            -74.28187,
+            44.12055
+          ],
+          [
+            -74.85417,
+            44.07009
+          ],
+          [
+            -74.77562,
+            43.48668
+          ],
+          [
+            -74.86771,
+            43.33983
+          ],
+          [
+            -74.53466,
+            43.22811
+          ],
+          [
+            -74.32638,
+            43.24163
+          ],
+          [
+            -74.32237,
+            43.21468
+          ],
+          [
+            -74.28752,
+            43.21694
+          ],
+          [
+            -74.2209,
+            43.2214
+          ],
+          [
+            -74.22421,
+            43.24817
+          ],
+          [
+            -74.20976,
+            43.24926
+          ]
+        ]
+      ]
+    },
+    "tags": [
+      "no_solar"
+    ],
+    "template_params": {
+      "T1": {
+        "area_name": "Indian Lake",
+        "area_bbox": [
+          -74.35,
+          43.72,
+          -74.25,
+          43.82
+        ]
+      },
+      "T4": {
+        "query_name": "Indian Lake (hamlet)",
+        "query_lat": 43.7826,
+        "query_lon": -74.2721
+      }
+    },
+    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
+  },
+  "instance_id": "T4@us-ny-hamilton",
+  "version": "T4.v1+sha256:a256b48642ed",
+  "method": "script",
+  "builder": "builders/t4_similar_places.py",
+  "builder_sha256": "83b031cad2b82db447cecd13535806c3f6dd5dd56bb6ffb3dcf06366a9fe4b4d",
+  "inputs": {
+    "function": "clay_embeddings.core.similar_places",
+    "query": {
+      "lat": 43.7826,
+      "lon": -74.2721,
+      "name": "Indian Lake (hamlet)"
+    },
+    "year": 2024,
+    "month": 7,
+    "k": 10,
+    "search_bbox": [
+      -74.86771,
+      43.21468,
+      -74.04687,
+      44.12055
+    ],
+    "staged_sha256": "265c44c47ff5d38d0d982e7dd95859c7ece7a52a2938dea05ee7db564541f541",
+    "staged_months": [
+      "2024-01",
+      "2024-07"
+    ],
+    "attribution": "Clay v1.5 embeddings by LGND (Sentinel-2 L2A, monthly aggregated, 1280 m chips, 256 dimensions), CC BY 4.0, https://source.coop/clay/lgnd-embeddings"
+  },
+  "built_at": "2026-11-04T17:07:08.290189Z",
+  "checked_by": null,
+  "checked_at": null,
+  "notes": [],
+  "workflow": {
+    "required": [
+      "embedding_similarity"
+    ],
+    "forbidden": [],
+    "ordering": [],
+    "argument_constraints": [
+      {
+        "capability": "embedding_similarity",
+        "check": "point_within_aoi",
+        "arg_names": [
+          "lat",
+          "lon"
+        ],
+        "values": null,
+        "value": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -74.20976,
+                43.24926
+              ],
+              [
+                -74.14015,
+                43.25398
+              ],
+              [
+                -74.21462,
+                43.7287
+              ],
+              [
+                -74.05701,
+                43.74451
+              ],
+              [
+                -74.04687,
+                43.79535
+              ],
+              [
+                -74.14908,
+                43.82961
+              ],
+              [
+                -74.21373,
+                43.81087
+              ],
+              [
+                -74.33683,
+                43.92522
+              ],
+              [
+                -74.256,
+                43.9698
+              ],
+              [
+                -74.28187,
+                44.12055
+              ],
+              [
+                -74.85417,
+                44.07009
+              ],
+              [
+                -74.77562,
+                43.48668
+              ],
+              [
+                -74.86771,
+                43.33983
+              ],
+              [
+                -74.53466,
+                43.22811
+              ],
+              [
+                -74.32638,
+                43.24163
+              ],
+              [
+                -74.32237,
+                43.21468
+              ],
+              [
+                -74.28752,
+                43.21694
+              ],
+              [
+                -74.2209,
+                43.2214
+              ],
+              [
+                -74.22421,
+                43.24817
+              ],
+              [
+                -74.20976,
+                43.24926
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "capability": "embedding_similarity",
+        "check": "k_at_most",
+        "arg_names": [
+          "k"
+        ],
+        "values": null,
+        "value": 10
+      }
+    ],
+    "expected_steps": 2,
+    "step_limit": 10,
+    "done": "output_matches_schema_nonempty",
+    "recovery": {
+      "recovered_penalty": 0.25
+    }
+  },
+  "output_reference": {
+    "chips": [
+      "6e58481cb7b6ddd99bb6538f67d4a4dd",
+      "d3e30fee6b141cbd7e6838da6b60b0f3",
+      "7bbaf0521a47c515dc574419ce91877f",
+      "8b6c195fc4f98f3999f2f6a3f1e329cb",
+      "690c04ca9de74cbb75f2dbb13e488e74",
+      "d5640a3832537e1ec89b4f54b7959953",
+      "0d0c117244a9a52a55d0947beb75041a",
+      "8af5b6590ac9954e43c80280da4a5f5d",
+      "78e3c43ee74eac75965e70789c900907",
+      "9c81c2c11e3e2e8148ca264b631caf6f"
+    ],
+    "k": 10,
+    "query_chip": "c2a4aeb7e1e69b9d105c5b867700ab01",
+    "similarities": [
+      0.9334549903869629,
+      0.931065022945404,
+      0.926816999912262,
+      0.9068520069122314,
+      0.9039319753646851,
+      0.9037860035896301,
+      0.90105801820755,
+      0.900052011013031,
+      0.8999300003051758,
+      0.8991029858589172
+    ],
+    "candidates": 3961
+  },
+  "weights": {},
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "chips"
+    ],
+    "properties": {
+      "chips": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 10
+      }
+    }
+  },
+  "process_rubric": "# Process rubric: T4 (places similar to a given place)\n\nThe agent was given a query point, a month, k and a search box, and asked for the k most similar\nplaces by Clay embeddings, as `{\"chips\": [chips_id, ...]}` with the most similar first. The\nanswer can be found with one correct call of the `similar_places` tool. Judge **how faithfully**\nthe agent used the tool; the output metric scores the chip list. Score each item from 0 to 1 and\ncite the trace event IDs your score is based on.\n\n## planning\n\nDid the agent recognise that one embedding-similarity search with the given inputs answers the\ntask?\n\n- **1.0**: calls `similar_places` with the given point, year, month, k and search box (optionally\n  `embedding_at` first to look at the query chip), then answers.\n- **0.5**: gets there after unneeded detours (geocoding the given point, several exploratory\n  searches with other months or boxes).\n- **0.0**: never uses the embeddings tool.\n\n## tool_choice\n\nWere the arguments the ones the prompt gave?\n\n- **1.0**: lat/lon, year, month, k and search_bbox exactly as given.\n- **0.5**: one argument changed or missing (no search_bbox, a different k) without a reason.\n- **0.0**: arguments unrelated to the prompt (another place or month).\n\n## error_recovery\n\nWhen a call failed, did it react sensibly?\n\n- **1.0**: reads the error (e.g. \"month not staged\", \"no chip at this point\") and corrects the\n  call. Also 1.0 if no call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: loops on the failing call, or abandons the task.\n\n## honesty\n\nIs the answer faithful to the tool result?\n\n- **1.0**: returns exactly the chip IDs the tool returned, in its order, without the query chip.\n- **0.5**: real chip IDs, but reordered, truncated or mixed with results from another call\n  without saying so.\n- **0.0**: invents chip IDs, or returns coordinates or names instead of chip IDs.\n"
+}

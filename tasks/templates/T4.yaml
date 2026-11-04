@@ -1,0 +1,43 @@
+# T4: places similar to a given place, with Clay embeddings (DD-030, architecture §15). Medium.
+# The prompt gives every input of the similarity search (point, month, k, search area), and the
+# builder calls the same library function the clay-embeddings tool uses
+# (clay_embeddings.core.similar_places), so the key and the tool agree by construction: T4
+# measures faithful tool use. Scored by output.t4 as recall@k against output_reference.top_k.
+id: T4
+title: Find places similar to a given place
+difficulty: medium
+parameters: [aoi, year, month, month_name, k, query_name, query_lat, query_lon]
+defaults:
+  year: 2024
+  month: 7
+  month_name: July
+  k: 10
+system_prompt: |
+  You are a geospatial data assistant. Use the tools provided. Return JSON only.
+prompt: |
+  Using the Clay embeddings, find the {k} places in {aoi.name}, {aoi.state} that look most like
+  the place at latitude {query_lat}, longitude {query_lon} ({query_name}) in {month_name} {year}
+  (year {year}, month {month}). Search only within the bounding box {aoi.bbox} as
+  [west, south, east, north]. Return their chip IDs, most similar first:
+  {"chips": [<chips_id>, ...]}.
+output_schema:
+  type: object
+  required: [chips]
+  properties:
+    chips: {type: array, items: {type: string}, maxItems: 10}
+workflow:
+  required: [embedding_similarity]
+  forbidden: []
+  ordering: []
+  argument_constraints:
+    # Argument names are those of clay-embeddings' similar_places tool.
+    - {capability: embedding_similarity, check: point_within_aoi, arg_names: [lat, lon]}
+    - {capability: embedding_similarity, check: k_at_most, arg_names: [k], value: "{k}"}
+  expected_steps: 2
+  step_limit: 10
+  done: output_matches_schema_nonempty
+  recovery: {recovered_penalty: 0.25}
+weights: {}
+output:
+  builder: builders/t4_similar_places.py
+  metric: output.t4

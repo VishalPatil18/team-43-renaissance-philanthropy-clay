@@ -1,0 +1,23 @@
+# Tool set T0: the Registry of Open Data on AWS only (DD-033). R0 walking skeleton.
+# Versions are pinned (FR-1.10). Smoke-test results and quirks: toolsets/README.md.
+name: T0
+description: Registry of Open Data on AWS (RODA) dataset discovery only.
+servers:
+  - name: roda
+    command: ["uvx", "awslabs.roda-mcp-server@0.1.7"]
+    env: {FASTMCP_LOG_LEVEL: ERROR}
+    # Smoke test 2026-11-04: every call, including preview_dataset and sample_dataset, works with
+    # anonymous access, so the server gets no AWS credentials (least privilege, DD-034).
+    needs_aws: false
+    timeout_s: 60
+capabilities:
+  dataset_discovery:
+    - roda.search_datasets
+    - roda.list_datasets
+    - roda.get_dataset_details
+    - roda.discover_by_organization
+    - roda.discover_by_license
+    - roda.find_related_datasets
+    - roda.search_stac_endpoints
+# Not mapped to a capability (no workflow rule refers to them): roda.get_knowledge_base_stats,
+# roda.preview_dataset, roda.sample_dataset.

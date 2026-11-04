@@ -1,0 +1,49 @@
+# Tool set T1-faulty: a copy of T1 with injected tool-side failures, for journey J4 only.
+# test_only: excluded from comparisons. Each server shows one failure kind:
+#   stac   -> tool_error:          every HTTP request goes to a proxy that refuses connections
+#   osm    -> tool_timeout:        Nominatim/Overpass point at a non-routable address, 0.5 s cap
+#   broken -> server_unavailable:  the command exits at once, so the server never starts
+# roda is unchanged, so the agent still has one working tool to recover with.
+name: T1-faulty
+description: T1 with a failing STAC server, a timing-out OSM server and one dead server (J4).
+test_only: true
+servers:
+  - name: roda
+    command: ["uvx", "awslabs.roda-mcp-server@0.1.7"]
+    env: {FASTMCP_LOG_LEVEL: ERROR}
+    needs_aws: false
+    timeout_s: 60
+  - name: stac
+    command: ["uvx", "stac-mcp@6.5.0"]
+    env:
+      STAC_MCP_LOG_LEVEL: ERROR
+      HTTPS_PROXY: http://127.0.0.1:9 # port 9 (discard) refuses connections
+      HTTP_PROXY: http://127.0.0.1:9
+      STAC_MCP_REQUEST_TIMEOUT: "5"
+    needs_aws: false
+    timeout_s: 30
+  - name: osm
+    command: ["npx", "-y", "@cyanheads/openstreetmap-mcp-server@0.7.0"]
+    env:
+      MCP_LOG_LEVEL: error
+      OSM_USER_AGENT: clay-agent-eval-sandbox/0.1 (+https://github.com/VishalPatil18/team-43-renaissance-philanthropy-clay)
+      OSM_NOMINATIM_BASE_URL: http://10.255.255.1 # non-routable: connections hang
+      OSM_OVERPASS_BASE_URL: http://10.255.255.1/api/interpreter
+    needs_aws: false
+    timeout_s: 0.5
+  - name: broken
+    command: ["false"]
+    needs_aws: false
+capabilities:
+  dataset_discovery:
+    - roda.search_datasets
+    - roda.list_datasets
+    - roda.get_dataset_details
+    - roda.discover_by_organization
+    - roda.discover_by_license
+    - roda.find_related_datasets
+    - roda.search_stac_endpoints
+  imagery_search:
+    - stac.search_items
+  geocode:
+    - osm.openstreetmap_search_places

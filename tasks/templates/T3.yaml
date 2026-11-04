@@ -1,0 +1,46 @@
+# T3: candidate solar sites in an AOI (DD-030). Hard.
+# The whole county is searched. Answer key: Global Renewables Watch v1.0 solar PV polygons in the
+# county (tasks/builders/t3_solar_sites.py): Kern 241, Clark 57, Robeson 51, Pecos 39, and none in
+# the two negative controls, where {"sites": []} is the correct answer. output.t3 matches the
+# agent's points to the key within output_reference.tolerance_m (500 m).
+id: T3
+title: Find candidate solar sites in an AOI
+difficulty: hard
+parameters: [aoi]
+system_prompt: |
+  You are a geospatial data assistant. Use the tools provided. Return JSON only.
+prompt: |
+  Find the existing utility-scale solar photovoltaic (PV) installations in {aoi.name},
+  {aoi.state} (bounding box {aoi.bbox} as [west, south, east, north] in WGS84). You may use any
+  dataset or tool you find. Return one point per installation:
+  {"sites": [{"lat": <latitude>, "lon": <longitude>}, ...]}.
+  If there are none, return {"sites": []}.
+output_schema:
+  type: object
+  required: [sites]
+  properties:
+    sites:
+      type: array
+      items:
+        type: object
+        required: [lat, lon]
+        properties:
+          lat: {type: number, minimum: -90, maximum: 90}
+          lon: {type: number, minimum: -180, maximum: 180}
+workflow:
+  required: [dataset_discovery]
+  forbidden: []
+  ordering:
+    # If the agent geocodes the county, it should do so before looking for datasets.
+    - {before: geocode, after: dataset_discovery, optional_first: true}
+  argument_constraints: [] # the useful tools (Overpass queries, dataset search) have no rule in the vocabulary
+  expected_steps: 6
+  step_limit: 20
+  # The output must parse against the schema; an empty "sites" list is a valid answer here
+  # (negative controls), so output.t3 and the done check treat {"sites": []} as an answer.
+  done: output_matches_schema_nonempty
+  recovery: {recovered_penalty: 0.25}
+weights: {}
+output:
+  builder: builders/t3_solar_sites.py
+  metric: output.t3

@@ -123,3 +123,70 @@ in every region it routes to; the stack handles that. Use it in a spec with
 `s3://<bucket>/requests/<run_id>.json`, starts a task with
 `clay-sandbox worker --request s3://...`, and reads `runs/<run_id>/status.json` when it stops.
 `cdk destroy` removes everything (the bucket is emptied automatically).
+
+## Tools and tasks
+
+This section covers what the agent can call and what it's asked to do (workstream WS2). Details:
+[`toolsets/README.md`](toolsets/README.md) and [`tasks/README.md`](tasks/README.md).
+
+### Tool sets
+
+A tool set is a YAML file in `toolsets/`: pinned MCP servers plus a map from capabilities
+(`dataset_discovery`, `imagery_search`, `geocode`, `embedding_similarity`) to concrete tools.
+Choose one with `toolset: T1` in the spec.
+
+| Tool set | Servers |
+|---|---|
+| `T0` | Registry of Open Data on AWS (`awslabs.roda-mcp-server@0.1.7`) |
+| `T1` | T0 + `stac-mcp@6.5.0` (NAIP and other STAC imagery) + `@cyanheads/openstreetmap-mcp-server@0.7.0` (Node ≥ 24) + our `clay-embeddings` |
+| `T1-faulty` | test only: failing STAC, timing-out OSM and a dead server, for journey J4 |
+
+Every server starts as a fresh subprocess per run with a scrubbed environment; no server in these
+tool sets gets AWS credentials. Failed calls come back to the agent as error results
+(`tool_error`, `tool_timeout`, `server_unavailable`), never as crashes.
+
+```bash
+uv run python scripts/smoke_mcp.py --schemas      # start each server, list tools, make one call
+```
+
+### Tasks
+
+Five templates over six US counties give 30 task instances (`T1@us-ca-kern`, ...), each with a
+versioned, script-built answer key in `tasks/references/`:
+
+| Template | Task |
+|---|---|
+| T1 | NAIP items for 2022 in a small box in the county |
+| T2 | Up to 10 open imagery, elevation or land-cover datasets covering the county |
+| T3 | Existing utility-scale solar sites in the county (two counties have none) |
+| T4 | The 10 places most similar to a given point, by Clay embeddings |
+| T5 | "Get me good imagery for <county>" (deliberately ambiguous) |
+
+```bash
+uv run python -m claysandbox.tasks list                         # instances and reference versions
+uv run python -m claysandbox.tasks build --template T1          # rebuild references (new version only if changed)
+```
+
+### Clay embeddings (`clay-embeddings` MCP server)
+
+T4 and tool set T1 need the staged embeddings (gitignored, about 160 MB):
+
+```bash
+uv run python scripts/stage_embeddings.py          # Jan + Jul 2024 for the six counties, no credentials
+uv run python -m clay_embeddings                   # the server alone (stdio)
+```
+
+If your environment was created before this server was added, run
+`uv sync --reinstall-package claysandbox` once so `python -m clay_embeddings` resolves.
+
+### Data attribution
+
+- Contains Clay v1.5 embeddings by LGND (Sentinel-2 L2A, monthly aggregated), licensed CC BY 4.0,
+  https://source.coop/clay/lgnd-embeddings. Sentinel-2 data: Copernicus Sentinel data, processed by
+  ESA.
+- Contains data © OpenStreetMap contributors, available under the Open Database License (ODbL)
+  1.0, https://www.openstreetmap.org/copyright.
+- Solar PV reference sites from Global Renewables Watch v1.0 (Microsoft, Planet and The Nature
+  Conservancy), MIT License, https://github.com/microsoft/global-renewables-watch.
+- NAIP imagery courtesy of the USDA Farm Service Agency (public domain). County boundaries: U.S.
+  Census Bureau TIGERweb (public domain).

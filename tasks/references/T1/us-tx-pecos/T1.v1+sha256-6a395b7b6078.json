@@ -1,0 +1,472 @@
+{
+  "schema_version": "1.0",
+  "template": "T1",
+  "aoi": {
+    "id": "us-tx-pecos",
+    "name": "Pecos County",
+    "state": "Texas",
+    "state_code": "TX",
+    "fips": "48371",
+    "bbox": [
+      -103.58508,
+      30.05281,
+      -101.76838,
+      31.37131
+    ],
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            -102.20872,
+            30.59796
+          ],
+          [
+            -102.13841,
+            30.59752
+          ],
+          [
+            -102.13778,
+            30.65598
+          ],
+          [
+            -101.76838,
+            30.65294
+          ],
+          [
+            -101.77982,
+            30.68599
+          ],
+          [
+            -101.81005,
+            30.70239
+          ],
+          [
+            -101.81583,
+            30.75202
+          ],
+          [
+            -101.83876,
+            30.76333
+          ],
+          [
+            -101.83147,
+            30.80173
+          ],
+          [
+            -101.8499,
+            30.85687
+          ],
+          [
+            -101.8911,
+            30.89016
+          ],
+          [
+            -101.87898,
+            30.92173
+          ],
+          [
+            -101.91863,
+            30.93463
+          ],
+          [
+            -101.9841,
+            30.98734
+          ],
+          [
+            -102.01167,
+            30.97934
+          ],
+          [
+            -102.04918,
+            31.00364
+          ],
+          [
+            -102.1099,
+            30.99032
+          ],
+          [
+            -102.18089,
+            31.0167
+          ],
+          [
+            -102.18999,
+            31.00337
+          ],
+          [
+            -102.20203,
+            31.03103
+          ],
+          [
+            -102.28479,
+            31.03381
+          ],
+          [
+            -102.32989,
+            31.06834
+          ],
+          [
+            -102.40615,
+            31.08787
+          ],
+          [
+            -102.43028,
+            31.12927
+          ],
+          [
+            -102.42508,
+            31.17826
+          ],
+          [
+            -102.44209,
+            31.2127
+          ],
+          [
+            -102.52077,
+            31.26281
+          ],
+          [
+            -102.59649,
+            31.26401
+          ],
+          [
+            -102.67574,
+            31.33001
+          ],
+          [
+            -102.72487,
+            31.30842
+          ],
+          [
+            -102.73924,
+            31.2826
+          ],
+          [
+            -102.77441,
+            31.29532
+          ],
+          [
+            -102.82673,
+            31.26688
+          ],
+          [
+            -102.91373,
+            31.33901
+          ],
+          [
+            -103.01104,
+            31.37131
+          ],
+          [
+            -103.58508,
+            30.76647
+          ],
+          [
+            -102.56705,
+            30.05281
+          ],
+          [
+            -102.56694,
+            30.28327
+          ],
+          [
+            -102.34308,
+            30.28412
+          ],
+          [
+            -102.34299,
+            30.59876
+          ],
+          [
+            -102.20872,
+            30.59796
+          ]
+        ]
+      ]
+    },
+    "tags": [
+      "has_solar"
+    ],
+    "template_params": {
+      "T1": {
+        "area_name": "Fort Stockton",
+        "area_bbox": [
+          -102.929,
+          30.844,
+          -102.829,
+          30.944
+        ]
+      }
+    },
+    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
+  },
+  "instance_id": "T1@us-tx-pecos",
+  "version": "T1.v1+sha256:6a395b7b6078",
+  "method": "script",
+  "builder": "builders/t1_naip_items.py",
+  "builder_sha256": "f151cf4b5493b19c892f80f8a1a61e9f27576de25ba7ef8ee6ac1cb227ab12b7",
+  "inputs": {
+    "stac_api": "https://planetarycomputer.microsoft.com/api/stac/v1",
+    "collection": "naip",
+    "year": 2022,
+    "area_name": "Fort Stockton",
+    "bbox": [
+      -102.929,
+      30.844,
+      -102.829,
+      30.944
+    ],
+    "match": "item intersects the search box"
+  },
+  "built_at": "2026-11-04T16:35:50.930726Z",
+  "checked_by": null,
+  "checked_at": null,
+  "notes": [],
+  "workflow": {
+    "required": [
+      "imagery_search"
+    ],
+    "forbidden": [],
+    "ordering": [
+      {
+        "kind": "before",
+        "before": "geocode",
+        "after": "imagery_search",
+        "optional_first": true
+      }
+    ],
+    "argument_constraints": [
+      {
+        "capability": "imagery_search",
+        "check": "bbox_intersects_aoi",
+        "arg_names": [
+          "bbox"
+        ],
+        "values": null,
+        "value": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -102.20872,
+                30.59796
+              ],
+              [
+                -102.13841,
+                30.59752
+              ],
+              [
+                -102.13778,
+                30.65598
+              ],
+              [
+                -101.76838,
+                30.65294
+              ],
+              [
+                -101.77982,
+                30.68599
+              ],
+              [
+                -101.81005,
+                30.70239
+              ],
+              [
+                -101.81583,
+                30.75202
+              ],
+              [
+                -101.83876,
+                30.76333
+              ],
+              [
+                -101.83147,
+                30.80173
+              ],
+              [
+                -101.8499,
+                30.85687
+              ],
+              [
+                -101.8911,
+                30.89016
+              ],
+              [
+                -101.87898,
+                30.92173
+              ],
+              [
+                -101.91863,
+                30.93463
+              ],
+              [
+                -101.9841,
+                30.98734
+              ],
+              [
+                -102.01167,
+                30.97934
+              ],
+              [
+                -102.04918,
+                31.00364
+              ],
+              [
+                -102.1099,
+                30.99032
+              ],
+              [
+                -102.18089,
+                31.0167
+              ],
+              [
+                -102.18999,
+                31.00337
+              ],
+              [
+                -102.20203,
+                31.03103
+              ],
+              [
+                -102.28479,
+                31.03381
+              ],
+              [
+                -102.32989,
+                31.06834
+              ],
+              [
+                -102.40615,
+                31.08787
+              ],
+              [
+                -102.43028,
+                31.12927
+              ],
+              [
+                -102.42508,
+                31.17826
+              ],
+              [
+                -102.44209,
+                31.2127
+              ],
+              [
+                -102.52077,
+                31.26281
+              ],
+              [
+                -102.59649,
+                31.26401
+              ],
+              [
+                -102.67574,
+                31.33001
+              ],
+              [
+                -102.72487,
+                31.30842
+              ],
+              [
+                -102.73924,
+                31.2826
+              ],
+              [
+                -102.77441,
+                31.29532
+              ],
+              [
+                -102.82673,
+                31.26688
+              ],
+              [
+                -102.91373,
+                31.33901
+              ],
+              [
+                -103.01104,
+                31.37131
+              ],
+              [
+                -103.58508,
+                30.76647
+              ],
+              [
+                -102.56705,
+                30.05281
+              ],
+              [
+                -102.56694,
+                30.28327
+              ],
+              [
+                -102.34308,
+                30.28412
+              ],
+              [
+                -102.34299,
+                30.59876
+              ],
+              [
+                -102.20872,
+                30.59796
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "capability": "imagery_search",
+        "check": "collection_in",
+        "arg_names": [
+          "collections"
+        ],
+        "values": [
+          "naip"
+        ],
+        "value": null
+      },
+      {
+        "capability": "imagery_search",
+        "check": "datetime_within_year",
+        "arg_names": [
+          "datetime"
+        ],
+        "values": null,
+        "value": 2022
+      }
+    ],
+    "expected_steps": 4,
+    "step_limit": 15,
+    "done": "output_matches_schema_nonempty",
+    "recovery": {
+      "recovered_penalty": 0.25
+    }
+  },
+  "output_reference": {
+    "items": [
+      "tx_m_3010201_ne_13_060_20220927",
+      "tx_m_3010201_se_13_060_20220927",
+      "tx_m_3010202_nw_13_060_20220927",
+      "tx_m_3010202_sw_13_060_20220927",
+      "tx_m_3010209_ne_13_060_20220927",
+      "tx_m_3010210_nw_13_060_20220927"
+    ]
+  },
+  "weights": {},
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "items"
+    ],
+    "properties": {
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "process_rubric": "# Process rubric: T1 (NAIP imagery for a search box and year)\n\nThe agent was asked for every NAIP item of one year that intersects a given 0.1° bounding box in\na US county, returned as `{\"items\": [...]}`. Judge **how** it worked, not whether the final list is\ncomplete (the output metric measures that separately). Score each item from 0 to 1 and cite the\ntrace event IDs your score is based on.\n\n## planning\n\nDid the agent work out what it needed (the NAIP collection, the box, the year) and go straight\nfor it, without wandering?\n\n- **1.0**: one imagery search with `collections: [\"naip\"]`, the given bbox and a datetime\n  range for the given year, then pages through results if `has_more` is true.\n- **0.5**: gets there, but with unneeded steps (geocoding a place whose bbox was already given,\n  listing every collection first, repeated near-identical searches).\n- **0.0**: never searches for imagery, or searches something unrelated (another collection, the\n  whole state, another year).\n\n## tool_choice\n\nDid it use the right tool with sensible arguments?\n\n- **1.0**: uses the imagery search tool (`stac.search_items`) with the given bbox, `naip` and the\n  year; optionally a dataset-discovery call to confirm NAIP exists.\n- **0.5**: uses the right tool but with a wrong or missing argument that it later fixes (no\n  datetime, bbox in the wrong order).\n- **0.0**: answers from memory, or uses tools that can't return NAIP item IDs.\n\n## error_recovery\n\nWhen a call failed (error result, timeout, unavailable server), did it react sensibly?\n\n- **1.0**: reads the error, corrects the call or switches to an equivalent tool, and continues.\n  Also 1.0 if no call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: repeats the same failing call until stopped, or gives up after the first error while\n  other options were available.\n\n## honesty\n\nIs the final answer honest about what was found?\n\n- **1.0**: returns only IDs that appeared in tool results, and says so (or returns an empty list)\n  if the search returned nothing.\n- **0.5**: returns real IDs but claims completeness it didn't check (stopped at the first page\n  while `has_more` was true).\n- **0.0**: invents item IDs, or returns IDs from another year or area as if they matched.\n"
+}

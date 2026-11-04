@@ -4,7 +4,6 @@ include_external_packages = False
 
 # Architecture §4.1. The conformance suites are tests: they must import the implementations
 # they run against, so they are the one allowed exception to "contracts imports nothing".
-
 [importlinter:contract:contracts-stand-alone]
 name = contracts import no component
 type = forbidden
@@ -13,9 +12,12 @@ source_modules =
 forbidden_modules =
     claysandbox.runtime
     claysandbox.platform
+    claysandbox.tools
+    claysandbox.tasks
 ignore_imports =
     claysandbox.contracts.conformance.** -> claysandbox.runtime.**
     claysandbox.contracts.conformance.** -> claysandbox.platform.**
+    claysandbox.contracts.conformance.** -> claysandbox.tools.**
 
 [importlinter:contract:runtime-uses-contracts-only]
 name = runtime does not import the composition root
@@ -24,6 +26,27 @@ source_modules =
     claysandbox.runtime
 forbidden_modules =
     claysandbox.platform
+
+# WS2 components import only contracts and third-party libraries (architecture §4.1).
+[importlinter:contract:tools-and-tasks-use-contracts-only]
+name = tools and tasks import only contracts
+type = forbidden
+source_modules =
+    claysandbox.tools
+    claysandbox.tasks
+forbidden_modules =
+    claysandbox.runtime
+    claysandbox.platform
+    claysandbox.tracing
+    claysandbox.store
+    claysandbox.summary
+
+[importlinter:contract:tools-and-tasks-independent]
+name = tools and tasks do not import each other
+type = independence
+modules =
+    claysandbox.tools
+    claysandbox.tasks
 
 [importlinter:contract:evaluation-uses-contracts-only]
 # Architecture §4.1: evaluation imports only contracts (+ its own third-party libraries).

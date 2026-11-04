@@ -287,9 +287,14 @@ class InstrumentedTools:
         error = None
         status = "ok"
         if result.is_error:
-            status = "error"
+            # DD-045: a session may report a timeout or a dead server in the result itself.
+            status = "timeout" if result.status == "timeout" else "error"
+            kind = result.error_kind or ("tool_timeout" if status == "timeout" else "tool_error")
             error = ErrorInfo(
-                source="tool", kind="tool_error", message=result.text[:500] or "tool reported error"
+                source="tool",
+                kind=kind,
+                message=result.text[:500] or "tool reported error",
+                retryable=status == "timeout",
             )
         self._emit(server, tool, args, tool_use_id, ts_start, t0, status, result, error)
         return result
