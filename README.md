@@ -257,3 +257,20 @@ exported temporary keys; it checks with `aws sts get-caller-identity`) and
 `AWS_REGION=us-west-2`, and it refuses to run while a spec still holds a `<placeholder>`. If
 you signed in with `aws login`, run Python commands with `uv run --with "botocore[crt]"`.
 See `tests/live/README.md`.
+
+### UI (prototype)
+
+A read-only local FastAPI API and React UI expose Runs, run traces and assessments with
+clickable evidence, site maps, evaluation reports, comparisons and an EvalSpec preview.
+The demo uses three committed fixtures and deterministic evaluators; no AWS or model calls.
+
+```bash
+uv sync --group dev --extra api
+npm --prefix ui ci
+npm --prefix ui run build
+uv run python scripts/make_demo_store.py --out /tmp/claysandbox-demo/store
+uv run python -m claysandbox.api --store /tmp/claysandbox-demo/store
+```
+
+Open <http://127.0.0.1:8765>. Choose a new temporary output directory when reseeding.
+See [ui/README.md](ui/README.md) for development, verification and prototype limits.
