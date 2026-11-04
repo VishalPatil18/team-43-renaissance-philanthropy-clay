@@ -1,0 +1,7 @@
+{
+  "good": "../good",
+  "drops": [
+    "workflow.tool_call_validity"
+  ],
+  "description": "A call of a tool that is not in the tool set."
+}

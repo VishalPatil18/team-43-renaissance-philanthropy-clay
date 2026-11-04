@@ -1,0 +1,7 @@
+{
+  "good": "../good",
+  "drops": [
+    "workflow.ordering"
+  ],
+  "description": "imagery_search before geocode, against the rule ``geocode before imagery_search``."
+}

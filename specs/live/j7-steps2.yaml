@@ -1,0 +1,27 @@
+# J7 step 1: guard on with a tight limit. Expect the run to stop at max_steps=2 with a guard_stop event.
+# PLACEHOLDERS: <nova-lite-id>, <aoi-1>.
+spec_version: 1
+name: live-j7-steps2
+tasks:
+  templates: [T1]
+  aois: ["<aoi-1>"]
+baseline:
+  name: novalite-strands-T1-steps2
+  model:   {name: bedrock, params: {model_id: "<nova-lite-id>", temperature: 0.2, max_tokens: 2048}}
+  harness: {name: strands, params: {}}
+  toolset: T1
+  tracer:  {name: jsonl}
+variants: []
+evaluators:
+  - {name: workflow, version: "1"}
+summary: {name: llm, params: {model_id: "<nova-lite-id>"}}
+trials: 1
+seed: 42
+budget:
+  run:  {max_steps: 2, max_usd: 0.05}
+  eval: {max_usd: 1}
+loop_guard: {max_identical_calls: 3}
+infra_retries: 0
+executor: {name: local, params: {max_parallel: 1}}
+store:    {name: local, params: {root: ./runs, mirror_s3: null}}
+offline: false

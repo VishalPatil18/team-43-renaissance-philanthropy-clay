@@ -1,0 +1,8 @@
+{
+  "good": "../good",
+  "drops": [
+    "workflow.recovery",
+    "workflow.required_coverage"
+  ],
+  "description": "The required imagery_search fails and is never retried."
+}

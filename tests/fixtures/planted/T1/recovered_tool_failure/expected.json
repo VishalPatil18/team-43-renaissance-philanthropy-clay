@@ -1,0 +1,11 @@
+{
+  "good": "../good",
+  "drops": [
+    "workflow.recovery"
+  ],
+  "less_than": {
+    "flaw": "unrecovered_tool_failure",
+    "metric": "workflow.recovery"
+  },
+  "description": "A failed imagery_search right before the successful one (control flaw)."
+}

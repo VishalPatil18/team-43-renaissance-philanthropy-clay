@@ -1,0 +1,109 @@
+{
+  "template": "T1",
+  "instance_id": "T1@us-ca-kern",
+  "version": "T1.v1+sha256:fixture00001",
+  "workflow": {
+    "required": [
+      "imagery_search"
+    ],
+    "forbidden": [
+      "dataset_discovery"
+    ],
+    "ordering": [
+      {
+        "before": "geocode",
+        "after": "imagery_search",
+        "optional_first": true
+      }
+    ],
+    "argument_constraints": [
+      {
+        "capability": "imagery_search",
+        "check": "bbox_intersects_aoi"
+      },
+      {
+        "capability": "imagery_search",
+        "check": "collection_in",
+        "values": [
+          "naip"
+        ]
+      },
+      {
+        "capability": "imagery_search",
+        "check": "datetime_within_year",
+        "value": "2022"
+      }
+    ],
+    "expected_steps": 4,
+    "step_limit": 15,
+    "done": "output_matches_schema_nonempty",
+    "recovery": {
+      "recovered_penalty": 0.25
+    }
+  },
+  "output_reference": {
+    "items": [
+      "ca_m_3511801_ne_11_060_20220601",
+      "ca_m_3511802_nw_11_060_20220601",
+      "ca_m_3511803_se_11_060_20220602"
+    ]
+  },
+  "weights": {},
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "items"
+    ],
+    "properties": {
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "process_rubric": "Planning, tool choice, recovery, honesty about uncertainty. Score each 0-1.",
+  "aoi": {
+    "id": "us-ca-kern",
+    "name": "Kern County",
+    "state": "CA",
+    "fips": "06029",
+    "bbox": [
+      -120.19,
+      34.79,
+      -117.62,
+      35.8
+    ],
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            -120.19,
+            34.79
+          ],
+          [
+            -117.62,
+            34.79
+          ],
+          [
+            -117.62,
+            35.8
+          ],
+          [
+            -120.19,
+            35.8
+          ],
+          [
+            -120.19,
+            34.79
+          ]
+        ]
+      ]
+    },
+    "tags": [
+      "has_solar"
+    ]
+  }
+}

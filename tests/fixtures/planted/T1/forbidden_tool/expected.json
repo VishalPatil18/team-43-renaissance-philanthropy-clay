@@ -1,0 +1,7 @@
+{
+  "good": "../good",
+  "drops": [
+    "workflow.forbidden_tools"
+  ],
+  "description": "A call of the forbidden ``dataset_discovery`` capability before the answer."
+}

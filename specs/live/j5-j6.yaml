@@ -1,0 +1,35 @@
+# J5 + J6: comparison eval with N trials, so the report has CIs and a significance verdict.
+# Reduced from specs/compare-default.yaml. PLACEHOLDERS: <nova-lite-id>, <alt-model-id>,
+# <judge-id> (must be out of family with every agent model, DD-027), AOI IDs.
+spec_version: 1
+name: live-j5-j6
+tasks:
+  templates: [T1, T2]
+  aois: ["<aoi-1>", "<aoi-2>", "<aoi-3>"]
+baseline:
+  name: novalite-strands-T1
+  model:   {name: bedrock, params: {model_id: "<nova-lite-id>", temperature: 0.2, max_tokens: 2048}}
+  harness: {name: strands, params: {}}
+  toolset: T1
+  tracer:  {name: jsonl}
+variants:
+  - name: converse-loop
+    override: {harness: {name: converse_loop}}
+  - name: other-model
+    override: {model: {params: {model_id: "<alt-model-id>"}}}
+evaluators:
+  - {name: workflow, version: "1"}
+  - {name: output, version: "1"}
+  - {name: llm_process, version: "1", params: {model_id: "<judge-id>", k: 3}}
+summary: {name: llm, params: {model_id: "<nova-lite-id>"}}
+trials: 3
+seed: 42
+budget:
+  run:  {max_steps: 20, max_tokens: 60000, max_usd: 0.10, max_seconds: 180}
+  eval: {max_usd: 15}
+loop_guard: {max_identical_calls: 3}
+infra_retries: 1
+executor: {name: local, params: {max_parallel: 4}}
+store:    {name: local, params: {root: ./runs, mirror_s3: null}}
+offline: false
+stats: {bootstrap_iterations: 2000, alpha: 0.05}
