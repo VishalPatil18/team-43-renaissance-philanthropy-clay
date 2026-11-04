@@ -21,6 +21,10 @@ dependencies = [
 ]
 
 [dependency-groups]
+agentcore = [
+    "awslabs-roda-mcp-server==0.1.7",
+    "bedrock-agentcore>=1.18.1,<2",
+]
 dev = [
     "pytest>=8.0",
     "ruff>=0.6",
@@ -33,6 +37,9 @@ dev = [
 infra = [
     "aws-cdk-lib>=2.150",
     "constructs>=10.3",
+]
+observability = [
+    "aws-opentelemetry-distro~=0.21.0",
 ]
 
 [build-system]

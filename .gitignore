@@ -67,3 +67,6 @@ infra/cdk.context.json
 
 # Staged data (embeddings); see scripts/stage_embeddings.py
 /data/
+
+# Build output (AgentCore deployment package)
+/build/
