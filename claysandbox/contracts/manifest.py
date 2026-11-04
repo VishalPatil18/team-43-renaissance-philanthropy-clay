@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, Field, model_validator
@@ -50,3 +51,38 @@ class ComponentRef(BaseModel):
     name: str
     version: str = ""
     params: dict[str, Any] = Field(default_factory=dict)
+
+
+# --- PLACEHOLDER (WS4 branch): RunManifest is owned by WS5 (5th member). This copy follows
+# architecture §7.2 so the evaluators can be built and tested before the scaffold merges.
+# Fields the evaluators do not read have defaults. Replace with WS5's module on merge.
+class RunManifest(BaseModel):
+    schema_version: str = "1.0"
+    run_id: str
+    eval_id: str = ""
+    trial_index: int = 0
+    attempt: int = 1
+    attempts: list[dict[str, Any]] = Field(default_factory=list)
+    task_instance_id: str
+    task_reference_version: str = ""
+    prompt: str = ""
+    system_prompt: str = ""
+    config_name: str = ""
+    toolset: ComponentRef | None = None
+    mcp_servers: list[dict[str, Any]] = Field(default_factory=list)
+    tools: list[ToolSpec] = Field(default_factory=list)
+    model: ComponentRef | None = None
+    harness: ComponentRef | None = None
+    tracer: ComponentRef | None = None
+    evaluators: list[ComponentRef] = Field(default_factory=list)
+    budget: dict[str, Any] = Field(default_factory=dict)
+    loop_guard: dict[str, Any] = Field(default_factory=dict)
+    seed: int = 0
+    price_table_version: str = ""
+    executor: ComponentRef | None = None
+    environment: dict[str, Any] = Field(default_factory=dict)
+    package_version: str = ""
+    git_sha: str = ""
+    lockfile_sha256: str = ""
+    spec_sha256: str = ""
+    started_at: datetime | None = None

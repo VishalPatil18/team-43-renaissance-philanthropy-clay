@@ -1,0 +1,8 @@
+{
+  "good": "../good",
+  "drops": [
+    "success",
+    "workflow.step_efficiency"
+  ],
+  "description": "The imagery_search call repeated 4 times identically, stopped by the loop guard."
+}

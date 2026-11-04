@@ -1,0 +1,9 @@
+{
+  "good": "../good",
+  "drops": [
+    "output.precision",
+    "output.recall",
+    "output.f1"
+  ],
+  "description": "The final output lists item IDs that no tool result returned."
+}

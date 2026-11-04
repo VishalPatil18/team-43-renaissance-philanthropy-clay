@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "run_id": "fixture-good_t1",
+  "eval_id": "fixture-eval",
+  "trial_index": 0,
+  "task_instance_id": "T1@us-ca-kern",
+  "task_reference_version": "T1.v1+sha256:fixture00001",
+  "config_name": "fixture-baseline",
+  "seed": 42,
+  "toolset": {
+    "kind": "toolset",
+    "name": "T1",
+    "version": "1",
+    "params": {}
+  },
+  "budget": {
+    "max_steps": 25
+  },
+  "loop_guard": {
+    "max_identical_calls": 3
+  }
+}
