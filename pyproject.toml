@@ -11,6 +11,9 @@ dependencies = [
     "pyyaml>=6.0",
     "python-ulid>=2.7",
     "strands-agents==1.63.0",
+    "mcp>=2.3,<3",
+    "pystac-client>=0.8",
+    "shapely>=2.0",
 ]
 
 [dependency-groups]

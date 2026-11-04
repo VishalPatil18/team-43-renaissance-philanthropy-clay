@@ -114,6 +114,29 @@ def test_server_crash_is_server_unavailable() -> None:
     assert h.sink.events[0].error.kind == "server_unavailable"  # type: ignore[union-attr]
 
 
+@pytest.mark.parametrize(
+    ("result", "status", "kind"),
+    [
+        (ToolResult(text="timed out after 0.5 s", status="timeout"), "timeout", "tool_timeout"),
+        (ToolResult(text="server gone", error_kind="server_unavailable"), "error",
+         "server_unavailable"),
+        (ToolResult(text="bad", error_kind="tool_error"), "error", "tool_error"),
+    ],
+)
+def test_status_and_error_kind_in_the_result_are_traced(
+    result: ToolResult, status: str, kind: str
+) -> None:
+    """DD-045: the real MCP session reports timeouts and dead servers in the result."""
+    h = build_context([], handlers={("stac", "search_items"): result})
+    returned = h.ctx.tools.call_blocking("stac", "search_items", {})
+    h.close()
+    assert returned.is_error
+    (event,) = h.sink.events
+    assert event.status == status  # type: ignore[union-attr]
+    assert (event.error.source, event.error.kind) == ("tool", kind)  # type: ignore[union-attr]
+    assert event.error.retryable is (status == "timeout")  # type: ignore[union-attr]
+
+
 def test_unexpected_tool_exception_is_a_tool_error_not_a_crash() -> None:
     h = build_context([], handlers={("stac", "search_items"): ValueError("bug")})
     result = h.ctx.tools.call_blocking("stac", "search_items", {})

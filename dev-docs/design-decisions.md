@@ -1649,3 +1649,38 @@ Each moved item sits next to code the new owner already writes: the estimate use
 - The name-to-workstream mapping follows the order of the team lead's list. Swapping two people means swapping their plan files, with no other change.
 
 ---
+
+## DD-045 - Decision - `ToolResult` carries `status` and `error_kind`
+
+| Field           | Value                                   |
+| --------------- | --------------------------------------- |
+| Date            | 2026-11-04                              |
+| Cycle / Feature | F1 Tooling, F2 error capture (contracts) |
+| Status          | accepted                                |
+| Supersedes      | —                                       |
+
+### Context
+
+The first `contracts/tools.py` (written by WS1 so the wrappers could be built before WS2 merged) gave `ToolResult` only `text`, `structured` and `is_error`. A session had to signal a timeout by raising `TimeoutError` and a dead server by raising `ConnectionError`/`OSError`, and `InstrumentedTools` turned those exceptions into `tool_timeout` and `server_unavailable`. Plan VIS-R0-01 instead has the MCP session return `status="timeout"` and `error_kind="server_unavailable"` in the result, so a failed call never raises out of the session.
+
+### Options considered
+
+1. Keep the exception-only contract. The session raises, the wrapper maps - no contract change / the session's result alone can't say why a call failed, and every caller of a bare session must catch exceptions.
+2. **Add `status` (`ok`, `error`, `timeout`) and `error_kind` (`tool_error`, `tool_timeout`, `server_unavailable`) to `ToolResult`, with defaults and a validator that keeps them consistent with `is_error`. `InstrumentedTools` reads them. Raising stays allowed** - additive and backward compatible / one small change in a WS1 file.
+3. Replace `is_error` with `status` - cleanest / breaks every existing caller and test.
+
+### Decision
+
+`ToolResult` gains `status` and `error_kind`. `ToolResult(text=..., is_error=True)` still means a plain `tool_error`. `InstrumentedTools._completed` uses the result's `status` and `error_kind` when it traces the call. Sessions may still raise `TimeoutError` or `ConnectionError`/`OSError` instead, and the wrapper maps those as before.
+
+### Rationale
+
+Vishal (WS2, contract owner) chose to add the fields. Defaults and the validator keep every existing constructor call valid, so WS1's tests and fakes keep working without edits.
+
+### Consequences
+
+- `claysandbox/runtime/instrument.py` (WS1) changes in one method, with a test in `tests/unit/runtime/test_instrument.py`. Prithwish reviews that change.
+- `ToolResult` has no `schema_version` field. The contract change is recorded here instead, and the contracts package version doesn't change.
+- `ToolCall.status` in the trace is unchanged (`ok`, `error`, `timeout`, `rejected`). Trace readers see no difference.
+
+---

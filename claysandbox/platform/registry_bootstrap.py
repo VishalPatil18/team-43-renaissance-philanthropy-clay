@@ -10,3 +10,8 @@ from claysandbox.platform.executors import fargate  # noqa: F401
 from claysandbox.runtime import pricing  # noqa: F401
 from claysandbox.runtime.harness import converse_loop, strands_harness  # noqa: F401
 from claysandbox.runtime.models import bedrock  # noqa: F401
+
+# WS2 (tools and tasks): one registry entry per toolsets/*.yaml file
+from claysandbox.tools.toolsets import register_toolsets
+
+register_toolsets()

@@ -14,7 +14,8 @@ from .runtime import (
     PriceTable,
 )
 from .store import RunStore
-from .tools import ToolSession
+from .task import TaskLibrary
+from .tools import ToolSession, ToolSetProvider
 from .trace import EventSink
 
 __all__ = [
@@ -26,5 +27,7 @@ __all__ = [
     "ModelAdapter",
     "PriceTable",
     "RunStore",
+    "TaskLibrary",
     "ToolSession",
+    "ToolSetProvider",
 ]
