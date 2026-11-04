@@ -19,10 +19,13 @@ ENV GIT_SHA=${GIT_SHA} \
     UV_LINK_MODE=copy \
     UV_PYTHON_DOWNLOADS=never \
     UV_PROJECT_ENVIRONMENT=/app/.venv \
-    PATH=/app/.venv/bin:/home/clay/.local/bin:$PATH
+    PATH=/app/.venv/bin:/home/clay/.local/bin:$PATH \
+    NPM_CONFIG_PREFIX=/home/clay/.local
 
 RUN if [ "$WITH_NODE" = "true" ]; then \
-      apt-get update && apt-get install -y --no-install-recommends nodejs npm \
+      apt-get update && apt-get install -y --no-install-recommends curl ca-certificates gnupg \
+      && curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
+      && apt-get install -y --no-install-recommends nodejs \
       && rm -rf /var/lib/apt/lists/*; \
     fi \
  && useradd --create-home --uid 1000 clay \

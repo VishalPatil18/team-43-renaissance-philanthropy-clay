@@ -57,6 +57,7 @@ temp/
 
 # Sandbox run output (samples/ is committed, runs/ and evals/ are not)
 /runs/
+/runs-try/
 /evals/
 
 # CDK
