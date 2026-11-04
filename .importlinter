@@ -1,0 +1,26 @@
+[importlinter]
+root_package = claysandbox
+include_external_packages = False
+
+# Architecture §4.1. The conformance suites are tests: they must import the implementations
+# they run against, so they are the one allowed exception to "contracts imports nothing".
+
+[importlinter:contract:contracts-stand-alone]
+name = contracts import no component
+type = forbidden
+source_modules =
+    claysandbox.contracts
+forbidden_modules =
+    claysandbox.runtime
+    claysandbox.platform
+ignore_imports =
+    claysandbox.contracts.conformance.** -> claysandbox.runtime.**
+    claysandbox.contracts.conformance.** -> claysandbox.platform.**
+
+[importlinter:contract:runtime-uses-contracts-only]
+name = runtime does not import the composition root
+type = forbidden
+source_modules =
+    claysandbox.runtime
+forbidden_modules =
+    claysandbox.platform

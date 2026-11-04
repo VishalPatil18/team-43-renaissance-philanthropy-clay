@@ -54,3 +54,13 @@ build/
 tmp/
 temp/
 *.tmp
+
+# Sandbox run output (samples/ is committed, runs/ and evals/ are not)
+/runs/
+/evals/
+
+# CDK
+cdk.out/
+infra/outputs.json
+infra/cdk-outputs.json
+infra/cdk.context.json
