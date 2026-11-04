@@ -286,10 +286,177 @@ model (FR-1.11).
 
 ---
 
+---
+
+## 10. Clay, the non-profit and the mission (for Clay / partner questions)
+
+**Q: Who is Clay and what is this for?**
+Clay is an open Earth-foundation-model project building the "Earth Dataset Foundry". The partner
+behind our task is the Asian Development Bank (ADB). Clay's agents plan and build geospatial
+datasets by calling tools, but today that work is a black box: you can't see what the agent did,
+and there's no scoring, so nobody can say whether to trust a run. Our sandbox makes that work
+visible and scored.
+
+**Q: What problem does this solve for a non-profit specifically?**
+Trust and cost, which matter more for a non-profit than for a big commercial lab. A non-profit
+can't burn budget on agent runs it can't justify, and it has to be able to show funders and
+partners (like ADB) that a dataset was built by a process that was checked, not by a black box. The
+sandbox gives both: every run is priced and budgeted, and every run is scored on behaviour with
+evidence, not just on its final answer.
+
+**Q: How does the build reflect Clay's values?**
+Clay's ideology is open, reproducible, public or synthetic data only, and provenance treated as
+first-class. We match all four: the repo is public and Apache-2.0-aligned (the license swap from
+MIT is the one open item), only public data (NAIP, RODA, OpenStreetMap, Global Renewables Watch)
+and synthetic tasks are used, every run keeps a full manifest of what it was given and judged
+against, and a teammate can reproduce a run from the README with no AWS access via replay.
+
+**Q: You had no real ADB task inputs. How is the evaluation still meaningful?**
+Clay confirmed no ADB inputs were coming, so we generate synthetic tasks (T1–T5) whose answer keys
+come from public reference data: NAIP item IDs from the STAC catalog, RODA dataset slugs, solar
+sites from Global Renewables Watch and OpenStreetMap. Each task reference is content-hashed and
+versioned, and is meant for Clay to review. The evaluation measures the agent's *process* against a
+known-good workflow, which is Clay's main judgment, so it doesn't depend on a specific ADB brief.
+
+**Q: Why geospatial tasks about solar sites and aerial imagery?**
+They're representative of the real Earth-observation work Clay does, and they have public answer
+keys, so we can score them honestly. T3 (find solar sites) even includes two negative-control AOIs
+with no solar, to catch an agent that invents sites. That mix of real-world relevance and a
+checkable ground truth is what makes the eval credible to a partner.
+
+**Q: What would Clay do with this after the hackathon?**
+Run their wider eval backlog through it, compare candidate agents and tool sets before committing to
+one, and keep a provenance record for each dataset build. Because every component is a plugin, they
+can add their own tools (from their ~99-server geoMCP catalog), models or evaluators without
+rewriting the core. The FUTURE-WORK file lists the next steps: sensitivity analysis, multi-agent
+traces, dynamic tool discovery and a richer dashboard.
+
+**Q: Is this locked to AWS or to our team?**
+The core (replay, scoring, statistics, reports) runs with no AWS at all, so Clay isn't locked in for
+the parts that matter for reproducibility. AWS is additive: Bedrock for the model, S3 for the
+mirror, Fargate or AgentCore for cloud runs, CloudWatch for traces. And it's open source, so it
+outlives our team.
+
+---
+
+## 11. AWS SI / SME questions (Well-Architected lens)
+
+These are how an AWS Solutions Integration SME is likely to probe: security, cost, reliability,
+operations, and AWS-service fit. Answers are honest about what's built versus planned.
+
+### Security
+
+**Q: How do you keep credentials out of untrusted MCP tool processes?**
+Each MCP server starts with a scrubbed environment (`tools/env.py`): only PATH, HOME, locale and
+cache vars, plus its own declared `env`. AWS credentials are passed only when a server sets
+`needs_aws: true`. So a third-party tool server can't read the account's credentials by default
+(principle P8, DD-034).
+
+**Q: How do you stop secrets leaking into traces or logs?**
+The event sink redacts every event before any tracer sees it (`tracing/redact.py`): AWS access key
+IDs, secret keys, Authorization/Bearer headers, SigV4 signatures, session tokens, and the values of
+env vars named like secrets. Blobs are redacted before they're hashed and stored, so you can't store
+a secret by skipping the preview path. A secret scanner also runs in CI.
+
+**Q: Is the IAM least-privilege?**
+The Fargate task role allows `bedrock:InvokeModel` only on the configured model and inference-profile
+ARNs, read/write on the one sandbox bucket, read on the NAIP Requester-Pays buckets, and X-Ray
+write. The AgentCore execution role is scoped the same way. Both are in the repo as CDK or as an
+inline policy in the deploy script, so they're reviewable.
+
+**Q: Is the AgentCore endpoint authenticated?**
+Right now it's protected only by IAM (`InvokeAgentRuntime`). The inbound-OAuth design adds a JWT
+authorizer (`customJWTAuthorizer`) backed by an OIDC provider such as a Cognito user pool, so a call
+with no token is rejected. That's the next step, not yet wired.
+
+**Q: Supply-chain risk from third-party MCP servers?**
+MCP server versions must be pinned (`name@1.2.3`); the tool-set loader and the Docker build both
+reject an unpinned server. The manifest records each server's package, version and hash, so a run's
+tool supply chain is auditable.
+
+### Cost
+
+**Q: How do you control spend in a capped $500 sandbox?**
+Three layers. Per-run guards (`max_usd`, `max_tokens`, `max_steps`, `max_seconds`). A per-eval dollar
+cap (`EvalBudget`) that stops launching new runs once spent. And a pre-flight estimate that blocks an
+eval whose estimate exceeds its cap. Every model call is priced at trace time against a versioned
+table, so cost is visible per run and per step.
+
+**Q: Price-table accuracy and drift?**
+`pricing/prices.yaml` is versioned and dated; `scripts/refresh_prices.py` rebuilds it from the AWS
+Price List API and prints a diff for a human to commit. Claude isn't in the Price List API, so those
+entries are typed by hand from public pricing and flagged. Cost is labelled an estimate everywhere,
+not the bill, which is an accepted limitation.
+
+**Q: What are the main cost drivers and how do you keep them down?**
+Bedrock tokens (dominated by output), NAIP Requester-Pays reads, and Fargate compute. We develop on
+Nova Lite (about $0.0003 per run in testing), pre-stage a small NAIP sample rather than reading
+whole counties, and the VPC has no NAT gateway. The estimate's token prediction learns from stored
+runs, so it tightens as real runs accumulate.
+
+**Q: Why Fargate rather than always-on infrastructure?**
+Runs are bursty and independent, so per-task Fargate matches the workload and costs nothing when
+idle. The local executor covers development with no cloud spend at all. AgentCore Runtime is the
+managed option when you want hosting and observability without running the container yourself.
+
+### Reliability and operations
+
+**Q: How do you handle Bedrock throttling and transient failures?**
+The model adapter uses adaptive SDK retries, then classifies surviving errors: throttling, 5xx and
+network become a retryable `InfraError`; the run ends `infra_error` and the executor can start a new
+attempt in a fresh run folder (retries never merge into one trace). Access-denied and validation
+errors become a non-retryable `ConfigError` so the eval fails fast instead of looping.
+
+**Q: What happens to a run if the worker or task crashes mid-run?**
+The trace is append-only and flushed per event, so a crash leaves every event up to it and the run
+is flagged `incomplete`. The Fargate executor reports a task that stopped with no terminal status as
+`infra_retry` / `executor_failure`. Infra-excluded runs are dropped from the statistics, so a flaky
+run can't skew a comparison.
+
+**Q: How is this observable in production?**
+Two layers. The agent trace itself (JSONL locally, OpenTelemetry to CloudWatch/X-Ray via a local
+ADOT collector, and on AgentCore Runtime a full 13-span trace per request in CloudWatch GenAI
+Observability). And the sandbox's own structured logs for spec validation, executor state changes,
+MCP server crashes, tracer failures and eval-cap stops. Tracers are compared against each other for
+overhead and fidelity, so you know the observability layer itself is trustworthy.
+
+**Q: How do you know a change didn't break scoring?**
+Conformance suites run against every registered plugin, evaluators are pure and deterministic where
+they claim to be, and planted-trace validation proves a bad trace scores below a good one. All of it
+runs in CI with no AWS, plus ruff, mypy and import-linter.
+
+### Architecture and AWS fit
+
+**Q: Why Bedrock Converse rather than per-model SDKs?**
+One Converse interface covers Nova, Claude, Llama and Mistral with the same tool-use shape, so the
+model becomes a config value and a comparison axis. The adapter is the only place that talks to
+Bedrock, which keeps model swaps to a spec change (FR-1.5).
+
+**Q: Why did you reject AgentCore for the core harness but then use it?**
+As the *core* harness host it would couple our harness to AgentCore and add platform latency that
+would skew the latency metric we're measuring, so the default path is Fargate. We deployed to
+AgentCore Runtime separately to demonstrate managed hosting, inbound auth and observability — it runs
+the same agent stack, so it's additive, not a dependency.
+
+**Q: How would this scale beyond a sandbox?**
+The executor is a plugin: `local` for a laptop, `fargate` for parallel cloud runs up to
+`max_parallel`, and AgentCore Runtime for managed hosting. The run store mirrors to S3 and queries
+through DuckDB, which is fine for hundreds of runs; a Parquet roll-up or a managed warehouse is a
+later additive change. Nothing in the design assumes a single machine.
+
+**Q: Biggest architectural risk you're carrying?**
+The WS5 orchestration glue (service, worker, local executor, CLI, API, report renderer) isn't built
+yet, so there's no single command that runs a full eval end to end today. The component libraries are
+built and tested and the contracts are frozen, so it's assembly rather than redesign, but it's the
+honest gap.
+
+---
+
 ### Thirty-second pitch
 "We run an agent on Bedrock against a known geospatial task, capture a full trace at the
 model-and-tool boundary, and score the behaviour and the answer separately — eight deterministic
 workflow sub-scores, per-template output metrics, and an out-of-family LLM judge — then compare
 configurations with cluster-bootstrap CIs and permutation tests. Everything that varies is a
 swappable plugin. Runs are budgeted and priced before they launch, run locally or on Fargate, and
-the Strands agent is also deployed on AgentCore Runtime with full request tracing in CloudWatch."
+the Strands agent is also deployed on AgentCore Runtime with full request tracing in CloudWatch. It's
+open source and all-public-data, matching Clay's reproducible, provenance-first ideology."
