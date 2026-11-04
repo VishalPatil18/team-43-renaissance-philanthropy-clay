@@ -47,3 +47,17 @@ type = independence
 modules =
     claysandbox.tools
     claysandbox.tasks
+
+[importlinter:contract:evaluation-uses-contracts-only]
+# Architecture §4.1: evaluation imports only contracts (+ its own third-party libraries).
+# Add tools, tasks, cli and api here once those packages exist.
+name = evaluation imports only contracts
+type = forbidden
+source_modules =
+    claysandbox.evaluation
+forbidden_modules =
+    claysandbox.runtime
+    claysandbox.tracing
+    claysandbox.store
+    claysandbox.summary
+    claysandbox.platform

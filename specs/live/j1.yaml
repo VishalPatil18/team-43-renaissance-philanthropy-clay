@@ -1,0 +1,28 @@
+# J1: evaluate one live run. T1, T2, T5 on two AOIs, Nova Lite + Strands + toolset T1, N=1.
+# PLACEHOLDERS: replace <nova-lite-id> (Prithwish) and <aoi-1>/<aoi-2> before running.
+spec_version: 1
+name: live-j1
+tasks:
+  templates: [T1, T2, T5]
+  aois: ["<aoi-1>", "<aoi-2>"]
+baseline:
+  name: novalite-strands-T1
+  model:   {name: bedrock, params: {model_id: "<nova-lite-id>", temperature: 0.2, max_tokens: 2048}}
+  harness: {name: strands, params: {}}
+  toolset: T1
+  tracer:  {name: jsonl}
+variants: []
+evaluators:
+  - {name: workflow, version: "1"}
+  - {name: output, version: "1"}
+summary: {name: llm, params: {model_id: "<nova-lite-id>"}}
+trials: 1
+seed: 42
+budget:
+  run:  {max_steps: 20, max_tokens: 60000, max_usd: 0.10, max_seconds: 180}
+  eval: {max_usd: 2}
+loop_guard: {max_identical_calls: 3}
+infra_retries: 1
+executor: {name: local, params: {max_parallel: 2}}
+store:    {name: local, params: {root: ./runs, mirror_s3: null}}
+offline: false

@@ -1,0 +1,8 @@
+{
+  "good": "../good",
+  "drops": [
+    "success",
+    "workflow.done_condition"
+  ],
+  "description": "Truncated after step 2 by ``max_steps=2``."
+}

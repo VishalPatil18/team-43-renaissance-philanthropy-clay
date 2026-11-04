@@ -1,0 +1,35 @@
+# J3: hot-swap model, harness and tracer on one T1 instance; each variant overrides one axis.
+# After this, re-score the stored runs: clay-sandbox rescore --evaluator llm_process@1 <run ids>
+# PLACEHOLDERS: <nova-lite-id>, <alt-model-id>, <aoi-1>, tracer name "cloudwatch" (confirm with Shivaani).
+spec_version: 1
+name: live-j3
+tasks:
+  templates: [T1]
+  aois: ["<aoi-1>"]
+baseline:
+  name: novalite-strands-jsonl
+  model:   {name: bedrock, params: {model_id: "<nova-lite-id>", temperature: 0.2, max_tokens: 2048}}
+  harness: {name: strands, params: {}}
+  toolset: T1
+  tracer:  {name: jsonl}
+variants:
+  - name: other-model
+    override: {model: {params: {model_id: "<alt-model-id>"}}}
+  - name: converse-loop
+    override: {harness: {name: converse_loop}}
+  - name: other-tracer
+    override: {tracer: {name: cloudwatch}}
+evaluators:
+  - {name: workflow, version: "1"}
+  - {name: output, version: "1"}
+summary: {name: llm, params: {model_id: "<nova-lite-id>"}}
+trials: 1
+seed: 42
+budget:
+  run:  {max_steps: 20, max_tokens: 60000, max_usd: 0.10, max_seconds: 180}
+  eval: {max_usd: 3}
+loop_guard: {max_identical_calls: 3}
+infra_retries: 1
+executor: {name: local, params: {max_parallel: 2}}
+store:    {name: local, params: {root: ./runs, mirror_s3: null}}
+offline: false

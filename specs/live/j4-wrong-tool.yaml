@@ -1,0 +1,31 @@
+# J4.2: attempt to provoke a model-side wrong-tool call.
+# T1 asks for NAIP imagery, but T0 exposes only RODA, not T1's STAC/OSM tools.
+# Higher temperature encourages exploration of unavailable tool names. It is not a guarantee:
+# if the model uses an available tool or gives up cleanly, use WS1's fakes test for J4.2.
+# Confirm the exposed tool list before running; see tests/live/README.md.
+spec_version: 1
+name: live-j4-wrong-tool
+tasks:
+  templates: [T1]
+  aois: ["<aoi-1>"]
+baseline:
+  name: novalite-strands-T0-wrong-tool
+  model:   {name: bedrock, params: {model_id: "<nova-lite-id>", temperature: 1.0, max_tokens: 2048}}
+  harness: {name: strands, params: {}}
+  toolset: T0
+  tracer:  {name: jsonl}
+variants: []
+evaluators:
+  - {name: workflow, version: "1"}
+  - {name: output, version: "1"}
+summary: {name: llm, params: {model_id: "<nova-lite-id>"}}
+trials: 1
+seed: 42
+budget:
+  run:  {max_steps: 15, max_tokens: 40000, max_usd: 0.08, max_seconds: 120}
+  eval: {max_usd: 1}
+loop_guard: {max_identical_calls: 3}
+infra_retries: 1
+executor: {name: local, params: {max_parallel: 1}}
+store:    {name: local, params: {root: ./runs, mirror_s3: null}}
+offline: false

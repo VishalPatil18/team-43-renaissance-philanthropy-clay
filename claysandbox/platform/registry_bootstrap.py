@@ -15,3 +15,8 @@ from claysandbox.runtime.models import bedrock  # noqa: F401
 from claysandbox.tools.toolsets import register_toolsets
 
 register_toolsets()
+
+# WS3 (trace and store)
+from claysandbox.store import local, s3  # noqa: F401
+from claysandbox.summary import deterministic, llm  # noqa: F401
+from claysandbox.tracing import jsonl, otel, tee  # noqa: F401
