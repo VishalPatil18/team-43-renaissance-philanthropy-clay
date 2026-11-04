@@ -8,7 +8,9 @@ Fill this in as the build goes. Start empty, and add a row the moment something 
 
 | Feature | Why it was cut | How we would build it | Effort guess |
 |---|---|---|---|
-| | | | |
+| Interrupt a Bedrock call already in flight when `max_seconds` runs out | The guard checks before each call (architecture §9.2), so a long call finishes first and the overshoot is recorded. Good enough for the MVP | Use `converse_stream` and stop reading the stream when the watchdog fires, or run the call in a worker thread with cancellation | ~3 h |
+| Reconcile estimated cost with the real AWS bill | Costs come from a price table and are labelled estimates (DD-032). The bill lags by a day and Claude is billed under Marketplace product names | Turn on Bedrock model invocation logging and join token counts to Cost Explorer usage types; report the difference per eval | ~4 h |
+| Measured Fargate run time in the pre-flight estimate | The estimate uses a default of 120 s per run (flagged as a guess) because the stored traces' `wall_ms` is not read yet | Add `wall_ms` to the token-history query and use its median per (template, model, harness) | ~1 h |
 
 ## Planned stretch (would implement next, roughly in this order)
 
