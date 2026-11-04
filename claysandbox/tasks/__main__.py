@@ -42,7 +42,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "spot-check":
             ref = library.get_reference(args.instance, args.version)
             ref = library.references.record_spot_check(
-                ref.template, ref.aoi, ref.version, args.by, note=args.note
+                ref.template, ref.aoi_id, ref.version, args.by, note=args.note
             )
             print(f"{ref.instance_id} {ref.version} checked by {ref.checked_by} at "
                   f"{ref.checked_at:%Y-%m-%dT%H:%M:%SZ}")

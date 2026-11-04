@@ -1,0 +1,334 @@
+{
+  "schema_version": "1.0",
+  "template": "T4",
+  "instance_id": "T4@us-ny-new-york",
+  "version": "T4.v2+sha256:5e147cb0443f",
+  "method": "script",
+  "builder": "builders/t4_similar_places.py",
+  "builder_sha256": "f841f57a4808f53b64c0a0f94c8491e241b63b2725a66186b299ec0a0156479f",
+  "inputs": {
+    "function": "clay_embeddings.core.similar_places",
+    "query": {
+      "lat": 40.7829,
+      "lon": -73.9654,
+      "name": "Central Park"
+    },
+    "year": 2024,
+    "month": 7,
+    "k": 10,
+    "search_bbox": [
+      -74.04721,
+      40.67955,
+      -73.90951,
+      40.88221
+    ],
+    "staged_sha256": "265c44c47ff5d38d0d982e7dd95859c7ece7a52a2938dea05ee7db564541f541",
+    "staged_months": [
+      "2024-01",
+      "2024-07"
+    ],
+    "attribution": "Clay v1.5 embeddings by LGND (Sentinel-2 L2A, monthly aggregated, 1280 m chips, 256 dimensions), CC BY 4.0, https://source.coop/clay/lgnd-embeddings"
+  },
+  "built_at": "2026-11-04T17:38:00.944964Z",
+  "checked_by": null,
+  "checked_at": null,
+  "notes": [],
+  "workflow": {
+    "required": [
+      "embedding_similarity"
+    ],
+    "forbidden": [],
+    "ordering": [],
+    "argument_constraints": [
+      {
+        "capability": "embedding_similarity",
+        "check": "point_within_aoi",
+        "arg_names": [
+          "lat",
+          "lon"
+        ],
+        "values": null,
+        "value": {
+          "type": "MultiPolygon",
+          "coordinates": [
+            [
+              [
+                [
+                  -74.03544,
+                  40.68512
+                ],
+                [
+                  -74.01935,
+                  40.67955
+                ],
+                [
+                  -73.96961,
+                  40.70763
+                ],
+                [
+                  -73.95919,
+                  40.74603
+                ],
+                [
+                  -73.9103,
+                  40.79066
+                ],
+                [
+                  -73.93235,
+                  40.80859
+                ],
+                [
+                  -73.93346,
+                  40.83318
+                ],
+                [
+                  -73.90951,
+                  40.87888
+                ],
+                [
+                  -73.93379,
+                  40.88221
+                ],
+                [
+                  -74.01403,
+                  40.75755
+                ],
+                [
+                  -74.03544,
+                  40.68512
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  -74.04075,
+                  40.70017
+                ],
+                [
+                  -74.03993,
+                  40.69859
+                ],
+                [
+                  -74.03837,
+                  40.69867
+                ],
+                [
+                  -74.04075,
+                  40.70017
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  -74.04721,
+                  40.69089
+                ],
+                [
+                  -74.04362,
+                  40.68876
+                ],
+                [
+                  -74.04389,
+                  40.69019
+                ],
+                [
+                  -74.04721,
+                  40.69089
+                ]
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "capability": "embedding_similarity",
+        "check": "k_at_most",
+        "arg_names": [
+          "k"
+        ],
+        "values": null,
+        "value": 10
+      }
+    ],
+    "expected_steps": 2,
+    "step_limit": 10,
+    "done": "output_matches_schema_nonempty",
+    "recovery": {
+      "recovered_penalty": 0.25
+    }
+  },
+  "output_reference": {
+    "top_k": [
+      "6138385421ab8983b7389f8d12ed785e",
+      "52da319ea7d9b45ca19be80cb9b7e4a8",
+      "cbbd931575105568bd66a3a262a8964e",
+      "bb7b9f13b722d914b0cb2b7c088dbff7",
+      "ea37b38acc8a180c19e1aa6bf40c2d04",
+      "ced31bd6342fc9506e6d4a43c3492ba2",
+      "3b4cf5273b345f863d4429352607fb5c",
+      "bd0d65a57f30a5650c7f8a58d2f14144",
+      "28934403d4546393166b15ffc67818a7",
+      "ae79e3351a26499c9eff182944de977d"
+    ],
+    "k": 10,
+    "query_chip": "b8a5b1f43496655371a6fd1a26eaaa27",
+    "similarities": [
+      0.957099974155426,
+      0.9469680190086365,
+      0.9370740056037903,
+      0.9345139861106873,
+      0.9319800138473511,
+      0.9316800236701965,
+      0.9309200048446655,
+      0.9299600124359131,
+      0.9292449951171875,
+      0.9283360242843628
+    ],
+    "candidates": 182
+  },
+  "weights": {},
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "chips"
+    ],
+    "properties": {
+      "chips": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 10
+      }
+    }
+  },
+  "process_rubric": "# Process rubric: T4 (places similar to a given place)\n\nThe agent was given a query point, a month, k and a search box, and asked for the k most similar\nplaces by Clay embeddings, as `{\"chips\": [chips_id, ...]}` with the most similar first. The\nanswer can be found with one correct call of the `similar_places` tool. Judge **how faithfully**\nthe agent used the tool; the output metric scores the chip list. Score each item from 0 to 1 and\ncite the trace event IDs your score is based on.\n\n## planning\n\nDid the agent recognise that one embedding-similarity search with the given inputs answers the\ntask?\n\n- **1.0**: calls `similar_places` with the given point, year, month, k and search box (optionally\n  `embedding_at` first to look at the query chip), then answers.\n- **0.5**: gets there after unneeded detours (geocoding the given point, several exploratory\n  searches with other months or boxes).\n- **0.0**: never uses the embeddings tool.\n\n## tool_choice\n\nWere the arguments the ones the prompt gave?\n\n- **1.0**: lat/lon, year, month, k and search_bbox exactly as given.\n- **0.5**: one argument changed or missing (no search_bbox, a different k) without a reason.\n- **0.0**: arguments unrelated to the prompt (another place or month).\n\n## error_recovery\n\nWhen a call failed, did it react sensibly?\n\n- **1.0**: reads the error (e.g. \"month not staged\", \"no chip at this point\") and corrects the\n  call. Also 1.0 if no call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: loops on the failing call, or abandons the task.\n\n## honesty\n\nIs the answer faithful to the tool result?\n\n- **1.0**: returns exactly the chip IDs the tool returned, in its order, without the query chip.\n- **0.5**: real chip IDs, but reordered, truncated or mixed with results from another call\n  without saying so.\n- **0.0**: invents chip IDs, or returns coordinates or names instead of chip IDs.\n",
+  "aoi": {
+    "id": "us-ny-new-york",
+    "name": "New York County",
+    "state": "New York",
+    "state_code": "NY",
+    "fips": "36061",
+    "bbox": [
+      -74.04721,
+      40.67955,
+      -73.90951,
+      40.88221
+    ],
+    "geometry": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -74.03544,
+              40.68512
+            ],
+            [
+              -74.01935,
+              40.67955
+            ],
+            [
+              -73.96961,
+              40.70763
+            ],
+            [
+              -73.95919,
+              40.74603
+            ],
+            [
+              -73.9103,
+              40.79066
+            ],
+            [
+              -73.93235,
+              40.80859
+            ],
+            [
+              -73.93346,
+              40.83318
+            ],
+            [
+              -73.90951,
+              40.87888
+            ],
+            [
+              -73.93379,
+              40.88221
+            ],
+            [
+              -74.01403,
+              40.75755
+            ],
+            [
+              -74.03544,
+              40.68512
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              -74.04075,
+              40.70017
+            ],
+            [
+              -74.03993,
+              40.69859
+            ],
+            [
+              -74.03837,
+              40.69867
+            ],
+            [
+              -74.04075,
+              40.70017
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              -74.04721,
+              40.69089
+            ],
+            [
+              -74.04362,
+              40.68876
+            ],
+            [
+              -74.04389,
+              40.69019
+            ],
+            [
+              -74.04721,
+              40.69089
+            ]
+          ]
+        ]
+      ]
+    },
+    "tags": [
+      "no_solar"
+    ],
+    "template_params": {
+      "T1": {
+        "area_name": "Central Park",
+        "area_bbox": [
+          -73.986,
+          40.762,
+          -73.946,
+          40.802
+        ]
+      },
+      "T4": {
+        "query_name": "Central Park",
+        "query_lat": 40.7829,
+        "query_lon": -73.9654
+      }
+    },
+    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
+  }
+}

@@ -1,7 +1,210 @@
 {
   "schema_version": "1.0",
   "template": "T3",
-  "aoi": "us-tx-pecos",
+  "aoi": {
+    "id": "us-tx-pecos",
+    "name": "Pecos County",
+    "state": "Texas",
+    "state_code": "TX",
+    "fips": "48371",
+    "bbox": [
+      -103.58508,
+      30.05281,
+      -101.76838,
+      31.37131
+    ],
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            -102.20872,
+            30.59796
+          ],
+          [
+            -102.13841,
+            30.59752
+          ],
+          [
+            -102.13778,
+            30.65598
+          ],
+          [
+            -101.76838,
+            30.65294
+          ],
+          [
+            -101.77982,
+            30.68599
+          ],
+          [
+            -101.81005,
+            30.70239
+          ],
+          [
+            -101.81583,
+            30.75202
+          ],
+          [
+            -101.83876,
+            30.76333
+          ],
+          [
+            -101.83147,
+            30.80173
+          ],
+          [
+            -101.8499,
+            30.85687
+          ],
+          [
+            -101.8911,
+            30.89016
+          ],
+          [
+            -101.87898,
+            30.92173
+          ],
+          [
+            -101.91863,
+            30.93463
+          ],
+          [
+            -101.9841,
+            30.98734
+          ],
+          [
+            -102.01167,
+            30.97934
+          ],
+          [
+            -102.04918,
+            31.00364
+          ],
+          [
+            -102.1099,
+            30.99032
+          ],
+          [
+            -102.18089,
+            31.0167
+          ],
+          [
+            -102.18999,
+            31.00337
+          ],
+          [
+            -102.20203,
+            31.03103
+          ],
+          [
+            -102.28479,
+            31.03381
+          ],
+          [
+            -102.32989,
+            31.06834
+          ],
+          [
+            -102.40615,
+            31.08787
+          ],
+          [
+            -102.43028,
+            31.12927
+          ],
+          [
+            -102.42508,
+            31.17826
+          ],
+          [
+            -102.44209,
+            31.2127
+          ],
+          [
+            -102.52077,
+            31.26281
+          ],
+          [
+            -102.59649,
+            31.26401
+          ],
+          [
+            -102.67574,
+            31.33001
+          ],
+          [
+            -102.72487,
+            31.30842
+          ],
+          [
+            -102.73924,
+            31.2826
+          ],
+          [
+            -102.77441,
+            31.29532
+          ],
+          [
+            -102.82673,
+            31.26688
+          ],
+          [
+            -102.91373,
+            31.33901
+          ],
+          [
+            -103.01104,
+            31.37131
+          ],
+          [
+            -103.58508,
+            30.76647
+          ],
+          [
+            -102.56705,
+            30.05281
+          ],
+          [
+            -102.56694,
+            30.28327
+          ],
+          [
+            -102.34308,
+            30.28412
+          ],
+          [
+            -102.34299,
+            30.59876
+          ],
+          [
+            -102.20872,
+            30.59796
+          ]
+        ]
+      ]
+    },
+    "tags": [
+      "has_solar"
+    ],
+    "template_params": {
+      "T1": {
+        "area_name": "Fort Stockton",
+        "area_bbox": [
+          -102.929,
+          30.844,
+          -102.829,
+          30.944
+        ]
+      },
+      "T4": {
+        "query_name": "solar PV installation (Global Renewables Watch feature 78324)",
+        "query_lat": 30.99704,
+        "query_lon": -102.27605
+      }
+    },
+    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
+  },
   "instance_id": "T3@us-tx-pecos",
   "version": "T3.v1+sha256:65eef1b36f74",
   "method": "script",
@@ -9725,209 +9928,5 @@
       }
     }
   },
-  "process_rubric": "# Process rubric: T3 (candidate solar sites in a county)\n\nThe agent was asked for the existing utility-scale solar PV installations in a US county, one\npoint per installation, as `{\"sites\": [{\"lat\", \"lon\"}, ...]}`, or `{\"sites\": []}` if there are\nnone. Some counties really have none. Judge **how** it worked; the output metric scores the\npoints. Score each item from 0 to 1 and cite the trace event IDs your score is based on.\n\n## planning\n\nDid the agent find a data source that can actually locate solar installations, and use it over\nthe whole county?\n\n- **1.0**: looks for a suitable source (an open dataset of energy infrastructure, or OpenStreetMap\n  power plants tagged as solar), queries it over the county's bbox, and handles paging or large\n  results.\n- **0.5**: finds a suitable source but queries only part of the county, or stops after one page.\n- **0.0**: never looks for a source and answers from memory, or searches imagery and \"sees\" sites\n  it can't have analysed.\n\n## tool_choice\n\nWere the tools and arguments suited to the job?\n\n- **1.0**: e.g. dataset discovery for solar or energy datasets, an Overpass query for\n  `power=plant` + `plant:source=solar` (or `generator:source=solar`) within the bbox, geocoding\n  only if needed.\n- **0.5**: right tools, poor arguments (wrong tag, a point-radius query that misses most of the\n  county).\n- **0.0**: tools that can't return solar locations.\n\n## error_recovery\n\nWhen a call failed or timed out (Overpass is often slow), did it react sensibly?\n\n- **1.0**: narrows the query, retries with a smaller area, or switches source. Also 1.0 if no call\n  failed.\n- **0.5**: retries the same call once or twice, then moves on.\n- **0.0**: loops on the failing call, or gives up while other options were available.\n\n## honesty\n\nIs the answer honest?\n\n- **1.0**: every point comes from a tool result; says so plainly when nothing was found and returns\n  `{\"sites\": []}`; doesn't pad with guesses.\n- **0.5**: real points, but includes rooftop or planned projects as if they were installations.\n- **0.0**: invents coordinates, or returns points outside the county as if inside.\n",
-  "aoi_snapshot": {
-    "id": "us-tx-pecos",
-    "name": "Pecos County",
-    "state": "Texas",
-    "state_code": "TX",
-    "fips": "48371",
-    "bbox": [
-      -103.58508,
-      30.05281,
-      -101.76838,
-      31.37131
-    ],
-    "geometry": {
-      "type": "Polygon",
-      "coordinates": [
-        [
-          [
-            -102.20872,
-            30.59796
-          ],
-          [
-            -102.13841,
-            30.59752
-          ],
-          [
-            -102.13778,
-            30.65598
-          ],
-          [
-            -101.76838,
-            30.65294
-          ],
-          [
-            -101.77982,
-            30.68599
-          ],
-          [
-            -101.81005,
-            30.70239
-          ],
-          [
-            -101.81583,
-            30.75202
-          ],
-          [
-            -101.83876,
-            30.76333
-          ],
-          [
-            -101.83147,
-            30.80173
-          ],
-          [
-            -101.8499,
-            30.85687
-          ],
-          [
-            -101.8911,
-            30.89016
-          ],
-          [
-            -101.87898,
-            30.92173
-          ],
-          [
-            -101.91863,
-            30.93463
-          ],
-          [
-            -101.9841,
-            30.98734
-          ],
-          [
-            -102.01167,
-            30.97934
-          ],
-          [
-            -102.04918,
-            31.00364
-          ],
-          [
-            -102.1099,
-            30.99032
-          ],
-          [
-            -102.18089,
-            31.0167
-          ],
-          [
-            -102.18999,
-            31.00337
-          ],
-          [
-            -102.20203,
-            31.03103
-          ],
-          [
-            -102.28479,
-            31.03381
-          ],
-          [
-            -102.32989,
-            31.06834
-          ],
-          [
-            -102.40615,
-            31.08787
-          ],
-          [
-            -102.43028,
-            31.12927
-          ],
-          [
-            -102.42508,
-            31.17826
-          ],
-          [
-            -102.44209,
-            31.2127
-          ],
-          [
-            -102.52077,
-            31.26281
-          ],
-          [
-            -102.59649,
-            31.26401
-          ],
-          [
-            -102.67574,
-            31.33001
-          ],
-          [
-            -102.72487,
-            31.30842
-          ],
-          [
-            -102.73924,
-            31.2826
-          ],
-          [
-            -102.77441,
-            31.29532
-          ],
-          [
-            -102.82673,
-            31.26688
-          ],
-          [
-            -102.91373,
-            31.33901
-          ],
-          [
-            -103.01104,
-            31.37131
-          ],
-          [
-            -103.58508,
-            30.76647
-          ],
-          [
-            -102.56705,
-            30.05281
-          ],
-          [
-            -102.56694,
-            30.28327
-          ],
-          [
-            -102.34308,
-            30.28412
-          ],
-          [
-            -102.34299,
-            30.59876
-          ],
-          [
-            -102.20872,
-            30.59796
-          ]
-        ]
-      ]
-    },
-    "tags": [
-      "has_solar"
-    ],
-    "template_params": {
-      "T1": {
-        "area_name": "Fort Stockton",
-        "area_bbox": [
-          -102.929,
-          30.844,
-          -102.829,
-          30.944
-        ]
-      },
-      "T4": {
-        "query_name": "solar PV installation (Global Renewables Watch feature 78324)",
-        "query_lat": 30.99704,
-        "query_lon": -102.27605
-      }
-    },
-    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
-  }
+  "process_rubric": "# Process rubric: T3 (candidate solar sites in a county)\n\nThe agent was asked for the existing utility-scale solar PV installations in a US county, one\npoint per installation, as `{\"sites\": [{\"lat\", \"lon\"}, ...]}`, or `{\"sites\": []}` if there are\nnone. Some counties really have none. Judge **how** it worked; the output metric scores the\npoints. Score each item from 0 to 1 and cite the trace event IDs your score is based on.\n\n## planning\n\nDid the agent find a data source that can actually locate solar installations, and use it over\nthe whole county?\n\n- **1.0**: looks for a suitable source (an open dataset of energy infrastructure, or OpenStreetMap\n  power plants tagged as solar), queries it over the county's bbox, and handles paging or large\n  results.\n- **0.5**: finds a suitable source but queries only part of the county, or stops after one page.\n- **0.0**: never looks for a source and answers from memory, or searches imagery and \"sees\" sites\n  it can't have analysed.\n\n## tool_choice\n\nWere the tools and arguments suited to the job?\n\n- **1.0**: e.g. dataset discovery for solar or energy datasets, an Overpass query for\n  `power=plant` + `plant:source=solar` (or `generator:source=solar`) within the bbox, geocoding\n  only if needed.\n- **0.5**: right tools, poor arguments (wrong tag, a point-radius query that misses most of the\n  county).\n- **0.0**: tools that can't return solar locations.\n\n## error_recovery\n\nWhen a call failed or timed out (Overpass is often slow), did it react sensibly?\n\n- **1.0**: narrows the query, retries with a smaller area, or switches source. Also 1.0 if no call\n  failed.\n- **0.5**: retries the same call once or twice, then moves on.\n- **0.0**: loops on the failing call, or gives up while other options were available.\n\n## honesty\n\nIs the answer honest?\n\n- **1.0**: every point comes from a tool result; says so plainly when nothing was found and returns\n  `{\"sites\": []}`; doesn't pad with guesses.\n- **0.5**: real points, but includes rooftop or planned projects as if they were installations.\n- **0.0**: invents coordinates, or returns points outside the county as if inside.\n"
 }

@@ -174,7 +174,8 @@ def test_build_creates_v1_with_metadata(lib: FileTaskLibrary) -> None:
     assert ref.version.startswith("T1.v1+sha256:") and len(ref.version.split(":")[1]) == 12
     assert ref.method == "script" and ref.inputs == {"year": 2022, "aoi": "us-zz-testland"}
     assert ref.output_reference == {"items": ["a", "b"]}
-    assert ref.process_rubric == "# T1 rubric\n" and ref.aoi_snapshot.id == "us-zz-testland"
+    assert ref.process_rubric == "# T1 rubric\n"
+    assert ref.aoi is not None and ref.aoi.id == "us-zz-testland"
     assert len(ref.builder_sha256) == 64 and reference_hash(ref) == ref.version.split(":")[1]
     files = list((lib.root / "references" / "T1" / "us-zz-testland").glob("*.json"))
     assert len(files) == 1 and ":" not in files[0].name
@@ -231,8 +232,7 @@ def test_store_refuses_to_overwrite_and_checks_the_hash(tmp_path: Path) -> None:
     store.save(ref)
     with pytest.raises(ConfigError, match="overwrite"):
         store.save(ref)
-    tampered = ref.model_copy(update={"aoi": "us-zz-other",
-                                      "output_reference": {"items": ["forged"]}})
+    tampered = ref.model_copy(update={"output_reference": {"items": ["forged"]}})
     with pytest.raises(ConfigError, match="does not match"):
         store.save(tampered)
 

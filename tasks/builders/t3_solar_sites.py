@@ -6,10 +6,11 @@ polygons worldwide, detected in satellite imagery up to the second quarter of 20
 The file (395 MB) is downloaded once to ``~/.cache/claysandbox/grw/`` and checked by sha256.
 
 The key is every polygon that intersects the AOI geometry (the simplified county boundary in
-``tasks/aois.yaml``), sorted by GRW feature ID, each with its centroid (WGS84), area,
-construction quarter and footprint (simplified by 0.0001°). The two negative-control AOIs have no
-polygons, so their correct answer is an empty list. ``output.t3`` matches the agent's points to
-these sites within ``tolerance_m`` (500 m).
+``tasks/aois.yaml``), sorted by GRW feature ID, as GeoJSON Features: the footprint (simplified by
+0.0001°) as ``geometry`` and the GRW feature ID, centroid (WGS84), area and construction quarter
+as ``properties``. The two negative-control AOIs have no polygons, so their correct answer is an
+empty list. ``output.t3`` matches the agent's points to the footprints within ``tolerance_m``
+(500 m).
 
 The GeoPackage is read with sqlite3 and its R-tree index; geometries are converted from Web
 Mercator with the closed-form inverse (no pyproj needed).
@@ -92,7 +93,7 @@ def gpkg_geometry(blob: bytes) -> Any:
 
 
 def solar_sites(aoi: AOI, path: Path | None = None) -> list[dict[str, Any]]:
-    """GRW polygons intersecting the AOI geometry, as site records sorted by feature ID."""
+    """GRW polygons intersecting the AOI geometry, as GeoJSON Features sorted by feature ID."""
     path = path or ensure_grw()
     west, south, east, north = aoi.bbox
     x0, y0 = to_mercator(west, south)
@@ -118,17 +119,20 @@ def solar_sites(aoi: AOI, path: Path | None = None) -> list[dict[str, Any]]:
         centroid = geom.centroid
         sites.append(
             {
-                "grw_fid": int(fid),
-                "lat": round(centroid.y, DECIMALS),
-                "lon": round(centroid.x, DECIMALS),
-                "area_m2": round(float(area_m2), 1),
-                "construction_year": year,
-                "construction_quarter": quarter,
-                "landcover_in_2018": landcover,
-                "source_layer": layer,
+                "type": "Feature",
                 "geometry": mapping(
                     shapely.set_precision(geom.simplify(SIMPLIFY_DEG), 10**-DECIMALS)
                 ),
+                "properties": {
+                    "grw_fid": int(fid),
+                    "lat": round(centroid.y, DECIMALS),
+                    "lon": round(centroid.x, DECIMALS),
+                    "area_m2": round(float(area_m2), 1),
+                    "construction_year": year,
+                    "construction_quarter": quarter,
+                    "landcover_in_2018": landcover,
+                    "source_layer": layer,
+                },
             }
         )
     return sites

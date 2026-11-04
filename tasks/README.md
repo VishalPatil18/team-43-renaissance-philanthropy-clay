@@ -40,12 +40,14 @@ Notes:
   recall@10.
 - **T3** searches the whole county. Keys: Kern 241, Clark 57, Robeson 51, Pecos 39 sites, and
   `{"sites": []}` for the two negative controls (the builder refuses to build if a `no_solar` AOI
-  has sites, or a `has_solar` one has none). Each site has its GRW feature ID, centroid, area,
-  construction quarter and footprint, simplified by 0.0001° (≤ 17 m).
+  has sites, or a `has_solar` one has none). Each site is a GeoJSON Feature: the footprint,
+  simplified by 0.0001° (≤ 17 m), as `geometry`, and the GRW feature ID, centroid, area and
+  construction quarter as `properties`, so `output.t3` matches points against the footprint.
 - **T4** gives every input of the search in the prompt: the query point from
   `template_params.T4`, July 2024, k = 10 and the county bbox. The builder calls the same library
-  function the `similar_places` tool uses, so a faithful agent can match the key exactly. It needs
-  the staged embeddings (`scripts/stage_embeddings.py`); the key records their sha256.
+  function the `similar_places` tool uses, so a faithful agent can match the key exactly; the
+  ranked chips are in `output_reference.top_k`. It needs the staged embeddings
+  (`scripts/stage_embeddings.py`); the key records their sha256.
 - **T5** has no answer key. Its reference is a rule list: (a) states assumptions or asks a
   clarifying question, (b) every returned item ID appears in some tool result, (c) every returned
   item's footprint intersects the county.
@@ -127,11 +129,15 @@ One instance per template is checked by a person and records `checked_by`, `chec
 | `T1@us-ca-kern` | `T1.v2+sha256:cfebf696c13c` | same 6 IDs from an independent Element 84 Earth Search query |
 | `T2@us-tx-pecos` | `T2.v1+sha256:2ef1434beca2` | registry docs of `naip`, `usgs-lidar`, `sentinel-2` read and correct; `nasa-uars` noted as a false positive |
 | `T5@us-nc-robeson` | `T5.v1+sha256:da748fe3bd16` | rules read; AOI values match `aois.yaml` |
-| `T3@us-ca-kern` | `T3.v1+sha256:97d56a81784d` | 140 of 241 GRW sites (58%) have an OpenStreetMap solar plant within ~500 m, including the three largest; both controls are empty |
-| `T4@us-nc-robeson` | `T4.v1+sha256:185c6f8b5199` | a live `similar_places` call over stdio with the prompt's arguments returned the same 10 chips in the same order |
+| `T3@us-ca-kern` | `T3.v2+sha256:d2f68006c230` | 140 of 241 GRW sites (58%) have an OpenStreetMap solar plant within ~500 m, including the three largest; both controls are empty |
+| `T4@us-nc-robeson` | `T4.v2+sha256:5633ef031d6f` | a live `similar_places` call over stdio with the prompt's arguments returned the same 10 chips in the same order |
 
-`T1@us-ca-kern` also has `T1.v1+sha256:133e9754636d` (R0, whole county, 721 items). It is kept
-because references are never deleted; `v2` is the latest.
+Older versions are kept because references are never deleted:
+
+- `T1@us-ca-kern` `T1.v1+sha256:133e9754636d`: R0, whole county (721 items).
+- `T3.v1` (4 solar counties) and `T4.v1` (all six): the same answers in the first key layout
+  (`sites` as plain records, `chips` instead of `top_k`), which `output.t3` and `output.t4` did not
+  read correctly. `v2` is the latest. The two empty T3 keys didn't change, so they stay `v1`.
 
 ## Data sources and licenses
 

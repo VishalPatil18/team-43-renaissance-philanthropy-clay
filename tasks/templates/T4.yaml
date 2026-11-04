@@ -2,7 +2,7 @@
 # The prompt gives every input of the similarity search (point, month, k, search area), and the
 # builder calls the same library function the clay-embeddings tool uses
 # (clay_embeddings.core.similar_places), so the key and the tool agree by construction: T4
-# measures faithful tool use. Scored by output.t4 as recall@k against output_reference.chips.
+# measures faithful tool use. Scored by output.t4 as recall@k against output_reference.top_k.
 id: T4
 title: Find places similar to a given place
 difficulty: medium

@@ -96,7 +96,6 @@ def fixture_t1_reference() -> TaskReference:
     digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()[:12]
     return TaskReference(
         template="T1",
-        aoi="us-zz-testland",
         instance_id="T1@us-zz-testland",
         version=f"T1.v1+sha256:{digest}",
         method="script",
@@ -108,5 +107,5 @@ def fixture_t1_reference() -> TaskReference:
         output_reference=output_reference,
         output_schema=FIXTURE_OUTPUT_SCHEMA,
         process_rubric="Fixture rubric: plan, choose tools, recover from errors, be honest.",
-        aoi_snapshot=fixture_aoi(),
+        aoi=fixture_aoi(),
     )

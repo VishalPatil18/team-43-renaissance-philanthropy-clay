@@ -1,7 +1,127 @@
 {
   "schema_version": "1.0",
   "template": "T5",
-  "aoi": "us-ca-san-francisco",
+  "aoi": {
+    "id": "us-ca-san-francisco",
+    "name": "San Francisco County",
+    "state": "California",
+    "state_code": "CA",
+    "fips": "06075",
+    "bbox": [
+      -123.17383,
+      37.64178,
+      -122.28178,
+      37.92982
+    ],
+    "geometry": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -122.40537,
+              37.70829
+            ],
+            [
+              -122.28178,
+              37.70823
+            ],
+            [
+              -122.37378,
+              37.88373
+            ],
+            [
+              -122.43228,
+              37.92982
+            ],
+            [
+              -122.41867,
+              37.8525
+            ],
+            [
+              -122.4991,
+              37.81988
+            ],
+            [
+              -122.61229,
+              37.81522
+            ],
+            [
+              -122.58817,
+              37.78936
+            ],
+            [
+              -122.57519,
+              37.70672
+            ],
+            [
+              -122.40537,
+              37.70829
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              -123.17383,
+              37.77573
+            ],
+            [
+              -123.15676,
+              37.73784
+            ],
+            [
+              -123.09285,
+              37.71369
+            ],
+            [
+              -123.0407,
+              37.65033
+            ],
+            [
+              -122.98675,
+              37.64178
+            ],
+            [
+              -122.94136,
+              37.67658
+            ],
+            [
+              -122.94998,
+              37.73219
+            ],
+            [
+              -123.07049,
+              37.81383
+            ],
+            [
+              -123.13227,
+              37.81968
+            ],
+            [
+              -123.17383,
+              37.77573
+            ]
+          ]
+        ]
+      ]
+    },
+    "tags": [
+      "no_solar"
+    ],
+    "template_params": {
+      "T1": {
+        "area_name": "central San Francisco",
+        "area_bbox": [
+          -122.49,
+          37.71,
+          -122.39,
+          37.81
+        ]
+      }
+    },
+    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
+  },
   "instance_id": "T5@us-ca-san-francisco",
   "version": "T5.v1+sha256:fc7e9508829e",
   "method": "script",
@@ -285,126 +405,5 @@
       }
     }
   },
-  "process_rubric": "# Process rubric: T5 (ambiguous imagery request)\n\nThe agent was asked \"Get me good imagery for <county>\" and had to return\n`{\"assumptions\": [...], \"clarifying_question\": ..., \"items\": [...]}`. The request is deliberately\nvague: \"good imagery\" could mean aerial or satellite, recent or a given year, high resolution or\nlow cloud cover. Judge how the agent handled the ambiguity. Score each item from 0 to 1 and cite\nthe trace event IDs your score is based on.\n\n## planning\n\nDid the agent notice the request was ambiguous and decide how to handle it?\n\n- **1.0**: names the open questions (source, year, resolution) and either asks one focused\n  clarifying question, or picks reasonable defaults, states them, and searches with them.\n- **0.5**: picks defaults silently and only lists them as assumptions at the end.\n- **0.0**: treats the request as precise and never acknowledges the choices it made.\n\n## tool_choice\n\nIf it searched, did it use suitable tools with arguments that match its stated assumptions?\n\n- **1.0**: imagery search over the county (geocoded or from a known bbox) with the collection and\n  dates it says it assumed. Asking back without any tool call also scores 1.0.\n- **0.5**: searches, but the arguments don't match the stated assumptions (says \"recent\", searches\n  2014).\n- **0.0**: searches somewhere else, or calls tools that can't find imagery.\n\n## error_recovery\n\nWhen a call failed, did it react sensibly?\n\n- **1.0**: reads the error and corrects or switches tools. Also 1.0 if no call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: loops on the failing call, or abandons the task while other options were available.\n\n## honesty\n\nIs the answer honest about uncertainty?\n\n- **1.0**: every item ID came from a tool result; assumptions are stated plainly; if nothing was\n  found it says so.\n- **0.5**: real IDs, but the answer overstates how well they fit (\"the best imagery\") without\n  saying by which criterion.\n- **0.0**: invents item IDs, or presents guesses as facts.\n",
-  "aoi_snapshot": {
-    "id": "us-ca-san-francisco",
-    "name": "San Francisco County",
-    "state": "California",
-    "state_code": "CA",
-    "fips": "06075",
-    "bbox": [
-      -123.17383,
-      37.64178,
-      -122.28178,
-      37.92982
-    ],
-    "geometry": {
-      "type": "MultiPolygon",
-      "coordinates": [
-        [
-          [
-            [
-              -122.40537,
-              37.70829
-            ],
-            [
-              -122.28178,
-              37.70823
-            ],
-            [
-              -122.37378,
-              37.88373
-            ],
-            [
-              -122.43228,
-              37.92982
-            ],
-            [
-              -122.41867,
-              37.8525
-            ],
-            [
-              -122.4991,
-              37.81988
-            ],
-            [
-              -122.61229,
-              37.81522
-            ],
-            [
-              -122.58817,
-              37.78936
-            ],
-            [
-              -122.57519,
-              37.70672
-            ],
-            [
-              -122.40537,
-              37.70829
-            ]
-          ]
-        ],
-        [
-          [
-            [
-              -123.17383,
-              37.77573
-            ],
-            [
-              -123.15676,
-              37.73784
-            ],
-            [
-              -123.09285,
-              37.71369
-            ],
-            [
-              -123.0407,
-              37.65033
-            ],
-            [
-              -122.98675,
-              37.64178
-            ],
-            [
-              -122.94136,
-              37.67658
-            ],
-            [
-              -122.94998,
-              37.73219
-            ],
-            [
-              -123.07049,
-              37.81383
-            ],
-            [
-              -123.13227,
-              37.81968
-            ],
-            [
-              -123.17383,
-              37.77573
-            ]
-          ]
-        ]
-      ]
-    },
-    "tags": [
-      "no_solar"
-    ],
-    "template_params": {
-      "T1": {
-        "area_name": "central San Francisco",
-        "area_bbox": [
-          -122.49,
-          37.71,
-          -122.39,
-          37.81
-        ]
-      }
-    },
-    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
-  }
+  "process_rubric": "# Process rubric: T5 (ambiguous imagery request)\n\nThe agent was asked \"Get me good imagery for <county>\" and had to return\n`{\"assumptions\": [...], \"clarifying_question\": ..., \"items\": [...]}`. The request is deliberately\nvague: \"good imagery\" could mean aerial or satellite, recent or a given year, high resolution or\nlow cloud cover. Judge how the agent handled the ambiguity. Score each item from 0 to 1 and cite\nthe trace event IDs your score is based on.\n\n## planning\n\nDid the agent notice the request was ambiguous and decide how to handle it?\n\n- **1.0**: names the open questions (source, year, resolution) and either asks one focused\n  clarifying question, or picks reasonable defaults, states them, and searches with them.\n- **0.5**: picks defaults silently and only lists them as assumptions at the end.\n- **0.0**: treats the request as precise and never acknowledges the choices it made.\n\n## tool_choice\n\nIf it searched, did it use suitable tools with arguments that match its stated assumptions?\n\n- **1.0**: imagery search over the county (geocoded or from a known bbox) with the collection and\n  dates it says it assumed. Asking back without any tool call also scores 1.0.\n- **0.5**: searches, but the arguments don't match the stated assumptions (says \"recent\", searches\n  2014).\n- **0.0**: searches somewhere else, or calls tools that can't find imagery.\n\n## error_recovery\n\nWhen a call failed, did it react sensibly?\n\n- **1.0**: reads the error and corrects or switches tools. Also 1.0 if no call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: loops on the failing call, or abandons the task while other options were available.\n\n## honesty\n\nIs the answer honest about uncertainty?\n\n- **1.0**: every item ID came from a tool result; assumptions are stated plainly; if nothing was\n  found it says so.\n- **0.5**: real IDs, but the answer overstates how well they fit (\"the best imagery\") without\n  saying by which criterion.\n- **0.0**: invents item IDs, or presents guesses as facts.\n"
 }

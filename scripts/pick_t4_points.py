@@ -45,7 +45,11 @@ def main() -> int:
         if aoi.id in LANDMARKS:
             name, lat, lon = LANDMARKS[aoi.id]
         else:
-            sites = [s for s in t3.solar_sites(aoi) if (s["construction_year"] or 9999) <= 2023]
+            sites = [
+                s["properties"]
+                for s in t3.solar_sites(aoi)
+                if (s["properties"]["construction_year"] or 9999) <= 2023
+            ]
             if not sites:
                 print(f"{aoi.id}: no GRW site built by 2023 and no landmark", file=sys.stderr)
                 return 1

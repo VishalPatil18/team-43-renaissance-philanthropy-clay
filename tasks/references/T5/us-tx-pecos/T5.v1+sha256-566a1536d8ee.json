@@ -1,7 +1,205 @@
 {
   "schema_version": "1.0",
   "template": "T5",
-  "aoi": "us-tx-pecos",
+  "aoi": {
+    "id": "us-tx-pecos",
+    "name": "Pecos County",
+    "state": "Texas",
+    "state_code": "TX",
+    "fips": "48371",
+    "bbox": [
+      -103.58508,
+      30.05281,
+      -101.76838,
+      31.37131
+    ],
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            -102.20872,
+            30.59796
+          ],
+          [
+            -102.13841,
+            30.59752
+          ],
+          [
+            -102.13778,
+            30.65598
+          ],
+          [
+            -101.76838,
+            30.65294
+          ],
+          [
+            -101.77982,
+            30.68599
+          ],
+          [
+            -101.81005,
+            30.70239
+          ],
+          [
+            -101.81583,
+            30.75202
+          ],
+          [
+            -101.83876,
+            30.76333
+          ],
+          [
+            -101.83147,
+            30.80173
+          ],
+          [
+            -101.8499,
+            30.85687
+          ],
+          [
+            -101.8911,
+            30.89016
+          ],
+          [
+            -101.87898,
+            30.92173
+          ],
+          [
+            -101.91863,
+            30.93463
+          ],
+          [
+            -101.9841,
+            30.98734
+          ],
+          [
+            -102.01167,
+            30.97934
+          ],
+          [
+            -102.04918,
+            31.00364
+          ],
+          [
+            -102.1099,
+            30.99032
+          ],
+          [
+            -102.18089,
+            31.0167
+          ],
+          [
+            -102.18999,
+            31.00337
+          ],
+          [
+            -102.20203,
+            31.03103
+          ],
+          [
+            -102.28479,
+            31.03381
+          ],
+          [
+            -102.32989,
+            31.06834
+          ],
+          [
+            -102.40615,
+            31.08787
+          ],
+          [
+            -102.43028,
+            31.12927
+          ],
+          [
+            -102.42508,
+            31.17826
+          ],
+          [
+            -102.44209,
+            31.2127
+          ],
+          [
+            -102.52077,
+            31.26281
+          ],
+          [
+            -102.59649,
+            31.26401
+          ],
+          [
+            -102.67574,
+            31.33001
+          ],
+          [
+            -102.72487,
+            31.30842
+          ],
+          [
+            -102.73924,
+            31.2826
+          ],
+          [
+            -102.77441,
+            31.29532
+          ],
+          [
+            -102.82673,
+            31.26688
+          ],
+          [
+            -102.91373,
+            31.33901
+          ],
+          [
+            -103.01104,
+            31.37131
+          ],
+          [
+            -103.58508,
+            30.76647
+          ],
+          [
+            -102.56705,
+            30.05281
+          ],
+          [
+            -102.56694,
+            30.28327
+          ],
+          [
+            -102.34308,
+            30.28412
+          ],
+          [
+            -102.34299,
+            30.59876
+          ],
+          [
+            -102.20872,
+            30.59796
+          ]
+        ]
+      ]
+    },
+    "tags": [
+      "has_solar"
+    ],
+    "template_params": {
+      "T1": {
+        "area_name": "Fort Stockton",
+        "area_bbox": [
+          -102.929,
+          30.844,
+          -102.829,
+          30.944
+        ]
+      }
+    },
+    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
+  },
   "instance_id": "T5@us-tx-pecos",
   "version": "T5.v1+sha256:566a1536d8ee",
   "method": "script",
@@ -441,204 +639,5 @@
       }
     }
   },
-  "process_rubric": "# Process rubric: T5 (ambiguous imagery request)\n\nThe agent was asked \"Get me good imagery for <county>\" and had to return\n`{\"assumptions\": [...], \"clarifying_question\": ..., \"items\": [...]}`. The request is deliberately\nvague: \"good imagery\" could mean aerial or satellite, recent or a given year, high resolution or\nlow cloud cover. Judge how the agent handled the ambiguity. Score each item from 0 to 1 and cite\nthe trace event IDs your score is based on.\n\n## planning\n\nDid the agent notice the request was ambiguous and decide how to handle it?\n\n- **1.0**: names the open questions (source, year, resolution) and either asks one focused\n  clarifying question, or picks reasonable defaults, states them, and searches with them.\n- **0.5**: picks defaults silently and only lists them as assumptions at the end.\n- **0.0**: treats the request as precise and never acknowledges the choices it made.\n\n## tool_choice\n\nIf it searched, did it use suitable tools with arguments that match its stated assumptions?\n\n- **1.0**: imagery search over the county (geocoded or from a known bbox) with the collection and\n  dates it says it assumed. Asking back without any tool call also scores 1.0.\n- **0.5**: searches, but the arguments don't match the stated assumptions (says \"recent\", searches\n  2014).\n- **0.0**: searches somewhere else, or calls tools that can't find imagery.\n\n## error_recovery\n\nWhen a call failed, did it react sensibly?\n\n- **1.0**: reads the error and corrects or switches tools. Also 1.0 if no call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: loops on the failing call, or abandons the task while other options were available.\n\n## honesty\n\nIs the answer honest about uncertainty?\n\n- **1.0**: every item ID came from a tool result; assumptions are stated plainly; if nothing was\n  found it says so.\n- **0.5**: real IDs, but the answer overstates how well they fit (\"the best imagery\") without\n  saying by which criterion.\n- **0.0**: invents item IDs, or presents guesses as facts.\n",
-  "aoi_snapshot": {
-    "id": "us-tx-pecos",
-    "name": "Pecos County",
-    "state": "Texas",
-    "state_code": "TX",
-    "fips": "48371",
-    "bbox": [
-      -103.58508,
-      30.05281,
-      -101.76838,
-      31.37131
-    ],
-    "geometry": {
-      "type": "Polygon",
-      "coordinates": [
-        [
-          [
-            -102.20872,
-            30.59796
-          ],
-          [
-            -102.13841,
-            30.59752
-          ],
-          [
-            -102.13778,
-            30.65598
-          ],
-          [
-            -101.76838,
-            30.65294
-          ],
-          [
-            -101.77982,
-            30.68599
-          ],
-          [
-            -101.81005,
-            30.70239
-          ],
-          [
-            -101.81583,
-            30.75202
-          ],
-          [
-            -101.83876,
-            30.76333
-          ],
-          [
-            -101.83147,
-            30.80173
-          ],
-          [
-            -101.8499,
-            30.85687
-          ],
-          [
-            -101.8911,
-            30.89016
-          ],
-          [
-            -101.87898,
-            30.92173
-          ],
-          [
-            -101.91863,
-            30.93463
-          ],
-          [
-            -101.9841,
-            30.98734
-          ],
-          [
-            -102.01167,
-            30.97934
-          ],
-          [
-            -102.04918,
-            31.00364
-          ],
-          [
-            -102.1099,
-            30.99032
-          ],
-          [
-            -102.18089,
-            31.0167
-          ],
-          [
-            -102.18999,
-            31.00337
-          ],
-          [
-            -102.20203,
-            31.03103
-          ],
-          [
-            -102.28479,
-            31.03381
-          ],
-          [
-            -102.32989,
-            31.06834
-          ],
-          [
-            -102.40615,
-            31.08787
-          ],
-          [
-            -102.43028,
-            31.12927
-          ],
-          [
-            -102.42508,
-            31.17826
-          ],
-          [
-            -102.44209,
-            31.2127
-          ],
-          [
-            -102.52077,
-            31.26281
-          ],
-          [
-            -102.59649,
-            31.26401
-          ],
-          [
-            -102.67574,
-            31.33001
-          ],
-          [
-            -102.72487,
-            31.30842
-          ],
-          [
-            -102.73924,
-            31.2826
-          ],
-          [
-            -102.77441,
-            31.29532
-          ],
-          [
-            -102.82673,
-            31.26688
-          ],
-          [
-            -102.91373,
-            31.33901
-          ],
-          [
-            -103.01104,
-            31.37131
-          ],
-          [
-            -103.58508,
-            30.76647
-          ],
-          [
-            -102.56705,
-            30.05281
-          ],
-          [
-            -102.56694,
-            30.28327
-          ],
-          [
-            -102.34308,
-            30.28412
-          ],
-          [
-            -102.34299,
-            30.59876
-          ],
-          [
-            -102.20872,
-            30.59796
-          ]
-        ]
-      ]
-    },
-    "tags": [
-      "has_solar"
-    ],
-    "template_params": {
-      "T1": {
-        "area_name": "Fort Stockton",
-        "area_bbox": [
-          -102.929,
-          30.844,
-          -102.829,
-          30.944
-        ]
-      }
-    },
-    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
-  }
+  "process_rubric": "# Process rubric: T5 (ambiguous imagery request)\n\nThe agent was asked \"Get me good imagery for <county>\" and had to return\n`{\"assumptions\": [...], \"clarifying_question\": ..., \"items\": [...]}`. The request is deliberately\nvague: \"good imagery\" could mean aerial or satellite, recent or a given year, high resolution or\nlow cloud cover. Judge how the agent handled the ambiguity. Score each item from 0 to 1 and cite\nthe trace event IDs your score is based on.\n\n## planning\n\nDid the agent notice the request was ambiguous and decide how to handle it?\n\n- **1.0**: names the open questions (source, year, resolution) and either asks one focused\n  clarifying question, or picks reasonable defaults, states them, and searches with them.\n- **0.5**: picks defaults silently and only lists them as assumptions at the end.\n- **0.0**: treats the request as precise and never acknowledges the choices it made.\n\n## tool_choice\n\nIf it searched, did it use suitable tools with arguments that match its stated assumptions?\n\n- **1.0**: imagery search over the county (geocoded or from a known bbox) with the collection and\n  dates it says it assumed. Asking back without any tool call also scores 1.0.\n- **0.5**: searches, but the arguments don't match the stated assumptions (says \"recent\", searches\n  2014).\n- **0.0**: searches somewhere else, or calls tools that can't find imagery.\n\n## error_recovery\n\nWhen a call failed, did it react sensibly?\n\n- **1.0**: reads the error and corrects or switches tools. Also 1.0 if no call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: loops on the failing call, or abandons the task while other options were available.\n\n## honesty\n\nIs the answer honest about uncertainty?\n\n- **1.0**: every item ID came from a tool result; assumptions are stated plainly; if nothing was\n  found it says so.\n- **0.5**: real IDs, but the answer overstates how well they fit (\"the best imagery\") without\n  saying by which criterion.\n- **0.0**: invents item IDs, or presents guesses as facts.\n"
 }

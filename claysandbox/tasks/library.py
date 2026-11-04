@@ -85,8 +85,8 @@ class FileTaskLibrary:
             return {}
         data = _read_yaml(path) or {}
         try:
-            aois = [AOI.model_validate(a) for a in data.get("aois", [])]
-        except ValidationError as exc:
+            aois = [AOI.model_validate(a).check_complete() for a in data.get("aois", [])]
+        except (ValidationError, ValueError) as exc:
             raise ConfigError(f"invalid AOI in {path}: {exc}", kind="invalid_aoi") from exc
         ids = [a.id for a in aois]
         dupes = sorted({i for i in ids if ids.count(i) > 1})
@@ -214,7 +214,6 @@ class FileTaskLibrary:
             return existing
         ref = TaskReference(
             template=template.id,
-            aoi=aoi.id,
             instance_id=instance.id,
             version=version,
             method=result.method,
@@ -228,7 +227,7 @@ class FileTaskLibrary:
             weights=template.weights,
             output_schema=template.output_schema,
             process_rubric=self.process_rubric(template),
-            aoi_snapshot=aoi,
+            aoi=aoi,
         )
         self.references.save(ref)
         return ref

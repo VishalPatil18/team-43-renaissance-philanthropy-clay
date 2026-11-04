@@ -50,7 +50,7 @@ def build(template: TaskTemplate, aoi: AOI, instance: TaskInstance) -> BuildResu
     }
     return BuildResult(
         output_reference={
-            "chips": chips,
+            "top_k": chips,  # ranked; the key output.t4 reads
             "k": int(p["k"]),
             "query_chip": result["query"]["chips_id"],
             "similarities": [r["similarity"] for r in result["results"]],

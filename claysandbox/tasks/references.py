@@ -144,7 +144,7 @@ class ReferenceStore:
             raise ConfigError(f"version {ref.version} does not belong to template {ref.template}")
         if reference_hash(ref) != digest:
             raise ConfigError(f"version {ref.version} does not match the reference content")
-        path = self._dir(ref.template, ref.aoi) / file_name(ref.version)
+        path = self._dir(ref.template, ref.aoi_id) / file_name(ref.version)
         if path.exists():
             raise ConfigError(f"refusing to overwrite existing reference {path}")
         path.parent.mkdir(parents=True, exist_ok=True)

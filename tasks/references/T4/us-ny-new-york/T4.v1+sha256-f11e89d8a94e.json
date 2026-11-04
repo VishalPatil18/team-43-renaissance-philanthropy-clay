@@ -1,7 +1,132 @@
 {
   "schema_version": "1.0",
   "template": "T4",
-  "aoi": "us-ny-new-york",
+  "aoi": {
+    "id": "us-ny-new-york",
+    "name": "New York County",
+    "state": "New York",
+    "state_code": "NY",
+    "fips": "36061",
+    "bbox": [
+      -74.04721,
+      40.67955,
+      -73.90951,
+      40.88221
+    ],
+    "geometry": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -74.03544,
+              40.68512
+            ],
+            [
+              -74.01935,
+              40.67955
+            ],
+            [
+              -73.96961,
+              40.70763
+            ],
+            [
+              -73.95919,
+              40.74603
+            ],
+            [
+              -73.9103,
+              40.79066
+            ],
+            [
+              -73.93235,
+              40.80859
+            ],
+            [
+              -73.93346,
+              40.83318
+            ],
+            [
+              -73.90951,
+              40.87888
+            ],
+            [
+              -73.93379,
+              40.88221
+            ],
+            [
+              -74.01403,
+              40.75755
+            ],
+            [
+              -74.03544,
+              40.68512
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              -74.04075,
+              40.70017
+            ],
+            [
+              -74.03993,
+              40.69859
+            ],
+            [
+              -74.03837,
+              40.69867
+            ],
+            [
+              -74.04075,
+              40.70017
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              -74.04721,
+              40.69089
+            ],
+            [
+              -74.04362,
+              40.68876
+            ],
+            [
+              -74.04389,
+              40.69019
+            ],
+            [
+              -74.04721,
+              40.69089
+            ]
+          ]
+        ]
+      ]
+    },
+    "tags": [
+      "no_solar"
+    ],
+    "template_params": {
+      "T1": {
+        "area_name": "Central Park",
+        "area_bbox": [
+          -73.986,
+          40.762,
+          -73.946,
+          40.802
+        ]
+      },
+      "T4": {
+        "query_name": "Central Park",
+        "query_lat": 40.7829,
+        "query_lon": -73.9654
+      }
+    },
+    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
+  },
   "instance_id": "T4@us-ny-new-york",
   "version": "T4.v1+sha256:f11e89d8a94e",
   "method": "script",
@@ -205,131 +330,5 @@
       }
     }
   },
-  "process_rubric": "# Process rubric: T4 (places similar to a given place)\n\nThe agent was given a query point, a month, k and a search box, and asked for the k most similar\nplaces by Clay embeddings, as `{\"chips\": [chips_id, ...]}` with the most similar first. The\nanswer can be found with one correct call of the `similar_places` tool. Judge **how faithfully**\nthe agent used the tool; the output metric scores the chip list. Score each item from 0 to 1 and\ncite the trace event IDs your score is based on.\n\n## planning\n\nDid the agent recognise that one embedding-similarity search with the given inputs answers the\ntask?\n\n- **1.0**: calls `similar_places` with the given point, year, month, k and search box (optionally\n  `embedding_at` first to look at the query chip), then answers.\n- **0.5**: gets there after unneeded detours (geocoding the given point, several exploratory\n  searches with other months or boxes).\n- **0.0**: never uses the embeddings tool.\n\n## tool_choice\n\nWere the arguments the ones the prompt gave?\n\n- **1.0**: lat/lon, year, month, k and search_bbox exactly as given.\n- **0.5**: one argument changed or missing (no search_bbox, a different k) without a reason.\n- **0.0**: arguments unrelated to the prompt (another place or month).\n\n## error_recovery\n\nWhen a call failed, did it react sensibly?\n\n- **1.0**: reads the error (e.g. \"month not staged\", \"no chip at this point\") and corrects the\n  call. Also 1.0 if no call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: loops on the failing call, or abandons the task.\n\n## honesty\n\nIs the answer faithful to the tool result?\n\n- **1.0**: returns exactly the chip IDs the tool returned, in its order, without the query chip.\n- **0.5**: real chip IDs, but reordered, truncated or mixed with results from another call\n  without saying so.\n- **0.0**: invents chip IDs, or returns coordinates or names instead of chip IDs.\n",
-  "aoi_snapshot": {
-    "id": "us-ny-new-york",
-    "name": "New York County",
-    "state": "New York",
-    "state_code": "NY",
-    "fips": "36061",
-    "bbox": [
-      -74.04721,
-      40.67955,
-      -73.90951,
-      40.88221
-    ],
-    "geometry": {
-      "type": "MultiPolygon",
-      "coordinates": [
-        [
-          [
-            [
-              -74.03544,
-              40.68512
-            ],
-            [
-              -74.01935,
-              40.67955
-            ],
-            [
-              -73.96961,
-              40.70763
-            ],
-            [
-              -73.95919,
-              40.74603
-            ],
-            [
-              -73.9103,
-              40.79066
-            ],
-            [
-              -73.93235,
-              40.80859
-            ],
-            [
-              -73.93346,
-              40.83318
-            ],
-            [
-              -73.90951,
-              40.87888
-            ],
-            [
-              -73.93379,
-              40.88221
-            ],
-            [
-              -74.01403,
-              40.75755
-            ],
-            [
-              -74.03544,
-              40.68512
-            ]
-          ]
-        ],
-        [
-          [
-            [
-              -74.04075,
-              40.70017
-            ],
-            [
-              -74.03993,
-              40.69859
-            ],
-            [
-              -74.03837,
-              40.69867
-            ],
-            [
-              -74.04075,
-              40.70017
-            ]
-          ]
-        ],
-        [
-          [
-            [
-              -74.04721,
-              40.69089
-            ],
-            [
-              -74.04362,
-              40.68876
-            ],
-            [
-              -74.04389,
-              40.69019
-            ],
-            [
-              -74.04721,
-              40.69089
-            ]
-          ]
-        ]
-      ]
-    },
-    "tags": [
-      "no_solar"
-    ],
-    "template_params": {
-      "T1": {
-        "area_name": "Central Park",
-        "area_bbox": [
-          -73.986,
-          40.762,
-          -73.946,
-          40.802
-        ]
-      },
-      "T4": {
-        "query_name": "Central Park",
-        "query_lat": 40.7829,
-        "query_lon": -73.9654
-      }
-    },
-    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
-  }
+  "process_rubric": "# Process rubric: T4 (places similar to a given place)\n\nThe agent was given a query point, a month, k and a search box, and asked for the k most similar\nplaces by Clay embeddings, as `{\"chips\": [chips_id, ...]}` with the most similar first. The\nanswer can be found with one correct call of the `similar_places` tool. Judge **how faithfully**\nthe agent used the tool; the output metric scores the chip list. Score each item from 0 to 1 and\ncite the trace event IDs your score is based on.\n\n## planning\n\nDid the agent recognise that one embedding-similarity search with the given inputs answers the\ntask?\n\n- **1.0**: calls `similar_places` with the given point, year, month, k and search box (optionally\n  `embedding_at` first to look at the query chip), then answers.\n- **0.5**: gets there after unneeded detours (geocoding the given point, several exploratory\n  searches with other months or boxes).\n- **0.0**: never uses the embeddings tool.\n\n## tool_choice\n\nWere the arguments the ones the prompt gave?\n\n- **1.0**: lat/lon, year, month, k and search_bbox exactly as given.\n- **0.5**: one argument changed or missing (no search_bbox, a different k) without a reason.\n- **0.0**: arguments unrelated to the prompt (another place or month).\n\n## error_recovery\n\nWhen a call failed, did it react sensibly?\n\n- **1.0**: reads the error (e.g. \"month not staged\", \"no chip at this point\") and corrects the\n  call. Also 1.0 if no call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: loops on the failing call, or abandons the task.\n\n## honesty\n\nIs the answer faithful to the tool result?\n\n- **1.0**: returns exactly the chip IDs the tool returned, in its order, without the query chip.\n- **0.5**: real chip IDs, but reordered, truncated or mixed with results from another call\n  without saying so.\n- **0.0**: invents chip IDs, or returns coordinates or names instead of chip IDs.\n"
 }

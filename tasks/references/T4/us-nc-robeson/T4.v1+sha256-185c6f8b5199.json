@@ -1,7 +1,138 @@
 {
   "schema_version": "1.0",
   "template": "T4",
-  "aoi": "us-nc-robeson",
+  "aoi": {
+    "id": "us-nc-robeson",
+    "name": "Robeson County",
+    "state": "North Carolina",
+    "state_code": "NC",
+    "fips": "37155",
+    "bbox": [
+      -79.46151,
+      34.29934,
+      -78.80543,
+      34.95271
+    ],
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            -79.12835,
+            34.88294
+          ],
+          [
+            -79.19139,
+            34.83372
+          ],
+          [
+            -79.34883,
+            34.83885
+          ],
+          [
+            -79.35742,
+            34.81896
+          ],
+          [
+            -79.33086,
+            34.77397
+          ],
+          [
+            -79.46151,
+            34.63038
+          ],
+          [
+            -79.07121,
+            34.29934
+          ],
+          [
+            -79.03847,
+            34.31314
+          ],
+          [
+            -79.02711,
+            34.35307
+          ],
+          [
+            -79.00908,
+            34.35283
+          ],
+          [
+            -79.01161,
+            34.38089
+          ],
+          [
+            -78.96974,
+            34.39521
+          ],
+          [
+            -78.95978,
+            34.44298
+          ],
+          [
+            -78.90685,
+            34.45584
+          ],
+          [
+            -78.84634,
+            34.49981
+          ],
+          [
+            -78.86266,
+            34.56223
+          ],
+          [
+            -78.83605,
+            34.59342
+          ],
+          [
+            -78.80543,
+            34.6866
+          ],
+          [
+            -78.85425,
+            34.73549
+          ],
+          [
+            -78.88334,
+            34.81212
+          ],
+          [
+            -78.95486,
+            34.91327
+          ],
+          [
+            -79.03875,
+            34.95271
+          ],
+          [
+            -79.12835,
+            34.88294
+          ]
+        ]
+      ]
+    },
+    "tags": [
+      "has_solar"
+    ],
+    "template_params": {
+      "T1": {
+        "area_name": "Lumberton",
+        "area_bbox": [
+          -79.059,
+          34.568,
+          -78.959,
+          34.668
+        ]
+      },
+      "T4": {
+        "query_name": "solar PV installation (Global Renewables Watch feature 43557)",
+        "query_lat": 34.80187,
+        "query_lon": -79.32932
+      }
+    },
+    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
+  },
   "instance_id": "T4@us-nc-robeson",
   "version": "T4.v1+sha256:185c6f8b5199",
   "method": "script",
@@ -213,137 +344,5 @@
       }
     }
   },
-  "process_rubric": "# Process rubric: T4 (places similar to a given place)\n\nThe agent was given a query point, a month, k and a search box, and asked for the k most similar\nplaces by Clay embeddings, as `{\"chips\": [chips_id, ...]}` with the most similar first. The\nanswer can be found with one correct call of the `similar_places` tool. Judge **how faithfully**\nthe agent used the tool; the output metric scores the chip list. Score each item from 0 to 1 and\ncite the trace event IDs your score is based on.\n\n## planning\n\nDid the agent recognise that one embedding-similarity search with the given inputs answers the\ntask?\n\n- **1.0**: calls `similar_places` with the given point, year, month, k and search box (optionally\n  `embedding_at` first to look at the query chip), then answers.\n- **0.5**: gets there after unneeded detours (geocoding the given point, several exploratory\n  searches with other months or boxes).\n- **0.0**: never uses the embeddings tool.\n\n## tool_choice\n\nWere the arguments the ones the prompt gave?\n\n- **1.0**: lat/lon, year, month, k and search_bbox exactly as given.\n- **0.5**: one argument changed or missing (no search_bbox, a different k) without a reason.\n- **0.0**: arguments unrelated to the prompt (another place or month).\n\n## error_recovery\n\nWhen a call failed, did it react sensibly?\n\n- **1.0**: reads the error (e.g. \"month not staged\", \"no chip at this point\") and corrects the\n  call. Also 1.0 if no call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: loops on the failing call, or abandons the task.\n\n## honesty\n\nIs the answer faithful to the tool result?\n\n- **1.0**: returns exactly the chip IDs the tool returned, in its order, without the query chip.\n- **0.5**: real chip IDs, but reordered, truncated or mixed with results from another call\n  without saying so.\n- **0.0**: invents chip IDs, or returns coordinates or names instead of chip IDs.\n",
-  "aoi_snapshot": {
-    "id": "us-nc-robeson",
-    "name": "Robeson County",
-    "state": "North Carolina",
-    "state_code": "NC",
-    "fips": "37155",
-    "bbox": [
-      -79.46151,
-      34.29934,
-      -78.80543,
-      34.95271
-    ],
-    "geometry": {
-      "type": "Polygon",
-      "coordinates": [
-        [
-          [
-            -79.12835,
-            34.88294
-          ],
-          [
-            -79.19139,
-            34.83372
-          ],
-          [
-            -79.34883,
-            34.83885
-          ],
-          [
-            -79.35742,
-            34.81896
-          ],
-          [
-            -79.33086,
-            34.77397
-          ],
-          [
-            -79.46151,
-            34.63038
-          ],
-          [
-            -79.07121,
-            34.29934
-          ],
-          [
-            -79.03847,
-            34.31314
-          ],
-          [
-            -79.02711,
-            34.35307
-          ],
-          [
-            -79.00908,
-            34.35283
-          ],
-          [
-            -79.01161,
-            34.38089
-          ],
-          [
-            -78.96974,
-            34.39521
-          ],
-          [
-            -78.95978,
-            34.44298
-          ],
-          [
-            -78.90685,
-            34.45584
-          ],
-          [
-            -78.84634,
-            34.49981
-          ],
-          [
-            -78.86266,
-            34.56223
-          ],
-          [
-            -78.83605,
-            34.59342
-          ],
-          [
-            -78.80543,
-            34.6866
-          ],
-          [
-            -78.85425,
-            34.73549
-          ],
-          [
-            -78.88334,
-            34.81212
-          ],
-          [
-            -78.95486,
-            34.91327
-          ],
-          [
-            -79.03875,
-            34.95271
-          ],
-          [
-            -79.12835,
-            34.88294
-          ]
-        ]
-      ]
-    },
-    "tags": [
-      "has_solar"
-    ],
-    "template_params": {
-      "T1": {
-        "area_name": "Lumberton",
-        "area_bbox": [
-          -79.059,
-          34.568,
-          -78.959,
-          34.668
-        ]
-      },
-      "T4": {
-        "query_name": "solar PV installation (Global Renewables Watch feature 43557)",
-        "query_lat": 34.80187,
-        "query_lon": -79.32932
-      }
-    },
-    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
-  }
+  "process_rubric": "# Process rubric: T4 (places similar to a given place)\n\nThe agent was given a query point, a month, k and a search box, and asked for the k most similar\nplaces by Clay embeddings, as `{\"chips\": [chips_id, ...]}` with the most similar first. The\nanswer can be found with one correct call of the `similar_places` tool. Judge **how faithfully**\nthe agent used the tool; the output metric scores the chip list. Score each item from 0 to 1 and\ncite the trace event IDs your score is based on.\n\n## planning\n\nDid the agent recognise that one embedding-similarity search with the given inputs answers the\ntask?\n\n- **1.0**: calls `similar_places` with the given point, year, month, k and search box (optionally\n  `embedding_at` first to look at the query chip), then answers.\n- **0.5**: gets there after unneeded detours (geocoding the given point, several exploratory\n  searches with other months or boxes).\n- **0.0**: never uses the embeddings tool.\n\n## tool_choice\n\nWere the arguments the ones the prompt gave?\n\n- **1.0**: lat/lon, year, month, k and search_bbox exactly as given.\n- **0.5**: one argument changed or missing (no search_bbox, a different k) without a reason.\n- **0.0**: arguments unrelated to the prompt (another place or month).\n\n## error_recovery\n\nWhen a call failed, did it react sensibly?\n\n- **1.0**: reads the error (e.g. \"month not staged\", \"no chip at this point\") and corrects the\n  call. Also 1.0 if no call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: loops on the failing call, or abandons the task.\n\n## honesty\n\nIs the answer faithful to the tool result?\n\n- **1.0**: returns exactly the chip IDs the tool returned, in its order, without the query chip.\n- **0.5**: real chip IDs, but reordered, truncated or mixed with results from another call\n  without saying so.\n- **0.0**: invents chip IDs, or returns coordinates or names instead of chip IDs.\n"
 }

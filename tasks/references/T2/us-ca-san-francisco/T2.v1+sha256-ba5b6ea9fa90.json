@@ -1,7 +1,127 @@
 {
   "schema_version": "1.0",
   "template": "T2",
-  "aoi": "us-ca-san-francisco",
+  "aoi": {
+    "id": "us-ca-san-francisco",
+    "name": "San Francisco County",
+    "state": "California",
+    "state_code": "CA",
+    "fips": "06075",
+    "bbox": [
+      -123.17383,
+      37.64178,
+      -122.28178,
+      37.92982
+    ],
+    "geometry": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -122.40537,
+              37.70829
+            ],
+            [
+              -122.28178,
+              37.70823
+            ],
+            [
+              -122.37378,
+              37.88373
+            ],
+            [
+              -122.43228,
+              37.92982
+            ],
+            [
+              -122.41867,
+              37.8525
+            ],
+            [
+              -122.4991,
+              37.81988
+            ],
+            [
+              -122.61229,
+              37.81522
+            ],
+            [
+              -122.58817,
+              37.78936
+            ],
+            [
+              -122.57519,
+              37.70672
+            ],
+            [
+              -122.40537,
+              37.70829
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              -123.17383,
+              37.77573
+            ],
+            [
+              -123.15676,
+              37.73784
+            ],
+            [
+              -123.09285,
+              37.71369
+            ],
+            [
+              -123.0407,
+              37.65033
+            ],
+            [
+              -122.98675,
+              37.64178
+            ],
+            [
+              -122.94136,
+              37.67658
+            ],
+            [
+              -122.94998,
+              37.73219
+            ],
+            [
+              -123.07049,
+              37.81383
+            ],
+            [
+              -123.13227,
+              37.81968
+            ],
+            [
+              -123.17383,
+              37.77573
+            ]
+          ]
+        ]
+      ]
+    },
+    "tags": [
+      "no_solar"
+    ],
+    "template_params": {
+      "T1": {
+        "area_name": "central San Francisco",
+        "area_bbox": [
+          -122.49,
+          37.71,
+          -122.39,
+          37.81
+        ]
+      }
+    },
+    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
+  },
   "instance_id": "T2@us-ca-san-francisco",
   "version": "T2.v1+sha256:ba5b6ea9fa90",
   "method": "script",
@@ -204,126 +324,5 @@
       }
     }
   },
-  "process_rubric": "# Process rubric: T2 (open datasets covering a county)\n\nThe agent was asked for up to 10 datasets in the Registry of Open Data on AWS that cover a US\ncounty and hold imagery, elevation/lidar or land-cover data, returned as `{\"datasets\": [slugs]}`.\nJudge **how** it worked; the output metric scores the list itself. Score each item from 0 to 1 and\ncite the trace event IDs your score is based on.\n\n## planning\n\nDid the agent plan searches that fit the request (themes × coverage)?\n\n- **1.0**: searches by theme (imagery, elevation, lidar, land cover) and checks coverage, for\n  example by reading dataset details or preferring datasets that say they are global or US-wide.\n- **0.5**: one broad search, then picks from its first page without checking coverage.\n- **0.0**: no dataset search, or searches unrelated to the themes.\n\n## tool_choice\n\nDid it use the dataset-discovery tools well?\n\n- **1.0**: `search_datasets` / `list_datasets` with theme keywords or tags, plus\n  `get_dataset_details` to confirm coverage where the description is unclear.\n- **0.5**: correct tools but poor arguments (one generic query such as \"data\").\n- **0.0**: uses tools that can't list registry datasets, or none.\n\n## error_recovery\n\nWhen a call failed, did it react sensibly?\n\n- **1.0**: reads the error, fixes the arguments or uses another discovery tool. Also 1.0 if no\n  call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: loops on the failing call, or gives up while other tools were available.\n\n## honesty\n\nIs the answer honest?\n\n- **1.0**: every slug came from a tool result; datasets whose coverage it couldn't confirm are left\n  out or flagged; returns fewer than 10 rather than padding.\n- **0.5**: real slugs, but includes datasets that the tool results show are limited to another\n  region.\n- **0.0**: invents slugs, or returns dataset names instead of slugs while claiming they are slugs.\n",
-  "aoi_snapshot": {
-    "id": "us-ca-san-francisco",
-    "name": "San Francisco County",
-    "state": "California",
-    "state_code": "CA",
-    "fips": "06075",
-    "bbox": [
-      -123.17383,
-      37.64178,
-      -122.28178,
-      37.92982
-    ],
-    "geometry": {
-      "type": "MultiPolygon",
-      "coordinates": [
-        [
-          [
-            [
-              -122.40537,
-              37.70829
-            ],
-            [
-              -122.28178,
-              37.70823
-            ],
-            [
-              -122.37378,
-              37.88373
-            ],
-            [
-              -122.43228,
-              37.92982
-            ],
-            [
-              -122.41867,
-              37.8525
-            ],
-            [
-              -122.4991,
-              37.81988
-            ],
-            [
-              -122.61229,
-              37.81522
-            ],
-            [
-              -122.58817,
-              37.78936
-            ],
-            [
-              -122.57519,
-              37.70672
-            ],
-            [
-              -122.40537,
-              37.70829
-            ]
-          ]
-        ],
-        [
-          [
-            [
-              -123.17383,
-              37.77573
-            ],
-            [
-              -123.15676,
-              37.73784
-            ],
-            [
-              -123.09285,
-              37.71369
-            ],
-            [
-              -123.0407,
-              37.65033
-            ],
-            [
-              -122.98675,
-              37.64178
-            ],
-            [
-              -122.94136,
-              37.67658
-            ],
-            [
-              -122.94998,
-              37.73219
-            ],
-            [
-              -123.07049,
-              37.81383
-            ],
-            [
-              -123.13227,
-              37.81968
-            ],
-            [
-              -123.17383,
-              37.77573
-            ]
-          ]
-        ]
-      ]
-    },
-    "tags": [
-      "no_solar"
-    ],
-    "template_params": {
-      "T1": {
-        "area_name": "central San Francisco",
-        "area_bbox": [
-          -122.49,
-          37.71,
-          -122.39,
-          37.81
-        ]
-      }
-    },
-    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
-  }
+  "process_rubric": "# Process rubric: T2 (open datasets covering a county)\n\nThe agent was asked for up to 10 datasets in the Registry of Open Data on AWS that cover a US\ncounty and hold imagery, elevation/lidar or land-cover data, returned as `{\"datasets\": [slugs]}`.\nJudge **how** it worked; the output metric scores the list itself. Score each item from 0 to 1 and\ncite the trace event IDs your score is based on.\n\n## planning\n\nDid the agent plan searches that fit the request (themes × coverage)?\n\n- **1.0**: searches by theme (imagery, elevation, lidar, land cover) and checks coverage, for\n  example by reading dataset details or preferring datasets that say they are global or US-wide.\n- **0.5**: one broad search, then picks from its first page without checking coverage.\n- **0.0**: no dataset search, or searches unrelated to the themes.\n\n## tool_choice\n\nDid it use the dataset-discovery tools well?\n\n- **1.0**: `search_datasets` / `list_datasets` with theme keywords or tags, plus\n  `get_dataset_details` to confirm coverage where the description is unclear.\n- **0.5**: correct tools but poor arguments (one generic query such as \"data\").\n- **0.0**: uses tools that can't list registry datasets, or none.\n\n## error_recovery\n\nWhen a call failed, did it react sensibly?\n\n- **1.0**: reads the error, fixes the arguments or uses another discovery tool. Also 1.0 if no\n  call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: loops on the failing call, or gives up while other tools were available.\n\n## honesty\n\nIs the answer honest?\n\n- **1.0**: every slug came from a tool result; datasets whose coverage it couldn't confirm are left\n  out or flagged; returns fewer than 10 rather than padding.\n- **0.5**: real slugs, but includes datasets that the tool results show are limited to another\n  region.\n- **0.0**: invents slugs, or returns dataset names instead of slugs while claiming they are slugs.\n"
 }

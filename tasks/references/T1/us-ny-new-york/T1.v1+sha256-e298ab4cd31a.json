@@ -1,7 +1,132 @@
 {
   "schema_version": "1.0",
   "template": "T1",
-  "aoi": "us-ny-new-york",
+  "aoi": {
+    "id": "us-ny-new-york",
+    "name": "New York County",
+    "state": "New York",
+    "state_code": "NY",
+    "fips": "36061",
+    "bbox": [
+      -74.04721,
+      40.67955,
+      -73.90951,
+      40.88221
+    ],
+    "geometry": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -74.03544,
+              40.68512
+            ],
+            [
+              -74.01935,
+              40.67955
+            ],
+            [
+              -73.96961,
+              40.70763
+            ],
+            [
+              -73.95919,
+              40.74603
+            ],
+            [
+              -73.9103,
+              40.79066
+            ],
+            [
+              -73.93235,
+              40.80859
+            ],
+            [
+              -73.93346,
+              40.83318
+            ],
+            [
+              -73.90951,
+              40.87888
+            ],
+            [
+              -73.93379,
+              40.88221
+            ],
+            [
+              -74.01403,
+              40.75755
+            ],
+            [
+              -74.03544,
+              40.68512
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              -74.04075,
+              40.70017
+            ],
+            [
+              -74.03993,
+              40.69859
+            ],
+            [
+              -74.03837,
+              40.69867
+            ],
+            [
+              -74.04075,
+              40.70017
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              -74.04721,
+              40.69089
+            ],
+            [
+              -74.04362,
+              40.68876
+            ],
+            [
+              -74.04389,
+              40.69019
+            ],
+            [
+              -74.04721,
+              40.69089
+            ]
+          ]
+        ]
+      ]
+    },
+    "tags": [
+      "no_solar"
+    ],
+    "template_params": {
+      "T1": {
+        "area_name": "Central Park",
+        "area_bbox": [
+          -73.986,
+          40.762,
+          -73.946,
+          40.802
+        ]
+      },
+      "T4": {
+        "query_name": "Central Park",
+        "query_lat": 40.7829,
+        "query_lon": -73.9654
+      }
+    },
+    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
+  },
   "instance_id": "T1@us-ny-new-york",
   "version": "T1.v1+sha256:e298ab4cd31a",
   "method": "script",
@@ -188,131 +313,5 @@
       }
     }
   },
-  "process_rubric": "# Process rubric: T1 (NAIP imagery for a search box and year)\n\nThe agent was asked for every NAIP item of one year that intersects a given 0.1° bounding box in\na US county, returned as `{\"items\": [...]}`. Judge **how** it worked, not whether the final list is\ncomplete (the output metric measures that separately). Score each item from 0 to 1 and cite the\ntrace event IDs your score is based on.\n\n## planning\n\nDid the agent work out what it needed (the NAIP collection, the box, the year) and go straight\nfor it, without wandering?\n\n- **1.0**: one imagery search with `collections: [\"naip\"]`, the given bbox and a datetime\n  range for the given year, then pages through results if `has_more` is true.\n- **0.5**: gets there, but with unneeded steps (geocoding a place whose bbox was already given,\n  listing every collection first, repeated near-identical searches).\n- **0.0**: never searches for imagery, or searches something unrelated (another collection, the\n  whole state, another year).\n\n## tool_choice\n\nDid it use the right tool with sensible arguments?\n\n- **1.0**: uses the imagery search tool (`stac.search_items`) with the given bbox, `naip` and the\n  year; optionally a dataset-discovery call to confirm NAIP exists.\n- **0.5**: uses the right tool but with a wrong or missing argument that it later fixes (no\n  datetime, bbox in the wrong order).\n- **0.0**: answers from memory, or uses tools that can't return NAIP item IDs.\n\n## error_recovery\n\nWhen a call failed (error result, timeout, unavailable server), did it react sensibly?\n\n- **1.0**: reads the error, corrects the call or switches to an equivalent tool, and continues.\n  Also 1.0 if no call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: repeats the same failing call until stopped, or gives up after the first error while\n  other options were available.\n\n## honesty\n\nIs the final answer honest about what was found?\n\n- **1.0**: returns only IDs that appeared in tool results, and says so (or returns an empty list)\n  if the search returned nothing.\n- **0.5**: returns real IDs but claims completeness it didn't check (stopped at the first page\n  while `has_more` was true).\n- **0.0**: invents item IDs, or returns IDs from another year or area as if they matched.\n",
-  "aoi_snapshot": {
-    "id": "us-ny-new-york",
-    "name": "New York County",
-    "state": "New York",
-    "state_code": "NY",
-    "fips": "36061",
-    "bbox": [
-      -74.04721,
-      40.67955,
-      -73.90951,
-      40.88221
-    ],
-    "geometry": {
-      "type": "MultiPolygon",
-      "coordinates": [
-        [
-          [
-            [
-              -74.03544,
-              40.68512
-            ],
-            [
-              -74.01935,
-              40.67955
-            ],
-            [
-              -73.96961,
-              40.70763
-            ],
-            [
-              -73.95919,
-              40.74603
-            ],
-            [
-              -73.9103,
-              40.79066
-            ],
-            [
-              -73.93235,
-              40.80859
-            ],
-            [
-              -73.93346,
-              40.83318
-            ],
-            [
-              -73.90951,
-              40.87888
-            ],
-            [
-              -73.93379,
-              40.88221
-            ],
-            [
-              -74.01403,
-              40.75755
-            ],
-            [
-              -74.03544,
-              40.68512
-            ]
-          ]
-        ],
-        [
-          [
-            [
-              -74.04075,
-              40.70017
-            ],
-            [
-              -74.03993,
-              40.69859
-            ],
-            [
-              -74.03837,
-              40.69867
-            ],
-            [
-              -74.04075,
-              40.70017
-            ]
-          ]
-        ],
-        [
-          [
-            [
-              -74.04721,
-              40.69089
-            ],
-            [
-              -74.04362,
-              40.68876
-            ],
-            [
-              -74.04389,
-              40.69019
-            ],
-            [
-              -74.04721,
-              40.69089
-            ]
-          ]
-        ]
-      ]
-    },
-    "tags": [
-      "no_solar"
-    ],
-    "template_params": {
-      "T1": {
-        "area_name": "Central Park",
-        "area_bbox": [
-          -73.986,
-          40.762,
-          -73.946,
-          40.802
-        ]
-      },
-      "T4": {
-        "query_name": "Central Park",
-        "query_lat": 40.7829,
-        "query_lon": -73.9654
-      }
-    },
-    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
-  }
+  "process_rubric": "# Process rubric: T1 (NAIP imagery for a search box and year)\n\nThe agent was asked for every NAIP item of one year that intersects a given 0.1° bounding box in\na US county, returned as `{\"items\": [...]}`. Judge **how** it worked, not whether the final list is\ncomplete (the output metric measures that separately). Score each item from 0 to 1 and cite the\ntrace event IDs your score is based on.\n\n## planning\n\nDid the agent work out what it needed (the NAIP collection, the box, the year) and go straight\nfor it, without wandering?\n\n- **1.0**: one imagery search with `collections: [\"naip\"]`, the given bbox and a datetime\n  range for the given year, then pages through results if `has_more` is true.\n- **0.5**: gets there, but with unneeded steps (geocoding a place whose bbox was already given,\n  listing every collection first, repeated near-identical searches).\n- **0.0**: never searches for imagery, or searches something unrelated (another collection, the\n  whole state, another year).\n\n## tool_choice\n\nDid it use the right tool with sensible arguments?\n\n- **1.0**: uses the imagery search tool (`stac.search_items`) with the given bbox, `naip` and the\n  year; optionally a dataset-discovery call to confirm NAIP exists.\n- **0.5**: uses the right tool but with a wrong or missing argument that it later fixes (no\n  datetime, bbox in the wrong order).\n- **0.0**: answers from memory, or uses tools that can't return NAIP item IDs.\n\n## error_recovery\n\nWhen a call failed (error result, timeout, unavailable server), did it react sensibly?\n\n- **1.0**: reads the error, corrects the call or switches to an equivalent tool, and continues.\n  Also 1.0 if no call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: repeats the same failing call until stopped, or gives up after the first error while\n  other options were available.\n\n## honesty\n\nIs the final answer honest about what was found?\n\n- **1.0**: returns only IDs that appeared in tool results, and says so (or returns an empty list)\n  if the search returned nothing.\n- **0.5**: returns real IDs but claims completeness it didn't check (stopped at the first page\n  while `has_more` was true).\n- **0.0**: invents item IDs, or returns IDs from another year or area as if they matched.\n"
 }
