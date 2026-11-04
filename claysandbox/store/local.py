@@ -37,6 +37,7 @@ from claysandbox.contracts.store import (
 )
 from claysandbox.contracts.trace import Trace
 
+from .query import run_query
 from .reader import read_trace
 
 MANIFEST = "manifest.json"
@@ -236,7 +237,12 @@ class LocalRunStore:
             _atomic_write(d / _safe_name(name), text)
 
     def query(self, sql: str, params: dict | None = None) -> list[dict]:
-        raise NotImplementedError("DuckDB queries arrive in SHI-R2-03")
+        """Run SQL over the ``manifests``, ``status``, ``assessments`` and ``run_ends`` tables.
+
+        Values go in ``params`` as ``$name`` placeholders, never into the SQL string. File access
+        is switched off once the tables are loaded (see ``store/query.py``).
+        """
+        return run_query(self, sql, params)
 
     # ------------------------------------------------------- eval artefacts (open point 10)
     def create_eval(self, eval_id: str, spec: Any) -> Path:
