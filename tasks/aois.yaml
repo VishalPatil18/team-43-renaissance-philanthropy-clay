@@ -1,11 +1,18 @@
 # Areas of interest (FR-13.3, DD-031): six US counties, four with known solar sites and two
 # negative controls without (approved 2026-11-04). Solar presence was checked against OpenStreetMap
-# power=plant + plant:source=solar (Kern 233, Clark 62, Robeson 42, Pecos 12, San Francisco 0,
-# Hamilton 0); T3 references in R2 check it against Global Renewables Watch.
+# power=plant + plant:source=solar (Kern 233, Clark 62, Robeson 42, Pecos 12, New York 0,
+# Hamilton 0) and Global Renewables Watch v1.0 (Kern 241, Clark 57, Robeson 51, Pecos 39,
+# New York 0, Hamilton 0). San Francisco was a control until 2026-11-04 but has 2 GRW sites;
+# its old references stay readable under tasks/references/*/us-ca-san-francisco/.
 # Every county has NAIP coverage for 2022 (the T1 year).
 #
-# template_params.T1: a 0.1 deg x 0.1 deg box around a named place, inside the county. T1 asks for
+# template_params.T1: a 0.1 deg x 0.1 deg box around a named place, inside the county (New York:
+# 0.04 deg around Central Park, because Manhattan is narrower than 0.1 deg). T1 asks for
 # the NAIP items of that box, because a whole county has hundreds of items (Kern: 721 in 2022).
+#
+# template_params.T4: the query point for "places similar to this one" (scripts/pick_t4_points.py):
+# the centroid of the county's largest GRW solar polygon built by 2023, or a landmark for the
+# negative controls.
 #
 # Generate a new entry with: uv run python scripts/fetch_aoi.py <5-digit FIPS> --tag has_solar|no_solar
 aois:
@@ -66,6 +73,8 @@ aois:
     T1:
       area_name: Bakersfield
       area_bbox: [-119.069, 35.323, -118.969, 35.423]
+    T4: {query_name: solar PV installation (Global Renewables Watch feature 79552), query_lat: 34.84748,
+      query_lon: -118.33869}
   source: Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04
 - id: us-nv-clark
   name: Clark County
@@ -133,6 +142,8 @@ aois:
     T1:
       area_name: Boulder City
       area_bbox: [-114.882, 35.929, -114.782, 36.029]
+    T4: {query_name: solar PV installation (Global Renewables Watch feature 43953), query_lat: 35.78605,
+      query_lon: -114.97901}
   source: Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04
 - id: us-tx-pecos
   name: Pecos County
@@ -189,6 +200,8 @@ aois:
     T1:
       area_name: Fort Stockton
       area_bbox: [-102.929, 30.844, -102.829, 30.944]
+    T4: {query_name: solar PV installation (Global Renewables Watch feature 78324), query_lat: 30.99704,
+      query_lon: -102.27605}
   source: Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04
 - id: us-nc-robeson
   name: Robeson County
@@ -227,41 +240,43 @@ aois:
     T1:
       area_name: Lumberton
       area_bbox: [-79.059, 34.568, -78.959, 34.668]
+    T4: {query_name: solar PV installation (Global Renewables Watch feature 43557), query_lat: 34.80187,
+      query_lon: -79.32932}
   source: Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04
-- id: us-ca-san-francisco
-  name: San Francisco County
-  state: California
-  state_code: CA
-  fips: '06075'
-  bbox: [-123.17383, 37.64178, -122.28178, 37.92982]
+- id: us-ny-new-york
+  name: New York County
+  state: New York
+  state_code: NY
+  fips: '36061'
+  bbox: [-74.04721, 40.67955, -73.90951, 40.88221]
   geometry:
     type: MultiPolygon
     coordinates:
-    - - - [-122.40537, 37.70829]
-        - [-122.28178, 37.70823]
-        - [-122.37378, 37.88373]
-        - [-122.43228, 37.92982]
-        - [-122.41867, 37.8525]
-        - [-122.4991, 37.81988]
-        - [-122.61229, 37.81522]
-        - [-122.58817, 37.78936]
-        - [-122.57519, 37.70672]
-        - [-122.40537, 37.70829]
-    - - - [-123.17383, 37.77573]
-        - [-123.15676, 37.73784]
-        - [-123.09285, 37.71369]
-        - [-123.0407, 37.65033]
-        - [-122.98675, 37.64178]
-        - [-122.94136, 37.67658]
-        - [-122.94998, 37.73219]
-        - [-123.07049, 37.81383]
-        - [-123.13227, 37.81968]
-        - [-123.17383, 37.77573]
+    - - - [-74.03544, 40.68512]
+        - [-74.01935, 40.67955]
+        - [-73.96961, 40.70763]
+        - [-73.95919, 40.74603]
+        - [-73.9103, 40.79066]
+        - [-73.93235, 40.80859]
+        - [-73.93346, 40.83318]
+        - [-73.90951, 40.87888]
+        - [-73.93379, 40.88221]
+        - [-74.01403, 40.75755]
+        - [-74.03544, 40.68512]
+    - - - [-74.04075, 40.70017]
+        - [-74.03993, 40.69859]
+        - [-74.03837, 40.69867]
+        - [-74.04075, 40.70017]
+    - - - [-74.04721, 40.69089]
+        - [-74.04362, 40.68876]
+        - [-74.04389, 40.69019]
+        - [-74.04721, 40.69089]
   tags: [no_solar]
   template_params:
     T1:
-      area_name: central San Francisco
-      area_bbox: [-122.49, 37.71, -122.39, 37.81]
+      area_name: Central Park
+      area_bbox: [-73.986, 40.762, -73.946, 40.802]
+    T4: {query_name: Central Park, query_lat: 40.7829, query_lon: -73.9654}
   source: Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04
 - id: us-ny-hamilton
   name: Hamilton County
@@ -297,4 +312,5 @@ aois:
     T1:
       area_name: Indian Lake
       area_bbox: [-74.35, 43.72, -74.25, 43.82]
+    T4: {query_name: Indian Lake (hamlet), query_lat: 43.7826, query_lon: -74.2721}
   source: Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04

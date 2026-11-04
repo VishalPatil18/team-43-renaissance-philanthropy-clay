@@ -9,8 +9,9 @@ file's sha256 as its version.
 | Tool set | Servers | Status |
 |---|---|---|
 | `T0` | `roda` | R0, live |
-| `T1` | `roda`, `stac`, `osm` (+ `clay-embeddings` in R2) | R1, live |
-| `T1-faulty` | T1 with injected failures plus a dead `broken` server, `test_only: true` | R1, for J4 |
+| `T1` | `roda`, `stac`, `osm`, `clay-embeddings` | R1, live; `clay-embeddings` added in R2 |
+| `T1-faulty` | R1's T1 (no `clay-embeddings`) with injected failures plus a dead `broken` server, `test_only: true` | R1, for J4 |
+| `lgnd` (LGND Geo MCP) | — | not built: whitelist access unconfirmed, see `docs/FUTURE-WORK.md` |
 
 ## Capabilities
 
@@ -19,7 +20,9 @@ file's sha256 as its version.
 | `dataset_discovery` | `roda.search_datasets`, `list_datasets`, `get_dataset_details`, `discover_by_organization`, `discover_by_license`, `find_related_datasets`, `search_stac_endpoints` | same |
 | `imagery_search` | — | `stac.search_items` |
 | `geocode` | — | `osm.openstreetmap_search_places` |
-| `embedding_similarity` | — | `clay-embeddings.similar_places` (R2) |
+| `embedding_similarity` | — | `clay-embeddings.similar_places` |
+
+Not mapped: `clay-embeddings.embedding_at` (a lookup helper; no workflow rule needs it).
 
 No server in T0 or T1 gets AWS credentials.
 
@@ -163,6 +166,49 @@ radius_meters, ...)`, `openstreetmap_query_bbox(within | south/west/north/east, 
 - Fallback if this server becomes unusable:
   [jagan-shanmugam/open-streetmap-mcp](https://github.com/jagan-shanmugam/open-streetmap-mcp)
   (MIT, Python ≥ 3.13, `osm-mcp-server` on PyPI, last updated 2025-07).
+
+### clay-embeddings (ours, 2 tools)
+
+`mcp_servers/clay_embeddings/`, run as `python -m clay_embeddings [--data DIR]` (stdio, MCP Python
+SDK `MCPServer`). It imports nothing from `claysandbox`. Data: `data/embeddings/staged.parquet`
+(default; or `$CLAY_EMBEDDINGS_DATA`), written by `scripts/stage_embeddings.py`.
+
+- `embedding_at(lat, lon, year, month)`: the chip containing the point: `chips_id`, `cell_id`,
+  acquisition `datetime`, `bbox`, `geometry`.
+- `similar_places(lat?, lon?, year?, month?, k=10, search_bbox?, chip_id?)`: the `k` most similar
+  chips of the same month by cosine similarity (rounded to 6 decimals, ties by `chips_id`, never
+  the query chip), optionally only chips whose bbox intersects `search_bbox`; returns the query
+  chip, the candidate count, the results with `similarity`, and the attribution.
+- Errors (no chip at the point, month not staged, staged file missing) are MCP tool errors with
+  the reason in the text.
+- Both tool descriptions state the dataset, the 1280 m resolution, the staged coverage and the
+  CC BY 4.0 attribution (FR-14.6).
+- The index loads at server start (about 1 s for the 152,516 staged chips); a call takes ~20 ms.
+
+Staged data (2026-11-04, `data/embeddings/staging_manifest.json`): Clay v1.5, Sentinel-2 L2A,
+1280 m chips, 256 dims, months **2024-01 and 2024-07** (June 2024 is missing from every partition
+we need), each AOI's bbox plus 10 km, from geohash partitions `9q`, `9t`, `dn`, `dq`, `dr`.
+152,516 rows, 158 MB, sha256 `265c44c47ff5…`. `data/` is gitignored; rebuild with
+`uv run python scripts/stage_embeddings.py` (anonymous S3, about 2 minutes). The sandbox bucket
+doesn't exist yet; once the CDK stack is deployed, share the files with
+`aws s3 cp data/embeddings/ s3://<sandbox-bucket>/data/embeddings/ --recursive`.
+
+## Attribution text (for the README and reports, C-14, FR-5.6)
+
+Reports that used results of these tools or data should include the matching lines:
+
+- **Clay embeddings:** "Contains Clay v1.5 embeddings by LGND (Sentinel-2 L2A, monthly
+  aggregated), licensed CC BY 4.0, https://source.coop/clay/lgnd-embeddings. Sentinel-2 data:
+  Copernicus Sentinel data, processed by ESA."
+- **OpenStreetMap:** "Contains data © OpenStreetMap contributors, available under the Open
+  Database License (ODbL) 1.0, https://www.openstreetmap.org/copyright."
+- **Global Renewables Watch:** "Solar PV reference sites from Global Renewables Watch v1.0
+  (Microsoft, The Nature Conservancy and Planet), MIT License,
+  https://github.com/microsoft/global-renewables-watch."
+- **NAIP:** "NAIP imagery courtesy of the USDA Farm Service Agency (public domain)."
+
+A report used a source if its trace has a tool call to that server (`clay-embeddings`, `osm`), or
+its task is T3 (Global Renewables Watch) or T1/T5 (NAIP).
 
 ## Data licenses
 

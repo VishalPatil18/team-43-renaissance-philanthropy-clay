@@ -1,9 +1,10 @@
-# Tool set T1: RODA + STAC + OpenStreetMap (DD-033). clay-embeddings is added in R2.
+# Tool set T1: RODA + STAC + OpenStreetMap + clay-embeddings (DD-033).
 # Versions are pinned (FR-1.10). Smoke-test results and quirks: toolsets/README.md.
 name: T1
 description: >-
   Registry of Open Data on AWS (dataset discovery), stac-mcp (imagery search, default catalog
-  Microsoft Planetary Computer) and OpenStreetMap (geocoding, Nominatim and Overpass).
+  Microsoft Planetary Computer), OpenStreetMap (geocoding, Nominatim and Overpass) and
+  clay-embeddings (similar places from staged Clay v1.5 embeddings by LGND).
 servers:
   - name: roda
     command: ["uvx", "awslabs.roda-mcp-server@0.1.7"]
@@ -23,6 +24,12 @@ servers:
       OSM_USER_AGENT: clay-agent-eval-sandbox/0.1 (+https://github.com/VishalPatil18/team-43-renaissance-philanthropy-clay)
     needs_aws: false
     timeout_s: 60
+  - name: clay-embeddings
+    # Our own server (mcp_servers/clay_embeddings). It reads data/embeddings/staged.parquet,
+    # written by scripts/stage_embeddings.py; without it every call returns a tool error.
+    command: ["python", "-m", "clay_embeddings"]
+    needs_aws: false
+    timeout_s: 60
 capabilities:
   dataset_discovery:
     - roda.search_datasets
@@ -36,4 +43,6 @@ capabilities:
     - stac.search_items
   geocode:
     - osm.openstreetmap_search_places
+  embedding_similarity:
+    - clay-embeddings.similar_places
 # Not mapped to a capability (no workflow rule refers to them): the other RODA, STAC and OSM tools.

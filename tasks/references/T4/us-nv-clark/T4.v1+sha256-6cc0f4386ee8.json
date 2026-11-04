@@ -1,0 +1,579 @@
+{
+  "schema_version": "1.0",
+  "template": "T4",
+  "aoi": "us-nv-clark",
+  "instance_id": "T4@us-nv-clark",
+  "version": "T4.v1+sha256:6cc0f4386ee8",
+  "method": "script",
+  "builder": "builders/t4_similar_places.py",
+  "builder_sha256": "83b031cad2b82db447cecd13535806c3f6dd5dd56bb6ffb3dcf06366a9fe4b4d",
+  "inputs": {
+    "function": "clay_embeddings.core.similar_places",
+    "query": {
+      "lat": 35.78605,
+      "lon": -114.97901,
+      "name": "solar PV installation (Global Renewables Watch feature 43953)"
+    },
+    "year": 2024,
+    "month": 7,
+    "k": 10,
+    "search_bbox": [
+      -115.89692,
+      35.00186,
+      -114.04394,
+      36.85366
+    ],
+    "staged_sha256": "265c44c47ff5d38d0d982e7dd95859c7ece7a52a2938dea05ee7db564541f541",
+    "staged_months": [
+      "2024-01",
+      "2024-07"
+    ],
+    "attribution": "Clay v1.5 embeddings by LGND (Sentinel-2 L2A, monthly aggregated, 1280 m chips, 256 dimensions), CC BY 4.0, https://source.coop/clay/lgnd-embeddings"
+  },
+  "built_at": "2026-11-04T17:07:08.252059Z",
+  "checked_by": null,
+  "checked_at": null,
+  "notes": [],
+  "workflow": {
+    "required": [
+      "embedding_similarity"
+    ],
+    "forbidden": [],
+    "ordering": [],
+    "argument_constraints": [
+      {
+        "capability": "embedding_similarity",
+        "check": "point_within_aoi",
+        "arg_names": [
+          "lat",
+          "lon"
+        ],
+        "values": null,
+        "value": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -115.89692,
+                36.84209
+              ],
+              [
+                -115.89575,
+                36.17223
+              ],
+              [
+                -115.84576,
+                36.17076
+              ],
+              [
+                -115.84599,
+                35.96371
+              ],
+              [
+                -114.63349,
+                35.00186
+              ],
+              [
+                -114.63473,
+                35.03373
+              ],
+              [
+                -114.60291,
+                35.06859
+              ],
+              [
+                -114.64676,
+                35.10187
+              ],
+              [
+                -114.57826,
+                35.12881
+              ],
+              [
+                -114.56926,
+                35.18342
+              ],
+              [
+                -114.60461,
+                35.35524
+              ],
+              [
+                -114.67864,
+                35.49763
+              ],
+              [
+                -114.65677,
+                35.53496
+              ],
+              [
+                -114.67567,
+                35.58003
+              ],
+              [
+                -114.65353,
+                35.60967
+              ],
+              [
+                -114.68951,
+                35.65143
+              ],
+              [
+                -114.68063,
+                35.68405
+              ],
+              [
+                -114.7056,
+                35.70827
+              ],
+              [
+                -114.69427,
+                35.75663
+              ],
+              [
+                -114.71203,
+                35.80553
+              ],
+              [
+                -114.69528,
+                35.83109
+              ],
+              [
+                -114.70586,
+                35.85051
+              ],
+              [
+                -114.66164,
+                35.87123
+              ],
+              [
+                -114.70811,
+                35.90993
+              ],
+              [
+                -114.74054,
+                35.97555
+              ],
+              [
+                -114.74301,
+                36.00845
+              ],
+              [
+                -114.7221,
+                36.02895
+              ],
+              [
+                -114.74126,
+                36.03804
+              ],
+              [
+                -114.73528,
+                36.05665
+              ],
+              [
+                -114.75451,
+                36.08617
+              ],
+              [
+                -114.63047,
+                36.14222
+              ],
+              [
+                -114.61545,
+                36.12965
+              ],
+              [
+                -114.57109,
+                36.1511
+              ],
+              [
+                -114.51122,
+                36.15058
+              ],
+              [
+                -114.50471,
+                36.12719
+              ],
+              [
+                -114.4626,
+                36.13964
+              ],
+              [
+                -114.44504,
+                36.12535
+              ],
+              [
+                -114.40562,
+                36.14698
+              ],
+              [
+                -114.37018,
+                36.14262
+              ],
+              [
+                -114.30694,
+                36.08249
+              ],
+              [
+                -114.31359,
+                36.05905
+              ],
+              [
+                -114.27086,
+                36.04552
+              ],
+              [
+                -114.24387,
+                36.01527
+              ],
+              [
+                -114.14699,
+                36.02606
+              ],
+              [
+                -114.112,
+                36.09491
+              ],
+              [
+                -114.12087,
+                36.11085
+              ],
+              [
+                -114.09699,
+                36.12082
+              ],
+              [
+                -114.0668,
+                36.17909
+              ],
+              [
+                -114.04394,
+                36.19335
+              ],
+              [
+                -114.05035,
+                36.84314
+              ],
+              [
+                -115.31475,
+                36.85366
+              ],
+              [
+                -115.89692,
+                36.84209
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "capability": "embedding_similarity",
+        "check": "k_at_most",
+        "arg_names": [
+          "k"
+        ],
+        "values": null,
+        "value": 10
+      }
+    ],
+    "expected_steps": 2,
+    "step_limit": 10,
+    "done": "output_matches_schema_nonempty",
+    "recovery": {
+      "recovered_penalty": 0.25
+    }
+  },
+  "output_reference": {
+    "chips": [
+      "3689a465542b90d43fe298d18c98b703",
+      "320619e156e87039228ed7ae2482102e",
+      "ff87384d436f49d6a0a4e733195b7617",
+      "7d5932269ac45864041dd7b9e82fc75f",
+      "2bceecc5ffd8085d285bccb7da37b4d1",
+      "24938437b1042e914c6531c507d795e7",
+      "6320e25bb510c5bdb39dbc8a919e3015",
+      "eca3aa7d58770754bc786c159f3285ad",
+      "759b9f43885b692c65c70f2cb1b54144",
+      "b05decf7d65bda8d32f0625c1adc43a5"
+    ],
+    "k": 10,
+    "query_chip": "934d8fb1e0c722195b4fd57d40b56f3d",
+    "similarities": [
+      0.9575470089912415,
+      0.9313750267028809,
+      0.9159870147705078,
+      0.9047179818153381,
+      0.8992840051651001,
+      0.8926259875297546,
+      0.8892580270767212,
+      0.8873100280761719,
+      0.8871179819107056,
+      0.8860089778900146
+    ],
+    "candidates": 20370
+  },
+  "weights": {},
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "chips"
+    ],
+    "properties": {
+      "chips": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 10
+      }
+    }
+  },
+  "process_rubric": "# Process rubric: T4 (places similar to a given place)\n\nThe agent was given a query point, a month, k and a search box, and asked for the k most similar\nplaces by Clay embeddings, as `{\"chips\": [chips_id, ...]}` with the most similar first. The\nanswer can be found with one correct call of the `similar_places` tool. Judge **how faithfully**\nthe agent used the tool; the output metric scores the chip list. Score each item from 0 to 1 and\ncite the trace event IDs your score is based on.\n\n## planning\n\nDid the agent recognise that one embedding-similarity search with the given inputs answers the\ntask?\n\n- **1.0**: calls `similar_places` with the given point, year, month, k and search box (optionally\n  `embedding_at` first to look at the query chip), then answers.\n- **0.5**: gets there after unneeded detours (geocoding the given point, several exploratory\n  searches with other months or boxes).\n- **0.0**: never uses the embeddings tool.\n\n## tool_choice\n\nWere the arguments the ones the prompt gave?\n\n- **1.0**: lat/lon, year, month, k and search_bbox exactly as given.\n- **0.5**: one argument changed or missing (no search_bbox, a different k) without a reason.\n- **0.0**: arguments unrelated to the prompt (another place or month).\n\n## error_recovery\n\nWhen a call failed, did it react sensibly?\n\n- **1.0**: reads the error (e.g. \"month not staged\", \"no chip at this point\") and corrects the\n  call. Also 1.0 if no call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: loops on the failing call, or abandons the task.\n\n## honesty\n\nIs the answer faithful to the tool result?\n\n- **1.0**: returns exactly the chip IDs the tool returned, in its order, without the query chip.\n- **0.5**: real chip IDs, but reordered, truncated or mixed with results from another call\n  without saying so.\n- **0.0**: invents chip IDs, or returns coordinates or names instead of chip IDs.\n",
+  "aoi_snapshot": {
+    "id": "us-nv-clark",
+    "name": "Clark County",
+    "state": "Nevada",
+    "state_code": "NV",
+    "fips": "32003",
+    "bbox": [
+      -115.89692,
+      35.00186,
+      -114.04394,
+      36.85366
+    ],
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            -115.89692,
+            36.84209
+          ],
+          [
+            -115.89575,
+            36.17223
+          ],
+          [
+            -115.84576,
+            36.17076
+          ],
+          [
+            -115.84599,
+            35.96371
+          ],
+          [
+            -114.63349,
+            35.00186
+          ],
+          [
+            -114.63473,
+            35.03373
+          ],
+          [
+            -114.60291,
+            35.06859
+          ],
+          [
+            -114.64676,
+            35.10187
+          ],
+          [
+            -114.57826,
+            35.12881
+          ],
+          [
+            -114.56926,
+            35.18342
+          ],
+          [
+            -114.60461,
+            35.35524
+          ],
+          [
+            -114.67864,
+            35.49763
+          ],
+          [
+            -114.65677,
+            35.53496
+          ],
+          [
+            -114.67567,
+            35.58003
+          ],
+          [
+            -114.65353,
+            35.60967
+          ],
+          [
+            -114.68951,
+            35.65143
+          ],
+          [
+            -114.68063,
+            35.68405
+          ],
+          [
+            -114.7056,
+            35.70827
+          ],
+          [
+            -114.69427,
+            35.75663
+          ],
+          [
+            -114.71203,
+            35.80553
+          ],
+          [
+            -114.69528,
+            35.83109
+          ],
+          [
+            -114.70586,
+            35.85051
+          ],
+          [
+            -114.66164,
+            35.87123
+          ],
+          [
+            -114.70811,
+            35.90993
+          ],
+          [
+            -114.74054,
+            35.97555
+          ],
+          [
+            -114.74301,
+            36.00845
+          ],
+          [
+            -114.7221,
+            36.02895
+          ],
+          [
+            -114.74126,
+            36.03804
+          ],
+          [
+            -114.73528,
+            36.05665
+          ],
+          [
+            -114.75451,
+            36.08617
+          ],
+          [
+            -114.63047,
+            36.14222
+          ],
+          [
+            -114.61545,
+            36.12965
+          ],
+          [
+            -114.57109,
+            36.1511
+          ],
+          [
+            -114.51122,
+            36.15058
+          ],
+          [
+            -114.50471,
+            36.12719
+          ],
+          [
+            -114.4626,
+            36.13964
+          ],
+          [
+            -114.44504,
+            36.12535
+          ],
+          [
+            -114.40562,
+            36.14698
+          ],
+          [
+            -114.37018,
+            36.14262
+          ],
+          [
+            -114.30694,
+            36.08249
+          ],
+          [
+            -114.31359,
+            36.05905
+          ],
+          [
+            -114.27086,
+            36.04552
+          ],
+          [
+            -114.24387,
+            36.01527
+          ],
+          [
+            -114.14699,
+            36.02606
+          ],
+          [
+            -114.112,
+            36.09491
+          ],
+          [
+            -114.12087,
+            36.11085
+          ],
+          [
+            -114.09699,
+            36.12082
+          ],
+          [
+            -114.0668,
+            36.17909
+          ],
+          [
+            -114.04394,
+            36.19335
+          ],
+          [
+            -114.05035,
+            36.84314
+          ],
+          [
+            -115.31475,
+            36.85366
+          ],
+          [
+            -115.89692,
+            36.84209
+          ]
+        ]
+      ]
+    },
+    "tags": [
+      "has_solar"
+    ],
+    "template_params": {
+      "T1": {
+        "area_name": "Boulder City",
+        "area_bbox": [
+          -114.882,
+          35.929,
+          -114.782,
+          36.029
+        ]
+      },
+      "T4": {
+        "query_name": "solar PV installation (Global Renewables Watch feature 43953)",
+        "query_lat": 35.78605,
+        "query_lon": -114.97901
+      }
+    },
+    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
+  }
+}

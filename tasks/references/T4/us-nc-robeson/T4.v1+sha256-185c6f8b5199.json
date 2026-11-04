@@ -1,0 +1,349 @@
+{
+  "schema_version": "1.0",
+  "template": "T4",
+  "aoi": "us-nc-robeson",
+  "instance_id": "T4@us-nc-robeson",
+  "version": "T4.v1+sha256:185c6f8b5199",
+  "method": "script",
+  "builder": "builders/t4_similar_places.py",
+  "builder_sha256": "83b031cad2b82db447cecd13535806c3f6dd5dd56bb6ffb3dcf06366a9fe4b4d",
+  "inputs": {
+    "function": "clay_embeddings.core.similar_places",
+    "query": {
+      "lat": 34.80187,
+      "lon": -79.32932,
+      "name": "solar PV installation (Global Renewables Watch feature 43557)"
+    },
+    "year": 2024,
+    "month": 7,
+    "k": 10,
+    "search_bbox": [
+      -79.46151,
+      34.29934,
+      -78.80543,
+      34.95271
+    ],
+    "staged_sha256": "265c44c47ff5d38d0d982e7dd95859c7ece7a52a2938dea05ee7db564541f541",
+    "staged_months": [
+      "2024-01",
+      "2024-07"
+    ],
+    "attribution": "Clay v1.5 embeddings by LGND (Sentinel-2 L2A, monthly aggregated, 1280 m chips, 256 dimensions), CC BY 4.0, https://source.coop/clay/lgnd-embeddings"
+  },
+  "built_at": "2026-11-04T17:07:08.278972Z",
+  "checked_by": "Vishal (agent-assisted)",
+  "checked_at": "2026-11-04T17:12:53.612899Z",
+  "notes": [
+    "spot-check: called clay-embeddings.similar_places over stdio (tool set T1) with the prompt's arguments: identical 10 chip IDs in the same order"
+  ],
+  "workflow": {
+    "required": [
+      "embedding_similarity"
+    ],
+    "forbidden": [],
+    "ordering": [],
+    "argument_constraints": [
+      {
+        "capability": "embedding_similarity",
+        "check": "point_within_aoi",
+        "arg_names": [
+          "lat",
+          "lon"
+        ],
+        "values": null,
+        "value": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -79.12835,
+                34.88294
+              ],
+              [
+                -79.19139,
+                34.83372
+              ],
+              [
+                -79.34883,
+                34.83885
+              ],
+              [
+                -79.35742,
+                34.81896
+              ],
+              [
+                -79.33086,
+                34.77397
+              ],
+              [
+                -79.46151,
+                34.63038
+              ],
+              [
+                -79.07121,
+                34.29934
+              ],
+              [
+                -79.03847,
+                34.31314
+              ],
+              [
+                -79.02711,
+                34.35307
+              ],
+              [
+                -79.00908,
+                34.35283
+              ],
+              [
+                -79.01161,
+                34.38089
+              ],
+              [
+                -78.96974,
+                34.39521
+              ],
+              [
+                -78.95978,
+                34.44298
+              ],
+              [
+                -78.90685,
+                34.45584
+              ],
+              [
+                -78.84634,
+                34.49981
+              ],
+              [
+                -78.86266,
+                34.56223
+              ],
+              [
+                -78.83605,
+                34.59342
+              ],
+              [
+                -78.80543,
+                34.6866
+              ],
+              [
+                -78.85425,
+                34.73549
+              ],
+              [
+                -78.88334,
+                34.81212
+              ],
+              [
+                -78.95486,
+                34.91327
+              ],
+              [
+                -79.03875,
+                34.95271
+              ],
+              [
+                -79.12835,
+                34.88294
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "capability": "embedding_similarity",
+        "check": "k_at_most",
+        "arg_names": [
+          "k"
+        ],
+        "values": null,
+        "value": 10
+      }
+    ],
+    "expected_steps": 2,
+    "step_limit": 10,
+    "done": "output_matches_schema_nonempty",
+    "recovery": {
+      "recovered_penalty": 0.25
+    }
+  },
+  "output_reference": {
+    "chips": [
+      "50fa1d6df69d35803da4c1bfc6334bd1",
+      "4afbc39bee322dafa9f262010fbd02db",
+      "a0e58ceb430cc6150a19d4ef1b2fb04d",
+      "eb8163f92bc34d98b84fac8cadb3f272",
+      "57bdd6e8b04275cfbebd523a86f349b2",
+      "115f48c49eed4607447667b8c8d77ab0",
+      "620db266255e9eaa2ac82f2575ce1d4e",
+      "95be97447d66d0306bf2a6138f4d380b",
+      "a9e6b024b5023393abf206cc126bcbe9",
+      "82df1fa6022615d0785e1b449051cad7"
+    ],
+    "k": 10,
+    "query_chip": "382c0808015e09463eb7e027dba55127",
+    "similarities": [
+      0.9368420243263245,
+      0.9321140050888062,
+      0.9305930137634277,
+      0.930076003074646,
+      0.9286540150642395,
+      0.9252129793167114,
+      0.9248319864273071,
+      0.9224889874458313,
+      0.9209380149841309,
+      0.9208869934082031
+    ],
+    "candidates": 2564
+  },
+  "weights": {},
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "chips"
+    ],
+    "properties": {
+      "chips": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 10
+      }
+    }
+  },
+  "process_rubric": "# Process rubric: T4 (places similar to a given place)\n\nThe agent was given a query point, a month, k and a search box, and asked for the k most similar\nplaces by Clay embeddings, as `{\"chips\": [chips_id, ...]}` with the most similar first. The\nanswer can be found with one correct call of the `similar_places` tool. Judge **how faithfully**\nthe agent used the tool; the output metric scores the chip list. Score each item from 0 to 1 and\ncite the trace event IDs your score is based on.\n\n## planning\n\nDid the agent recognise that one embedding-similarity search with the given inputs answers the\ntask?\n\n- **1.0**: calls `similar_places` with the given point, year, month, k and search box (optionally\n  `embedding_at` first to look at the query chip), then answers.\n- **0.5**: gets there after unneeded detours (geocoding the given point, several exploratory\n  searches with other months or boxes).\n- **0.0**: never uses the embeddings tool.\n\n## tool_choice\n\nWere the arguments the ones the prompt gave?\n\n- **1.0**: lat/lon, year, month, k and search_bbox exactly as given.\n- **0.5**: one argument changed or missing (no search_bbox, a different k) without a reason.\n- **0.0**: arguments unrelated to the prompt (another place or month).\n\n## error_recovery\n\nWhen a call failed, did it react sensibly?\n\n- **1.0**: reads the error (e.g. \"month not staged\", \"no chip at this point\") and corrects the\n  call. Also 1.0 if no call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: loops on the failing call, or abandons the task.\n\n## honesty\n\nIs the answer faithful to the tool result?\n\n- **1.0**: returns exactly the chip IDs the tool returned, in its order, without the query chip.\n- **0.5**: real chip IDs, but reordered, truncated or mixed with results from another call\n  without saying so.\n- **0.0**: invents chip IDs, or returns coordinates or names instead of chip IDs.\n",
+  "aoi_snapshot": {
+    "id": "us-nc-robeson",
+    "name": "Robeson County",
+    "state": "North Carolina",
+    "state_code": "NC",
+    "fips": "37155",
+    "bbox": [
+      -79.46151,
+      34.29934,
+      -78.80543,
+      34.95271
+    ],
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            -79.12835,
+            34.88294
+          ],
+          [
+            -79.19139,
+            34.83372
+          ],
+          [
+            -79.34883,
+            34.83885
+          ],
+          [
+            -79.35742,
+            34.81896
+          ],
+          [
+            -79.33086,
+            34.77397
+          ],
+          [
+            -79.46151,
+            34.63038
+          ],
+          [
+            -79.07121,
+            34.29934
+          ],
+          [
+            -79.03847,
+            34.31314
+          ],
+          [
+            -79.02711,
+            34.35307
+          ],
+          [
+            -79.00908,
+            34.35283
+          ],
+          [
+            -79.01161,
+            34.38089
+          ],
+          [
+            -78.96974,
+            34.39521
+          ],
+          [
+            -78.95978,
+            34.44298
+          ],
+          [
+            -78.90685,
+            34.45584
+          ],
+          [
+            -78.84634,
+            34.49981
+          ],
+          [
+            -78.86266,
+            34.56223
+          ],
+          [
+            -78.83605,
+            34.59342
+          ],
+          [
+            -78.80543,
+            34.6866
+          ],
+          [
+            -78.85425,
+            34.73549
+          ],
+          [
+            -78.88334,
+            34.81212
+          ],
+          [
+            -78.95486,
+            34.91327
+          ],
+          [
+            -79.03875,
+            34.95271
+          ],
+          [
+            -79.12835,
+            34.88294
+          ]
+        ]
+      ]
+    },
+    "tags": [
+      "has_solar"
+    ],
+    "template_params": {
+      "T1": {
+        "area_name": "Lumberton",
+        "area_bbox": [
+          -79.059,
+          34.568,
+          -78.959,
+          34.668
+        ]
+      },
+      "T4": {
+        "query_name": "solar PV installation (Global Renewables Watch feature 43557)",
+        "query_lat": 34.80187,
+        "query_lon": -79.32932
+      }
+    },
+    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
+  }
+}

@@ -64,3 +64,6 @@ cdk.out/
 infra/outputs.json
 infra/cdk-outputs.json
 infra/cdk.context.json
+
+# Staged data (embeddings); see scripts/stage_embeddings.py
+/data/
