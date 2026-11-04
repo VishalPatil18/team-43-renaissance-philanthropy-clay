@@ -9,7 +9,7 @@ file's sha256 as its version.
 | Tool set | Servers | Status |
 |---|---|---|
 | `T0` | `roda` | R0, live |
-| `T1` | `roda`, `stac`, `osm`, `clay-embeddings` | R1, live; `clay-embeddings` added in R2 |
+| `T1` | `roda`, `stac`, `osm`, `clay_embeddings` | R1, live; `clay_embeddings` added in R2 |
 | `T1-faulty` | R1's T1 (no `clay-embeddings`) with injected failures plus a dead `broken` server, `test_only: true` | R1, for J4 |
 | `lgnd` (LGND Geo MCP) | — | not built: whitelist access unconfirmed, see `docs/FUTURE-WORK.md` |
 
@@ -20,9 +20,9 @@ file's sha256 as its version.
 | `dataset_discovery` | `roda.search_datasets`, `list_datasets`, `get_dataset_details`, `discover_by_organization`, `discover_by_license`, `find_related_datasets`, `search_stac_endpoints` | same |
 | `imagery_search` | — | `stac.search_items` |
 | `geocode` | — | `osm.openstreetmap_search_places` |
-| `embedding_similarity` | — | `clay-embeddings.similar_places` |
+| `embedding_similarity` | — | `clay_embeddings.similar_places` |
 
-Not mapped: `clay-embeddings.embedding_at` (a lookup helper; no workflow rule needs it).
+Not mapped: `clay_embeddings.embedding_at` (a lookup helper; no workflow rule needs it).
 
 No server in T0 or T1 gets AWS credentials.
 
@@ -45,7 +45,7 @@ name: T0                     # must equal the file name
 description: ...
 test_only: false             # true = excluded from comparisons
 servers:
-  - name: roda               # [A-Za-z0-9_-], becomes the "<server>__" prefix of model tool names
+  - name: roda               # [A-Za-z0-9_], becomes the "<server>__" prefix of model tool names
     command: ["uvx", "awslabs.roda-mcp-server@0.1.7"]   # version pinned (FR-1.10)
     env: {FASTMCP_LOG_LEVEL: ERROR}                      # non-secret settings only, committed
     needs_aws: false         # true = AWS credentials are passed to this server (FR-1.9)
@@ -170,7 +170,10 @@ radius_meters, ...)`, `openstreetmap_query_bbox(within | south/west/north/east, 
 ### clay-embeddings (ours, 2 tools)
 
 `mcp_servers/clay_embeddings/`, run as `python -m clay_embeddings [--data DIR]` (stdio, MCP Python
-SDK `MCPServer`). It imports nothing from `claysandbox`. Data: `data/embeddings/staged.parquet`
+SDK `MCPServer`). In tool sets the server is named `clay_embeddings`, so the model sees
+`clay_embeddings__similar_places`. Server names may not contain `-`: Amazon Nova fails to call
+a tool named `clay-embeddings__similar_places` ("Model produced invalid sequence as part of
+ToolUse", reproduced 2026-11-04), and the same tool with `_` works. It imports nothing from `claysandbox`. Data: `data/embeddings/staged.parquet`
 (default; or `$CLAY_EMBEDDINGS_DATA`), written by `scripts/stage_embeddings.py`.
 
 - `embedding_at(lat, lon, year, month)`: the chip containing the point: `chips_id`, `cell_id`,
@@ -207,7 +210,7 @@ Reports that used results of these tools or data should include the matching lin
   https://github.com/microsoft/global-renewables-watch."
 - **NAIP:** "NAIP imagery courtesy of the USDA Farm Service Agency (public domain)."
 
-A report used a source if its trace has a tool call to that server (`clay-embeddings`, `osm`), or
+A report used a source if its trace has a tool call to that server (`clay_embeddings`, `osm`), or
 its task is T3 (Global Renewables Watch) or T1/T5 (NAIP).
 
 ## Data licenses

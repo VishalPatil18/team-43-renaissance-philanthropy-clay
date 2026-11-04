@@ -137,9 +137,9 @@ def test_stdio_round_trip_through_the_tool_session(tmp_path: Path) -> None:
     data = make_staged(tmp_path / "emb").parent
     ts = ToolSetDef(
         name="TE",
-        servers=[ServerDef(name="clay-embeddings",
+        servers=[ServerDef(name="clay_embeddings",
                            command=[sys.executable, "-m", "clay_embeddings", "--data", str(data)])],
-        capabilities={"embedding_similarity": ["clay-embeddings.similar_places"]},
+        capabilities={"embedding_similarity": ["clay_embeddings.similar_places"]},
     )
     with McpStdioToolSession(ts, log_dir=tmp_path) as session:
         tools = {t.name: t for t in session.list_tools()}
@@ -148,13 +148,13 @@ def test_stdio_round_trip_through_the_tool_session(tmp_path: Path) -> None:
         assert "CC BY 4.0" in tools["similar_places"].description
         assert "1280 m" in tools["embedding_at"].description
         result = session.call_blocking(
-            "clay-embeddings", "similar_places",
+            "clay_embeddings", "similar_places",
             {"lat": 40.005, "lon": -99.995, "year": 2024, "month": 7, "k": 2}, 30,
         )
         assert result.status == "ok"
         body = json.loads(result.text)
         assert [r["chips_id"] for r in body["results"]] == ["c01", "c10"]
         bad = session.call_blocking(
-            "clay-embeddings", "embedding_at", {"lat": 0, "lon": 0, "year": 2024, "month": 7}, 30
+            "clay_embeddings", "embedding_at", {"lat": 0, "lon": 0, "year": 2024, "month": 7}, 30
         )
         assert bad.error_kind == "tool_error" and "only the staged areas" in bad.text

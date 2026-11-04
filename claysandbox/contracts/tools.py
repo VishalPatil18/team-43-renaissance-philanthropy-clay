@@ -23,7 +23,10 @@ from .manifest import ToolSpec
 ToolStatus = Literal["ok", "error", "timeout"]
 ToolErrorKind = Literal["tool_error", "tool_timeout", "server_unavailable"]
 
-_SERVER_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
+# Letters, digits and "_" only. Bedrock allows "-" in tool names, but Amazon Nova fails to call a
+# tool whose name contains one ("Model produced invalid sequence as part of ToolUse", checked
+# 2026-11-04), and the server name becomes the "<server>__" prefix of every tool name.
+_SERVER_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_]*$")
 
 
 class ToolResult(BaseModel):

@@ -24,7 +24,7 @@ servers:
       OSM_USER_AGENT: clay-agent-eval-sandbox/0.1 (+https://github.com/VishalPatil18/team-43-renaissance-philanthropy-clay)
     needs_aws: false
     timeout_s: 60
-  - name: clay-embeddings
+  - name: clay_embeddings # no hyphen: Nova fails to call tools named "clay-embeddings__..."
     # Our own server (mcp_servers/clay_embeddings). It reads data/embeddings/staged.parquet,
     # written by scripts/stage_embeddings.py; without it every call returns a tool error.
     command: ["python", "-m", "clay_embeddings"]
@@ -44,5 +44,5 @@ capabilities:
   geocode:
     - osm.openstreetmap_search_places
   embedding_similarity:
-    - clay-embeddings.similar_places
+    - clay_embeddings.similar_places
 # Not mapped to a capability (no workflow rule refers to them): the other RODA, STAC and OSM tools.
