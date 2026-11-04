@@ -944,7 +944,7 @@ Run ID, eval ID, `trial_index`, attempt number and attempts history; task instan
 | Template | Task | Output reference | Metric |
 |---|---|---|---|
 | T1 | Find NAIP imagery covering an AOI for year Y | NAIP item IDs intersecting the AOI, from the STAC catalog | Precision, recall, F1 of item IDs |
-| T2 | List open datasets covering the AOI | RODA dataset IDs covering the AOI (script + curated) | Precision, recall, F1 |
+| T2 | List open datasets covering the AOI | RODA dataset IDs covering the AOI (script-built from dataset metadata, DD-046) | Precision, recall@k (k = 10), F1 (DD-046) |
 | T3 | Candidate solar sites in the AOI | Global Renewables Watch polygons clipped to the AOI | Precision, recall within a distance tolerance. Empty list is correct for no-solar AOIs |
 | T4 | Places similar to a given place | Cosine top-k over the staged embeddings | Recall@k |
 | T5 | Ambiguous request | Expected behaviours: states assumptions or asks back, no fabricated IDs | Pass rate over rule checks |

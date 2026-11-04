@@ -7,7 +7,7 @@ journeys still bill your account. `estimate` runs before each spec; read it firs
 ## Run
 
 ```bash
-export AWS_PROFILE=<your-sso-profile>   # aws sso login --profile $AWS_PROFILE first
+export AWS_PROFILE=<your-sso-profile>   # or: aws login, or export temporary keys from the access portal
 export AWS_REGION=us-west-2
 scripts/live_journeys.sh r1   # J1, J4
 scripts/live_journeys.sh r2   # J3, J5, J6, J7

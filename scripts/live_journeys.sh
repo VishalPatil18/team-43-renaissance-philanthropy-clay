@@ -8,7 +8,12 @@ usage() { echo "usage: $0 <r1|r2>" >&2; exit 2; }
 release="$1"
 case "$release" in r1|r2) ;; *) usage ;; esac
 
-: "${AWS_PROFILE:?set AWS_PROFILE to your SSO profile (never put credentials in this script)}"
+# Credentials come from the environment: an AWS_PROFILE (SSO or `aws login`) or exported
+# temporary keys. Never put credentials in this script.
+if ! aws sts get-caller-identity >/dev/null 2>&1; then
+  echo "No working AWS credentials: set AWS_PROFILE, run 'aws login', or export temporary keys." >&2
+  exit 2
+fi
 if [[ "${AWS_REGION:-}" != "us-west-2" ]]; then
   echo "AWS_REGION must be us-west-2 (DD-010); got '${AWS_REGION:-}'" >&2
   exit 2
@@ -34,7 +39,7 @@ if placeholders="$(grep -nE '^[^#]*"<[a-z0-9-]+>"' specs/live/*.yaml)"; then
 fi
 
 report_dir="${REPORT_DIR:-./runs}"
-echo "release=$release profile=$AWS_PROFILE region=$AWS_REGION report_dir=$report_dir"
+echo "release=$release profile=${AWS_PROFILE:-env} region=$AWS_REGION report_dir=$report_dir"
 
 run_spec() { # <command> <spec>
   local cmd="$1" spec="$2"
