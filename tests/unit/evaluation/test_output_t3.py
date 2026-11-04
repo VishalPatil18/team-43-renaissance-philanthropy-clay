@@ -1,5 +1,5 @@
 from claysandbox.contracts.registry import resolve
-from tests.unit.evaluation.test_output_helpers import make_case
+from tests.unit.evaluation._output_traces import make_case
 
 
 def square(lon, lat, d=0.001):

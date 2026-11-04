@@ -5,6 +5,9 @@ Each workstream adds its own import lines. WS1's lines are below.
 
 from __future__ import annotations
 
+# WS4 (evaluation): workflow@0/@1, output and output.t1..t5, llm_process
+from claysandbox.evaluation import llm_process, output, workflow  # noqa: F401
+
 # WS1 (runtime and cloud execution)
 from claysandbox.platform.executors import fargate  # noqa: F401
 from claysandbox.runtime import pricing  # noqa: F401

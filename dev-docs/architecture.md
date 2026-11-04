@@ -498,6 +498,8 @@ class Assessment(BaseModel):
     metrics: dict                   # e.g. {"precision":0.8,"recall":0.6,"f1":0.69}
     success: bool | None            # workflow evaluator only (DD-042)
     repeats: list[float] | None     # LLM evaluator k scores
+    evidence: list[str]             # event IDs behind metric-level results (DD-047)
+    notes: list[str]                # e.g. a parse error or a skip reason (DD-047)
     cost_usd: float                 # evaluation cost, not agent cost
     created_at: datetime
 ```
@@ -724,7 +726,7 @@ One per template, registered as `output.t1` … `output.t5`, resolved from the g
 | Evaluator | Parses | Compares with | Metrics |
 |---|---|---|---|
 | `output.t1` | List of NAIP item IDs | Reference item IDs | precision, recall, F1 |
-| `output.t2` | List of RODA dataset slugs | Reference slugs | precision, recall, F1 |
+| `output.t2` | List of RODA dataset slugs (at most k = 10) | Reference slugs and `k` | precision, recall@k, F1 (DD-046) |
 | `output.t3` | List of sites (point or polygon) | GRW polygons in the AOI | precision, recall at a distance tolerance (default 500 m), with empty-list handling for no-solar AOIs |
 | `output.t4` | List of chip IDs | Reference top-k | recall@k |
 | `output.t5` | Final text and trace | Rule list (states assumptions or asks back, no fabricated IDs: every ID in output must appear in some tool result) | pass rate |

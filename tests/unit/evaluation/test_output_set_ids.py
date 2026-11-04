@@ -3,7 +3,7 @@ import pytest
 from claysandbox.contracts.registry import resolve
 from claysandbox.evaluation.output import t1 as _t1  # noqa: F401  (registers)
 from tests.fixtures.traces import load
-from tests.unit.evaluation.test_output_helpers import as_json_fenced, make_case
+from tests.unit.evaluation._output_traces import as_json_fenced, make_case
 
 SCHEMA = {
     "type": "object",

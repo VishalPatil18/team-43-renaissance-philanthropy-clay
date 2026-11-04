@@ -1,5 +1,5 @@
 from claysandbox.contracts.registry import resolve
-from tests.unit.evaluation.test_output_helpers import make_case
+from tests.unit.evaluation._output_traces import make_case
 
 REF = {"top_k": [{"chips_id": "c1"}, {"chips_id": "c2"}, {"chips_id": "c3"}, {"chips_id": "c4"}]}
 

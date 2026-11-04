@@ -190,3 +190,70 @@ If your environment was created before this server was added, run
   Conservancy), MIT License, https://github.com/microsoft/global-renewables-watch.
 - NAIP imagery courtesy of the USDA Farm Service Agency (public domain). County boundaries: U.S.
   Census Bureau TIGERweb (public domain).
+
+## Scoring and statistics
+
+This section covers how a run is judged and how configurations are compared (workstream WS4).
+Code: `claysandbox/evaluation/`. Contracts: `claysandbox/contracts/assessment.py` and
+`stats.py`. Definitions: architecture §10–§11.
+
+### Evaluators
+
+Every evaluator reads the trace, the manifest and the task reference, and writes one
+`Assessment`. It records the evaluator's name and version and the reference version, and
+cites the event IDs behind every score. Pick them in the spec, for example
+`evaluators: [{name: workflow, version: "1"}, {name: output, version: "1"}]`.
+
+| Evaluator | Kind | What it scores |
+|---|---|---|
+| `workflow` (`@1`; `@0` kept) | workflow, deterministic | Eight sub-scores: tool-call validity, argument constraints, required coverage, ordering, forbidden tools, error recovery, step efficiency, done condition. Composite = weighted mean (weights from the reference, default equal). `success` = done condition met and no guard stop |
+| `output` → `output.t1` … `output.t5` | output, deterministic | The final answer against the reference: T1 item IDs and T2 dataset slugs (precision, recall, F1; T2 uses recall@k, DD-046), T3 solar sites (precision and recall within 500 m), T4 chips (recall@k), T5 rules (pass rate). An answer that doesn't parse scores 0 |
+| `llm_process` | process, not deterministic | A judge model scores planning, tool choice, recovery and honesty k times (default 3) at temperature 0. Stores all k scores, the mean and the spread. The judge must be a different model family from every agent model (DD-027) |
+
+Workflow rules name tools by capability, so the same rule scores T0 and T1 runs. Infra
+errors never change any score. Output metrics are never blended into the workflow score.
+Older versions stay registered as `<name>@<version>`, so stored assessments can be re-scored
+with the version that made them.
+
+### Statistics
+
+`compute_stats` and `build_eval_report_content` turn per-run rows into the eval report's
+numbers. They use numpy and scipy only, and the seed and iteration count are recorded.
+
+- **Success rate:** Wilson 95% CI.
+- **Means** (scores, steps, latency, cost, errors): cluster bootstrap over task instances,
+  `stats.bootstrap_iterations` (default 5000).
+- **Variant vs baseline:** paired on the task instances complete in both. The effect is the
+  mean per-instance difference, with a bootstrap CI and a sign-flip permutation p-value
+  (exact up to 15 instances). Holm correction applies when there are more than two
+  comparisons.
+- **Verdicts:** in plain words ("sonnet is better on workflow.composite by 0.21 …" or "No
+  meaningful difference …"). The report warns when a CI is wide or there are fewer than 10
+  instances, and says how many runs were excluded for infra errors.
+- **Sample size:** with Holm across three variants, fewer than 7 complete instances can never
+  reach p < 0.05. Keep a cut-down comparison eval at 7–10 instances or more.
+
+### Proving the evaluator works (J6)
+
+`validate` scores each planted flaw (an unrecovered failure, a loop, the wrong order, a
+forbidden tool, an unknown tool, a budget stop, a fabricated output, and a recovered-failure
+control) against its good trace. It reports the detection rate per flaw type and the
+good-vs-bad margin per evaluator kind. CI runs it on `samples/planted/` (made by
+`scripts/make_planted.py`), or on the stand-in set in `tests/fixtures/planted/` until samples
+are committed.
+
+```bash
+uv run pytest tests/journeys/test_j6_validation.py claysandbox/contracts/conformance/test_evaluator.py
+uv run python -c "from claysandbox.evaluation.validate import validate, format_report; \
+print(format_report(validate(planted_root='tests/fixtures/planted')))"
+```
+
+### Live gate runs
+
+`scripts/live_journeys.sh r1|r2` runs the journey specs in `specs/live/` (J1, J3–J7) through
+the `clay-sandbox` CLI and prints run IDs and report paths. Every spec sets
+`budget.run.max_usd`. It needs working AWS credentials (an `AWS_PROFILE`, `aws login`, or
+exported temporary keys; it checks with `aws sts get-caller-identity`) and
+`AWS_REGION=us-west-2`, and it refuses to run while a spec still holds a `<placeholder>`. If
+you signed in with `aws login`, run Python commands with `uv run --with "botocore[crt]"`.
+See `tests/live/README.md`.

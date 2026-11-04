@@ -1684,3 +1684,76 @@ Vishal (WS2, contract owner) chose to add the fields. Defaults and the validator
 - `ToolCall.status` in the trace is unchanged (`ok`, `error`, `timeout`, `rejected`). Trace readers see no difference.
 
 ---
+
+## DD-046 - Decision - T2 is scored by precision and recall@k against a script-built key
+
+| Field           | Value                                        |
+| --------------- | -------------------------------------------- |
+| Date            | 2026-11-04                                   |
+| Cycle / Feature | F13 Task library, F4 scoring (`output.t2`)   |
+| Status          | accepted                                     |
+| Supersedes      | srs §12.3 and architecture §10.2, T2 row     |
+
+### Context
+
+srs §12.3 scores T2 by precision, recall and F1 against a "script + curated" key. The Registry of Open Data has no coverage field, so the T2 builder decides coverage from keywords in each dataset's name and description. That gives about 120–134 candidate datasets per county, with false positives and misses, and no hand curation (Task Author decision). The prompt asks the agent for at most 10 datasets (`maxItems: 10`), so recall over the whole key is capped near 10/120 even for a perfect answer.
+
+### Options considered
+
+1. Keep recall over the whole key - no change / a perfect answer scores F1 ≈ 0.15, so the metric can't separate good agents from bad ones.
+2. **Store `k` (10) in each T2 reference and score recall@k = matched slugs among the first `k` output slugs ÷ min(k, key size). Precision stays matched ÷ all output slugs, so padding past `k` with wrong slugs still costs precision. F1 combines the two** - a correct 10-slug answer scores 1.0 / the key's false positives still count as correct.
+3. Hand-curate a short key per county - the most accurate / not feasible in the hackathon time box.
+
+### Decision
+
+Option 2. T2 references carry `output_reference.k` and `method: script`. `output.t2` scores recall@k when `k` is present and plain recall when it isn't, so older keys without `k` keep their meaning.
+
+### Rationale
+
+Vishal (WS2, task author) chose a script-built key with `k`; Barath (WS4) owns `output.t2` and implements recall@k on it. Each reference's `notes` already state that recall over the whole key is not meaningful.
+
+### Consequences
+
+- srs §12.3 and architecture §10.2 now say "precision, recall@k (k = 10), F1" for T2, and the T2 key method is `script`.
+- The key's false positives inflate precision. A curated key stays in `docs/FUTURE-WORK.md` territory.
+- `output.t2` keeps version `1`: no T2 assessment had been stored before the change.
+
+---
+
+## DD-047 - Decision - WS4 contract additions: assessment evidence and notes, versioned evaluator names, `infra_error` excluded from statistics
+
+| Field           | Value                                                  |
+| --------------- | ------------------------------------------------------ |
+| Date            | 2026-11-04                                             |
+| Cycle / Feature | F4 scoring, F10 statistics (`contracts/assessment.py`, `contracts/stats.py`) |
+| Status          | accepted                                               |
+| Supersedes      | —                                                      |
+
+### Context
+
+Building the evaluators (BAR-R0 to BAR-R2) needed three things the architecture sketch doesn't have. Output and LLM assessments have no sub-scores to hang evidence on, so a parse failure or a skipped evaluation had nowhere to cite the event or say why (FR-4.2). `rescore --evaluator <name>@<version>` (J3) needs older evaluator versions to stay resolvable by name. And a run whose `run_end` state is `infra_error` (one attempt, no retry recorded yet) is neither a success nor a failure under DD-042, but srs §8.3 only lists `infra_excluded` as excluded.
+
+### Options considered
+
+1. Put the information in `metrics` and `subscores` only - no contract change / evidence and reasons would be mixed into numeric fields.
+2. **Add `evidence: list[str]` and `notes: list[str]` to `Assessment`, register every evaluator as both `<name>` (latest) and `<name>@<version>`, and treat `infra_error` like `infra_excluded` in the statistics** - additive / three small changes to record.
+
+### Decision
+
+Option 2:
+
+- `Assessment.evidence` holds event IDs behind metric-level results (for example the `final_output` event of an output that fails to parse). `Assessment.notes` holds one-line reasons (a parse error, a skip reason). Both default to empty lists, so existing readers are unaffected.
+- Each evaluator registers as `<name>` (latest version) and `<name>@<version>`: `workflow@0`, `workflow@1`, `output@1`, `output.t1@1` to `output.t5@1` and `llm_process@1`. An Assessment records the plain name and its version.
+- `contracts/stats.py` `EXCLUDED_STATES` = `infra_excluded`, `infra_error`, `skipped_eval_cap`. Excluded runs are counted per configuration and reported (FR-10.5), never scored as failures.
+
+### Rationale
+
+Barath (WS4) owns both contracts. All three changes are additive. Old Assessments still validate, and nothing that reads `metrics` or `subscores` changes.
+
+### Consequences
+
+- Architecture §7.5 now lists `evidence` and `notes`.
+- The WS5 CLI resolves `rescore --evaluator name@version` with a plain registry lookup, without parsing the version itself.
+- If WS5's run worker always turns a final `infra_error` into `infra_retry` and then `infra_excluded`, the extra state is harmless.
+
+---
