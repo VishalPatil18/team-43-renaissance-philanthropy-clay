@@ -26,7 +26,12 @@ class UnsupportedTraceVersion(ValueError):
 
 
 def _version_key(v: str) -> tuple[int, ...]:
-    return tuple(int(p) for p in v.split("."))
+    try:
+        return tuple(int(p) for p in v.split("."))
+    except ValueError:
+        raise UnsupportedTraceVersion(
+            f"unreadable trace schema version {v!r}"
+        ) from None
 
 
 def upgrade_event(raw: dict) -> dict:
@@ -71,9 +76,11 @@ def read_trace(run_dir: str | Path, run_id: str | None = None) -> Trace:
             try:
                 raw = json.loads(line)
             except json.JSONDecodeError:
-                incomplete = (
-                    True  # truncated line: a crash mid-write; keep what came before
-                )
+                raw = None  # truncated line: a crash mid-write
+            if not isinstance(raw, dict):
+                # Not an event at all (truncated, or garbage that happens to be valid
+                # JSON). Keep what came before and flag the trace.
+                incomplete = True
                 break
             events.append(parse_event(upgrade_event(raw)))
     if not events or events[-1].type != "run_end":

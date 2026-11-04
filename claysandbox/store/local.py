@@ -29,7 +29,12 @@ import yaml
 from pydantic import BaseModel
 
 from claysandbox.contracts.registry import register
-from claysandbox.contracts.store import TERMINAL_STATES, RunStatus, StoreWriteRefused
+from claysandbox.contracts.store import (
+    TERMINAL_STATES,
+    RunLifecycle,
+    RunStatus,
+    StoreWriteRefused,
+)
 from claysandbox.contracts.trace import Trace
 
 from .reader import read_trace
@@ -154,8 +159,15 @@ class LocalRunStore:
 
     # ---------------------------------------------------------------- status
     def write_status(
-        self, run_id: str, state: str, attempt: int = 1, incomplete: bool = False
+        self,
+        run_id: str,
+        state: RunLifecycle,
+        attempt: int = 1,
+        incomplete: bool = False,
     ) -> None:
+        if not (self.run_dir(run_id) / MANIFEST).exists():
+            # Would otherwise create a stray folder that makes a later create_run fail.
+            raise FileNotFoundError(f"unknown run {run_id}: create_run it first")
         d = self._write_dir(run_id)
         prev = self.read_status(run_id)
         if prev and prev.state in TERMINAL_STATES and state != prev.state:

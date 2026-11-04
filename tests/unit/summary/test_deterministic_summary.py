@@ -67,3 +67,23 @@ def test_citation_checker_drops_bad_claims_and_adds_missing_errors():
     kept, dropped = check(claims, trace)
     assert dropped == 2
     assert any(c.deterministic and "tool_timeout" in c.claim for c in kept)
+
+
+def test_recovery_needs_the_same_server_and_tool():
+    """A later success of a same-named tool on a different server is not a recovery."""
+    from claysandbox.contracts.trace import ToolCall
+
+    events = scripted_events()
+    other_server_ok = ToolCall(
+        server="roda", tool="search_items", status="ok", result_preview="{}"
+    )
+    # failed stac.search_items, then an ok roda.search_items only
+    events = events[:3] + [other_server_ok, events[-2], events[-1]]
+    text = DeterministicSummarizer().summarize(recorded(events)).text()
+    assert "never recovered" in text
+    assert "recovered by a later successful call" not in text
+
+
+def test_recovery_on_the_same_server_and_tool_is_credited():
+    text = DeterministicSummarizer().summarize(recorded()).text()
+    assert "recovered by a later successful call" in text

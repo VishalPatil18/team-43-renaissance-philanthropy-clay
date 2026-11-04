@@ -8,7 +8,12 @@ from typing import Any
 from pydantic import BaseModel
 
 from claysandbox.contracts.registry import register
-from claysandbox.contracts.store import TERMINAL_STATES, RunStatus, StoreWriteRefused
+from claysandbox.contracts.store import (
+    TERMINAL_STATES,
+    RunLifecycle,
+    RunStatus,
+    StoreWriteRefused,
+)
 from claysandbox.contracts.trace import Trace
 
 
@@ -59,7 +64,11 @@ class MemoryRunStore:
         return self.manifests[run_id]
 
     def write_status(
-        self, run_id: str, state: str, attempt: int = 1, incomplete: bool = False
+        self,
+        run_id: str,
+        state: RunLifecycle,
+        attempt: int = 1,
+        incomplete: bool = False,
     ) -> None:
         prev = self.status.get(run_id)
         if prev and prev.state in TERMINAL_STATES and state != prev.state:

@@ -110,7 +110,7 @@ class DeterministicSummarizer:
                         x
                         for x in trace.events[i + 1 :]
                         if isinstance(x, ToolCall)
-                        and x.tool == e.tool
+                        and (x.server, x.tool) == (e.server, e.tool)
                         and x.status == "ok"
                     ),
                     None,

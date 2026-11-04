@@ -16,7 +16,12 @@ import threading
 from pathlib import Path
 from typing import Any
 
-from claysandbox.contracts.trace import TRACE_EVENT_ADAPTER, AnyEvent
+from claysandbox.contracts.trace import (
+    TRACE_EVENT_ADAPTER,
+    AnyEvent,
+    ErrorEvent,
+    ErrorInfo,
+)
 
 from .redact import redact_event_dict, redact_text
 
@@ -54,13 +59,21 @@ class RunEventSink:
             try:
                 stamped = TRACE_EVENT_ADAPTER.validate_python(redact_event_dict(data))
             except Exception as e:  # noqa: BLE001  a malformed event must not break the run
+                # Fail closed: never forward the original, unredacted event. Keep the
+                # sequence gap-free with a payload-free error event instead.
                 self._sandbox_error("redaction_or_validation_failed", e)
-                stamped = event.model_copy(
-                    update={
-                        "run_id": self.run_id,
-                        "seq": seq,
-                        "event_id": f"{self.run_id}:{seq}",
-                    }
+                stamped = ErrorEvent(
+                    run_id=self.run_id,
+                    seq=seq,
+                    event_id=f"{self.run_id}:{seq}",
+                    error=ErrorInfo(
+                        source="infra",
+                        kind="trace_event_invalid",
+                        message=(
+                            f"a {event.type} event could not be redacted or validated "
+                            f"({type(e).__name__}); its content was dropped"
+                        ),
+                    ),
                 )
             self._seq += 1
             self._last = stamped.event_id
@@ -73,8 +86,19 @@ class RunEventSink:
             return stamped
 
     def put_blob(self, data: bytes | str) -> tuple[str, str]:
-        """Write the full payload once under blobs/<sha256> (deduplicated); return (ref, sha)."""
-        raw = data.encode() if isinstance(data, str) else data
+        """Write the full payload once under blobs/<sha256> (deduplicated); return (ref, sha).
+
+        Text payloads are redacted here, so no caller can store a secret by skipping
+        a step. The returned hash is of the stored (redacted) bytes. Binary payloads
+        that are not valid UTF-8 are stored as given.
+        """
+        if isinstance(data, str):
+            raw = redact_text(data).encode()
+        else:
+            try:
+                raw = redact_text(data.decode("utf-8")).encode()
+            except UnicodeDecodeError:
+                raw = data  # binary payload: store untouched
         sha = hashlib.sha256(raw).hexdigest()
         ref = f"blobs/{sha}"
         path = self.run_dir / ref
@@ -90,15 +114,14 @@ class RunEventSink:
 
     def result_fields(self, result_text: str) -> dict[str, str | None]:
         """FR-2.5 helper for tool wrappers: full result to a blob, redacted preview inline."""
-        if len(result_text) <= self.preview_chars:
-            return {
-                "result_preview": result_text,
-                "result_ref": None,
-                "result_sha256": None,
-            }
-        ref, sha = self.put_blob(redact_text(result_text))
+        # Redact first, then truncate: cutting first could leave half a secret that
+        # no pattern recognises.
+        text = redact_text(result_text)
+        if len(text) <= self.preview_chars:
+            return {"result_preview": text, "result_ref": None, "result_sha256": None}
+        ref, sha = self.put_blob(text)
         return {
-            "result_preview": result_text[: self.preview_chars] + "…",
+            "result_preview": text[: self.preview_chars] + "…",
             "result_ref": ref,
             "result_sha256": sha,
         }

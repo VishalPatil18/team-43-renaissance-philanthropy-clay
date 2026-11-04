@@ -15,6 +15,7 @@ from typing import IO
 from pydantic import BaseModel
 
 from claysandbox.contracts.registry import register
+from claysandbox.contracts.store import StoreWriteRefused
 from claysandbox.contracts.trace import AnyEvent
 
 log = logging.getLogger("claysandbox.tracing")
@@ -40,10 +41,23 @@ class JsonlTracer:
         self._fh: IO[str] | None = None
 
     def open(self, run_id: str, run_dir: Path) -> None:
+        """Start the trace. Raises ``StoreWriteRefused`` if the file already has events.
+
+        A run folder is traced exactly once (NFR-PROV-2): an infra retry gets a new
+        run folder (arch §8.3), so appending to an existing trace would duplicate
+        ``seq`` values or alter a finished run. The check is on content, not file
+        permissions, so it also holds when running as root (Docker, Fargate).
+        This is a start-up error, not an ``emit`` error, so it may raise.
+        """
         self.run_id = run_id
         self.path = Path(run_dir) / self.params.file_name
         try:
             self.path.parent.mkdir(parents=True, exist_ok=True)
+            if self.path.exists() and self.path.stat().st_size > 0:
+                raise StoreWriteRefused(
+                    f"{self.path} already has events; a run folder is traced once "
+                    "(use a new run folder for a retry)"
+                )
             self._fh = self.path.open("a", encoding="utf-8")
         except OSError as e:
             self._fail("open", e)

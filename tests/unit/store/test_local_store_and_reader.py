@@ -139,3 +139,57 @@ def test_digest_compresses_middle(tmp_path):
     assert d.splitlines()[0].startswith("[r1:0] run_start")
     assert "run_end" in d.splitlines()[-1]
     shutil.rmtree(tmp_path / "runs")
+
+
+# ---------------------------------------------------------------- regression tests (review fixes)
+def test_finished_trace_cannot_be_reopened_even_if_permissions_allow_it(tmp_path):
+    """The guard is on content, so it also holds for root (Docker/Fargate ignore file modes)."""
+    store = LocalRunStore(tmp_path / "runs", tmp_path / "evals")
+    record(store)
+    path = store.trace_path("r1")
+    path.chmod(0o644)  # simulate a user that can write regardless of the read-only mode
+    before = path.read_bytes()
+    with pytest.raises(StoreWriteRefused):
+        JsonlTracer().open("r1", store.run_dir("r1"))
+    assert path.read_bytes() == before
+
+
+def test_empty_trace_file_can_be_opened_once(tmp_path):
+    store = LocalRunStore(tmp_path / "runs", tmp_path / "evals")
+    store.create_run(MANIFEST)
+    t = JsonlTracer()
+    t.open("r1", store.run_dir("r1"))
+    t.close()  # nothing written yet: still empty
+    t2 = JsonlTracer()
+    t2.open("r1", store.run_dir("r1"))  # allowed: no events to duplicate
+    t2.close()
+
+
+def test_write_status_for_unknown_run_creates_nothing(tmp_path):
+    store = LocalRunStore(tmp_path / "runs", tmp_path / "evals")
+    with pytest.raises(FileNotFoundError):
+        store.write_status("ghost", "running")
+    assert not (tmp_path / "runs" / "ghost").exists()
+    store.create_run({"run_id": "ghost"})  # the real run can still be created
+
+
+def test_reader_non_event_json_line_is_treated_as_corruption(tmp_path):
+    store = LocalRunStore(tmp_path / "runs", tmp_path / "evals")
+    sent = record(store, finish=False)
+    path = store.trace_path("r1")
+    lines = path.read_text().splitlines()
+    for bad in ("[1, 2, 3]", '"just a string"', "42", "null"):
+        path.write_text("\n".join(lines[:3] + [bad] + lines[3:]) + "\n")
+        trace = read_trace(path.parent)
+        assert trace.incomplete is True and trace.events == sent[:3]
+
+
+def test_reader_unreadable_schema_version_is_a_clear_error(tmp_path):
+    store = LocalRunStore(tmp_path / "runs", tmp_path / "evals")
+    record(store, finish=False)
+    path = store.trace_path("r1")
+    path.write_text(
+        path.read_text().replace('"schema_version":"1.0"', '"schema_version":"abc"', 1)
+    )
+    with pytest.raises(UnsupportedTraceVersion):
+        read_trace(path.parent)
