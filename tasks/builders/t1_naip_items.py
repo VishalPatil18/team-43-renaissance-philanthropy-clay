@@ -1,4 +1,4 @@
-"""T1 reference builder: every NAIP item intersecting the AOI bbox in the given year.
+"""T1 reference builder: every NAIP item intersecting the instance's search box in its year.
 
 Source: the STAC API that stac-mcp searches when the agent gives no ``catalog_url`` (Microsoft
 Planetary Computer, collection ``naip``). Using the same catalog as the tool means the answer key
@@ -32,14 +32,16 @@ def search_item_ids(bbox: list[float], year: int, stac_api: str = STAC_API) -> l
 
 def build(template: TaskTemplate, aoi: AOI, instance: TaskInstance) -> BuildResult:
     year = int(instance.params["year"])
-    ids = search_item_ids(aoi.bbox, year)
+    bbox = [float(v) for v in instance.params["area_bbox"]]
+    ids = search_item_ids(bbox, year)
     if not ids:
         raise RuntimeError(f"no NAIP items for {aoi.id} in {year}: choose another year")
     inputs: dict[str, Any] = {
         "stac_api": STAC_API,
         "collection": COLLECTION,
         "year": year,
-        "bbox": aoi.bbox,
-        "match": "item intersects the AOI bbox",
+        "area_name": instance.params["area_name"],
+        "bbox": bbox,
+        "match": "item intersects the search box",
     }
     return BuildResult(output_reference={"items": ids}, inputs=inputs, method="script")

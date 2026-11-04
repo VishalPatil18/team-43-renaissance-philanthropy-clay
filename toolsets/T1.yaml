@@ -1,0 +1,39 @@
+# Tool set T1: RODA + STAC + OpenStreetMap (DD-033). clay-embeddings is added in R2.
+# Versions are pinned (FR-1.10). Smoke-test results and quirks: toolsets/README.md.
+name: T1
+description: >-
+  Registry of Open Data on AWS (dataset discovery), stac-mcp (imagery search, default catalog
+  Microsoft Planetary Computer) and OpenStreetMap (geocoding, Nominatim and Overpass).
+servers:
+  - name: roda
+    command: ["uvx", "awslabs.roda-mcp-server@0.1.7"]
+    env: {FASTMCP_LOG_LEVEL: ERROR}
+    needs_aws: false # every RODA call works with anonymous access (smoke test 2026-11-04)
+    timeout_s: 60
+  - name: stac
+    command: ["uvx", "stac-mcp@6.5.0"]
+    env: {STAC_MCP_LOG_LEVEL: ERROR}
+    needs_aws: false
+    timeout_s: 60
+  - name: osm
+    command: ["npx", "-y", "@cyanheads/openstreetmap-mcp-server@0.7.0"]
+    env:
+      MCP_LOG_LEVEL: error
+      # Required by the Nominatim and Overpass usage policies.
+      OSM_USER_AGENT: clay-agent-eval-sandbox/0.1 (+https://github.com/VishalPatil18/team-43-renaissance-philanthropy-clay)
+    needs_aws: false
+    timeout_s: 60
+capabilities:
+  dataset_discovery:
+    - roda.search_datasets
+    - roda.list_datasets
+    - roda.get_dataset_details
+    - roda.discover_by_organization
+    - roda.discover_by_license
+    - roda.find_related_datasets
+    - roda.search_stac_endpoints
+  imagery_search:
+    - stac.search_items
+  geocode:
+    - osm.openstreetmap_search_places
+# Not mapped to a capability (no workflow rule refers to them): the other RODA, STAC and OSM tools.

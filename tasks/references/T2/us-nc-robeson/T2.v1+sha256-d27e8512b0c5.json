@@ -1,0 +1,322 @@
+{
+  "schema_version": "1.0",
+  "template": "T2",
+  "aoi": "us-nc-robeson",
+  "instance_id": "T2@us-nc-robeson",
+  "version": "T2.v1+sha256:d27e8512b0c5",
+  "method": "script",
+  "builder": "builders/t2_open_datasets.py",
+  "builder_sha256": "cb1ecf49c39bb53ddead8a7bc87d2183a882006a8cccff1be5c6f04e77251811",
+  "inputs": {
+    "registry": "https://github.com/awslabs/open-data-registry",
+    "commit": "40c4313ffd10948ee5193e14b7605996cccb3d1b",
+    "datasets_read": 1245,
+    "theme_tags": [
+      "aerial imagery",
+      "elevation",
+      "land cover",
+      "lidar",
+      "satellite imagery"
+    ],
+    "filter_version": 1,
+    "state": "North Carolina"
+  },
+  "built_at": "2026-11-04T16:48:51.541600Z",
+  "checked_by": null,
+  "checked_at": null,
+  "notes": [
+    "Coverage is decided by keywords in each dataset's name and description (the registry has no coverage field), so the key has false positives and misses. T2 is scored by precision and recall@k; recall over the whole key is not meaningful.",
+    "method script: not hand-curated (Task Author decision, 2026-11-04)."
+  ],
+  "workflow": {
+    "required": [
+      "dataset_discovery"
+    ],
+    "forbidden": [],
+    "ordering": [
+      {
+        "kind": "before",
+        "before": "geocode",
+        "after": "dataset_discovery",
+        "optional_first": true
+      }
+    ],
+    "argument_constraints": [],
+    "expected_steps": 4,
+    "step_limit": 15,
+    "done": "output_matches_schema_nonempty",
+    "recovery": {
+      "recovered_penalty": 0.25
+    }
+  },
+  "output_reference": {
+    "datasets": [
+      "aster-l1t",
+      "capella_opendata",
+      "ccic",
+      "clay-v1-5-sentinel2",
+      "copernicus-dem",
+      "ctrees-agb-100m-global",
+      "dataforgood-fb-forests",
+      "dataforgood-fb-forestsv2",
+      "dataforgood-fb-hrsl",
+      "ebd-sentinel-1-global-coherence-backscatter",
+      "emc-built",
+      "epa-edde-v1",
+      "epa-edde-v2",
+      "esa-worldcover-vito",
+      "esa-worldcover-vito-composites",
+      "geonadir-fair-data",
+      "ghs-built-h",
+      "ghs-built-s",
+      "ghs-built-v",
+      "ghs-wup-built-s",
+      "glad-landsat-ard",
+      "glo-30-hand",
+      "io-lulc",
+      "its-live-data",
+      "lgnd-clay-v1-5-sentinel2",
+      "m3ed",
+      "modis-astraea",
+      "naip",
+      "nasa-aster",
+      "nasa-aster-ged",
+      "nasa-atdd",
+      "nasa-aura",
+      "nasa-ceres",
+      "nasa-cms",
+      "nasa-csda",
+      "nasa-ecostress",
+      "nasa-emit",
+      "nasa-fldas",
+      "nasa-g-liht",
+      "nasa-gedi",
+      "nasa-gedi02a",
+      "nasa-gedil4aagbdensityv212056",
+      "nasa-gfsad",
+      "nasa-grace-da-dm",
+      "nasa-gsesa",
+      "nasa-hls",
+      "nasa-hlsl30",
+      "nasa-hlss30",
+      "nasa-hrac",
+      "nasa-hydroclimatology",
+      "nasa-jason-3",
+      "nasa-jpss",
+      "nasa-lance",
+      "nasa-landsat",
+      "nasa-landsat-8",
+      "nasa-landslide-project",
+      "nasa-lba-eco",
+      "nasa-mcd43a3",
+      "nasa-mcd43a4",
+      "nasa-misr",
+      "nasa-mod09a1",
+      "nasa-mod09ga",
+      "nasa-mod13q1",
+      "nasa-mod16a2",
+      "nasa-modis-aqua",
+      "nasa-multi-taste",
+      "nasa-myd09ga",
+      "nasa-nca-ldas",
+      "nasa-npp-jpss",
+      "nasa-operal3dist-alert-hlsprovisionalv0",
+      "nasa-operal3dist-alert-hlsv1",
+      "nasa-operal3dist-ann-hlsv1",
+      "nasa-operal3dswx-hlsv1",
+      "nasa-power",
+      "nasa-prefire",
+      "nasa-roses",
+      "nasa-sentinel-1",
+      "nasa-sentinel-1adpgrdhigh",
+      "nasa-sentinel-1aslc",
+      "nasa-sentinel-1bdpgrdhigh",
+      "nasa-sentinel-1bslc",
+      "nasa-sentinel-2",
+      "nasa-sentinel-6",
+      "nasa-smerge",
+      "nasa-soil",
+      "nasa-swot",
+      "nasa-tempo",
+      "nasa-terra",
+      "nasa-toms",
+      "nasa-trmm",
+      "nasa-tropess",
+      "nasa-uars",
+      "nasa-usgs-themis-mosaics",
+      "nasa-vegetation",
+      "nasa-viirs-jpss",
+      "nasa-viirs-snpp",
+      "nasa-wdts",
+      "nasa-weld",
+      "nasa-wldas",
+      "ndui",
+      "noaa-coastal-lidar",
+      "omi-no2-nasa",
+      "open-lidar-data",
+      "pgc-earthdem",
+      "radarsat-1",
+      "satellogic-earthview",
+      "seefar",
+      "sentinel-1",
+      "sentinel-1-rtc-indigo",
+      "sentinel-2",
+      "sentinel-2-l2a-cogs",
+      "sentinel-3",
+      "sentinel-s2-l2a-mosaic-120",
+      "sentinel5p",
+      "ssl4eo-multi-product-data",
+      "terrain-tiles",
+      "tessera",
+      "usgs-landsat",
+      "usgs-lidar",
+      "usgs_aqr",
+      "venus-l2a-cogs"
+    ],
+    "k": 10
+  },
+  "weights": {},
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "datasets"
+    ],
+    "properties": {
+      "datasets": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 10
+      }
+    }
+  },
+  "process_rubric": "# Process rubric: T2 (open datasets covering a county)\n\nThe agent was asked for up to 10 datasets in the Registry of Open Data on AWS that cover a US\ncounty and hold imagery, elevation/lidar or land-cover data, returned as `{\"datasets\": [slugs]}`.\nJudge **how** it worked; the output metric scores the list itself. Score each item from 0 to 1 and\ncite the trace event IDs your score is based on.\n\n## planning\n\nDid the agent plan searches that fit the request (themes × coverage)?\n\n- **1.0**: searches by theme (imagery, elevation, lidar, land cover) and checks coverage, for\n  example by reading dataset details or preferring datasets that say they are global or US-wide.\n- **0.5**: one broad search, then picks from its first page without checking coverage.\n- **0.0**: no dataset search, or searches unrelated to the themes.\n\n## tool_choice\n\nDid it use the dataset-discovery tools well?\n\n- **1.0**: `search_datasets` / `list_datasets` with theme keywords or tags, plus\n  `get_dataset_details` to confirm coverage where the description is unclear.\n- **0.5**: correct tools but poor arguments (one generic query such as \"data\").\n- **0.0**: uses tools that can't list registry datasets, or none.\n\n## error_recovery\n\nWhen a call failed, did it react sensibly?\n\n- **1.0**: reads the error, fixes the arguments or uses another discovery tool. Also 1.0 if no\n  call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: loops on the failing call, or gives up while other tools were available.\n\n## honesty\n\nIs the answer honest?\n\n- **1.0**: every slug came from a tool result; datasets whose coverage it couldn't confirm are left\n  out or flagged; returns fewer than 10 rather than padding.\n- **0.5**: real slugs, but includes datasets that the tool results show are limited to another\n  region.\n- **0.0**: invents slugs, or returns dataset names instead of slugs while claiming they are slugs.\n",
+  "aoi_snapshot": {
+    "id": "us-nc-robeson",
+    "name": "Robeson County",
+    "state": "North Carolina",
+    "state_code": "NC",
+    "fips": "37155",
+    "bbox": [
+      -79.46151,
+      34.29934,
+      -78.80543,
+      34.95271
+    ],
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            -79.12835,
+            34.88294
+          ],
+          [
+            -79.19139,
+            34.83372
+          ],
+          [
+            -79.34883,
+            34.83885
+          ],
+          [
+            -79.35742,
+            34.81896
+          ],
+          [
+            -79.33086,
+            34.77397
+          ],
+          [
+            -79.46151,
+            34.63038
+          ],
+          [
+            -79.07121,
+            34.29934
+          ],
+          [
+            -79.03847,
+            34.31314
+          ],
+          [
+            -79.02711,
+            34.35307
+          ],
+          [
+            -79.00908,
+            34.35283
+          ],
+          [
+            -79.01161,
+            34.38089
+          ],
+          [
+            -78.96974,
+            34.39521
+          ],
+          [
+            -78.95978,
+            34.44298
+          ],
+          [
+            -78.90685,
+            34.45584
+          ],
+          [
+            -78.84634,
+            34.49981
+          ],
+          [
+            -78.86266,
+            34.56223
+          ],
+          [
+            -78.83605,
+            34.59342
+          ],
+          [
+            -78.80543,
+            34.6866
+          ],
+          [
+            -78.85425,
+            34.73549
+          ],
+          [
+            -78.88334,
+            34.81212
+          ],
+          [
+            -78.95486,
+            34.91327
+          ],
+          [
+            -79.03875,
+            34.95271
+          ],
+          [
+            -79.12835,
+            34.88294
+          ]
+        ]
+      ]
+    },
+    "tags": [
+      "has_solar"
+    ],
+    "template_params": {
+      "T1": {
+        "area_name": "Lumberton",
+        "area_bbox": [
+          -79.059,
+          34.568,
+          -78.959,
+          34.668
+        ]
+      }
+    },
+    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
+  }
+}

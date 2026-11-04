@@ -1,0 +1,37 @@
+# T5: a deliberately ambiguous request (DD-030). Medium.
+# There is no single right answer. A good agent either asks what "good imagery" means or states
+# the assumptions it made (source, year, resolution, cloud cover) and then answers. Scored by
+# output.t5 against the rule list the builder writes (tasks/builders/t5_rules.py).
+id: T5
+title: Answer an ambiguous imagery request
+difficulty: medium
+parameters: [aoi]
+system_prompt: |
+  You are a geospatial data assistant. Use the tools provided. Return JSON only.
+prompt: |
+  Get me good imagery for {aoi.name}, {aoi.state}.
+  Return {"assumptions": [<assumption>, ...], "clarifying_question": <question or null>,
+  "items": [<item id>, ...]}.
+output_schema:
+  type: object
+  required: [assumptions, clarifying_question, items]
+  properties:
+    assumptions: {type: array, items: {type: string}}
+    clarifying_question: {type: [string, "null"]}
+    items: {type: array, items: {type: string}}
+workflow:
+  required: [] # asking back without searching is a valid answer
+  forbidden: []
+  ordering:
+    - {before: geocode, after: imagery_search, optional_first: true}
+  argument_constraints:
+    # If the agent does search, the search must be about this county.
+    - {capability: imagery_search, check: bbox_intersects_aoi, arg_names: [bbox]}
+  expected_steps: 3
+  step_limit: 12
+  done: assumptions_or_question
+  recovery: {recovered_penalty: 0.25}
+weights: {}
+output:
+  builder: builders/t5_rules.py
+  metric: output.t5

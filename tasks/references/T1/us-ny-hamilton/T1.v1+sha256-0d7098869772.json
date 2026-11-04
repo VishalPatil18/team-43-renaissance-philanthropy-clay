@@ -1,0 +1,311 @@
+{
+  "schema_version": "1.0",
+  "template": "T1",
+  "aoi": "us-ny-hamilton",
+  "instance_id": "T1@us-ny-hamilton",
+  "version": "T1.v1+sha256:0d7098869772",
+  "method": "script",
+  "builder": "builders/t1_naip_items.py",
+  "builder_sha256": "f151cf4b5493b19c892f80f8a1a61e9f27576de25ba7ef8ee6ac1cb227ab12b7",
+  "inputs": {
+    "stac_api": "https://planetarycomputer.microsoft.com/api/stac/v1",
+    "collection": "naip",
+    "year": 2022,
+    "area_name": "Indian Lake",
+    "bbox": [
+      -74.35,
+      43.72,
+      -74.25,
+      43.82
+    ],
+    "match": "item intersects the search box"
+  },
+  "built_at": "2026-11-04T16:35:54.291132Z",
+  "checked_by": null,
+  "checked_at": null,
+  "notes": [],
+  "workflow": {
+    "required": [
+      "imagery_search"
+    ],
+    "forbidden": [],
+    "ordering": [
+      {
+        "kind": "before",
+        "before": "geocode",
+        "after": "imagery_search",
+        "optional_first": true
+      }
+    ],
+    "argument_constraints": [
+      {
+        "capability": "imagery_search",
+        "check": "bbox_intersects_aoi",
+        "arg_names": [
+          "bbox"
+        ],
+        "values": null,
+        "value": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -74.20976,
+                43.24926
+              ],
+              [
+                -74.14015,
+                43.25398
+              ],
+              [
+                -74.21462,
+                43.7287
+              ],
+              [
+                -74.05701,
+                43.74451
+              ],
+              [
+                -74.04687,
+                43.79535
+              ],
+              [
+                -74.14908,
+                43.82961
+              ],
+              [
+                -74.21373,
+                43.81087
+              ],
+              [
+                -74.33683,
+                43.92522
+              ],
+              [
+                -74.256,
+                43.9698
+              ],
+              [
+                -74.28187,
+                44.12055
+              ],
+              [
+                -74.85417,
+                44.07009
+              ],
+              [
+                -74.77562,
+                43.48668
+              ],
+              [
+                -74.86771,
+                43.33983
+              ],
+              [
+                -74.53466,
+                43.22811
+              ],
+              [
+                -74.32638,
+                43.24163
+              ],
+              [
+                -74.32237,
+                43.21468
+              ],
+              [
+                -74.28752,
+                43.21694
+              ],
+              [
+                -74.2209,
+                43.2214
+              ],
+              [
+                -74.22421,
+                43.24817
+              ],
+              [
+                -74.20976,
+                43.24926
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "capability": "imagery_search",
+        "check": "collection_in",
+        "arg_names": [
+          "collections"
+        ],
+        "values": [
+          "naip"
+        ],
+        "value": null
+      },
+      {
+        "capability": "imagery_search",
+        "check": "datetime_within_year",
+        "arg_names": [
+          "datetime"
+        ],
+        "values": null,
+        "value": 2022
+      }
+    ],
+    "expected_steps": 4,
+    "step_limit": 15,
+    "done": "output_matches_schema_nonempty",
+    "recovery": {
+      "recovered_penalty": 0.25
+    }
+  },
+  "output_reference": {
+    "items": [
+      "ny_m_4307414_ne_18_060_20220511",
+      "ny_m_4307414_ne_18_060_20220710",
+      "ny_m_4307414_nw_18_060_20220710",
+      "ny_m_4307414_se_18_060_20220511",
+      "ny_m_4307414_se_18_060_20220710",
+      "ny_m_4307414_sw_18_060_20220710",
+      "ny_m_4307415_nw_18_060_20220710",
+      "ny_m_4307415_sw_18_060_20220710",
+      "ny_m_4307422_ne_18_060_20220511",
+      "ny_m_4307422_ne_18_060_20220710",
+      "ny_m_4307422_nw_18_060_20220710",
+      "ny_m_4307423_nw_18_060_20220710"
+    ]
+  },
+  "weights": {},
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "items"
+    ],
+    "properties": {
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "process_rubric": "# Process rubric: T1 (NAIP imagery for a search box and year)\n\nThe agent was asked for every NAIP item of one year that intersects a given 0.1° bounding box in\na US county, returned as `{\"items\": [...]}`. Judge **how** it worked, not whether the final list is\ncomplete (the output metric measures that separately). Score each item from 0 to 1 and cite the\ntrace event IDs your score is based on.\n\n## planning\n\nDid the agent work out what it needed (the NAIP collection, the box, the year) and go straight\nfor it, without wandering?\n\n- **1.0**: one imagery search with `collections: [\"naip\"]`, the given bbox and a datetime\n  range for the given year, then pages through results if `has_more` is true.\n- **0.5**: gets there, but with unneeded steps (geocoding a place whose bbox was already given,\n  listing every collection first, repeated near-identical searches).\n- **0.0**: never searches for imagery, or searches something unrelated (another collection, the\n  whole state, another year).\n\n## tool_choice\n\nDid it use the right tool with sensible arguments?\n\n- **1.0**: uses the imagery search tool (`stac.search_items`) with the given bbox, `naip` and the\n  year; optionally a dataset-discovery call to confirm NAIP exists.\n- **0.5**: uses the right tool but with a wrong or missing argument that it later fixes (no\n  datetime, bbox in the wrong order).\n- **0.0**: answers from memory, or uses tools that can't return NAIP item IDs.\n\n## error_recovery\n\nWhen a call failed (error result, timeout, unavailable server), did it react sensibly?\n\n- **1.0**: reads the error, corrects the call or switches to an equivalent tool, and continues.\n  Also 1.0 if no call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: repeats the same failing call until stopped, or gives up after the first error while\n  other options were available.\n\n## honesty\n\nIs the final answer honest about what was found?\n\n- **1.0**: returns only IDs that appeared in tool results, and says so (or returns an empty list)\n  if the search returned nothing.\n- **0.5**: returns real IDs but claims completeness it didn't check (stopped at the first page\n  while `has_more` was true).\n- **0.0**: invents item IDs, or returns IDs from another year or area as if they matched.\n",
+  "aoi_snapshot": {
+    "id": "us-ny-hamilton",
+    "name": "Hamilton County",
+    "state": "New York",
+    "state_code": "NY",
+    "fips": "36041",
+    "bbox": [
+      -74.86771,
+      43.21468,
+      -74.04687,
+      44.12055
+    ],
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            -74.20976,
+            43.24926
+          ],
+          [
+            -74.14015,
+            43.25398
+          ],
+          [
+            -74.21462,
+            43.7287
+          ],
+          [
+            -74.05701,
+            43.74451
+          ],
+          [
+            -74.04687,
+            43.79535
+          ],
+          [
+            -74.14908,
+            43.82961
+          ],
+          [
+            -74.21373,
+            43.81087
+          ],
+          [
+            -74.33683,
+            43.92522
+          ],
+          [
+            -74.256,
+            43.9698
+          ],
+          [
+            -74.28187,
+            44.12055
+          ],
+          [
+            -74.85417,
+            44.07009
+          ],
+          [
+            -74.77562,
+            43.48668
+          ],
+          [
+            -74.86771,
+            43.33983
+          ],
+          [
+            -74.53466,
+            43.22811
+          ],
+          [
+            -74.32638,
+            43.24163
+          ],
+          [
+            -74.32237,
+            43.21468
+          ],
+          [
+            -74.28752,
+            43.21694
+          ],
+          [
+            -74.2209,
+            43.2214
+          ],
+          [
+            -74.22421,
+            43.24817
+          ],
+          [
+            -74.20976,
+            43.24926
+          ]
+        ]
+      ]
+    },
+    "tags": [
+      "no_solar"
+    ],
+    "template_params": {
+      "T1": {
+        "area_name": "Indian Lake",
+        "area_bbox": [
+          -74.35,
+          43.72,
+          -74.25,
+          43.82
+        ]
+      }
+    },
+    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
+  }
+}

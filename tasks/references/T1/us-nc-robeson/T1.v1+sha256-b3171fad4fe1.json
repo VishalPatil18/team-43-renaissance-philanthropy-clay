@@ -1,0 +1,328 @@
+{
+  "schema_version": "1.0",
+  "template": "T1",
+  "aoi": "us-nc-robeson",
+  "instance_id": "T1@us-nc-robeson",
+  "version": "T1.v1+sha256:b3171fad4fe1",
+  "method": "script",
+  "builder": "builders/t1_naip_items.py",
+  "builder_sha256": "f151cf4b5493b19c892f80f8a1a61e9f27576de25ba7ef8ee6ac1cb227ab12b7",
+  "inputs": {
+    "stac_api": "https://planetarycomputer.microsoft.com/api/stac/v1",
+    "collection": "naip",
+    "year": 2022,
+    "area_name": "Lumberton",
+    "bbox": [
+      -79.059,
+      34.568,
+      -78.959,
+      34.668
+    ],
+    "match": "item intersects the search box"
+  },
+  "built_at": "2026-11-04T16:35:52.065913Z",
+  "checked_by": null,
+  "checked_at": null,
+  "notes": [],
+  "workflow": {
+    "required": [
+      "imagery_search"
+    ],
+    "forbidden": [],
+    "ordering": [
+      {
+        "kind": "before",
+        "before": "geocode",
+        "after": "imagery_search",
+        "optional_first": true
+      }
+    ],
+    "argument_constraints": [
+      {
+        "capability": "imagery_search",
+        "check": "bbox_intersects_aoi",
+        "arg_names": [
+          "bbox"
+        ],
+        "values": null,
+        "value": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -79.12835,
+                34.88294
+              ],
+              [
+                -79.19139,
+                34.83372
+              ],
+              [
+                -79.34883,
+                34.83885
+              ],
+              [
+                -79.35742,
+                34.81896
+              ],
+              [
+                -79.33086,
+                34.77397
+              ],
+              [
+                -79.46151,
+                34.63038
+              ],
+              [
+                -79.07121,
+                34.29934
+              ],
+              [
+                -79.03847,
+                34.31314
+              ],
+              [
+                -79.02711,
+                34.35307
+              ],
+              [
+                -79.00908,
+                34.35283
+              ],
+              [
+                -79.01161,
+                34.38089
+              ],
+              [
+                -78.96974,
+                34.39521
+              ],
+              [
+                -78.95978,
+                34.44298
+              ],
+              [
+                -78.90685,
+                34.45584
+              ],
+              [
+                -78.84634,
+                34.49981
+              ],
+              [
+                -78.86266,
+                34.56223
+              ],
+              [
+                -78.83605,
+                34.59342
+              ],
+              [
+                -78.80543,
+                34.6866
+              ],
+              [
+                -78.85425,
+                34.73549
+              ],
+              [
+                -78.88334,
+                34.81212
+              ],
+              [
+                -78.95486,
+                34.91327
+              ],
+              [
+                -79.03875,
+                34.95271
+              ],
+              [
+                -79.12835,
+                34.88294
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "capability": "imagery_search",
+        "check": "collection_in",
+        "arg_names": [
+          "collections"
+        ],
+        "values": [
+          "naip"
+        ],
+        "value": null
+      },
+      {
+        "capability": "imagery_search",
+        "check": "datetime_within_year",
+        "arg_names": [
+          "datetime"
+        ],
+        "values": null,
+        "value": 2022
+      }
+    ],
+    "expected_steps": 4,
+    "step_limit": 15,
+    "done": "output_matches_schema_nonempty",
+    "recovery": {
+      "recovered_penalty": 0.25
+    }
+  },
+  "output_reference": {
+    "items": [
+      "nc_m_3407817_sw_17_060_20221004",
+      "nc_m_3407825_nw_17_060_20221004",
+      "nc_m_3407924_se_17_060_20221004",
+      "nc_m_3407932_ne_17_060_20221004",
+      "nc_m_3407932_nw_17_060_20221004"
+    ]
+  },
+  "weights": {},
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "items"
+    ],
+    "properties": {
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "process_rubric": "# Process rubric: T1 (NAIP imagery for a search box and year)\n\nThe agent was asked for every NAIP item of one year that intersects a given 0.1° bounding box in\na US county, returned as `{\"items\": [...]}`. Judge **how** it worked, not whether the final list is\ncomplete (the output metric measures that separately). Score each item from 0 to 1 and cite the\ntrace event IDs your score is based on.\n\n## planning\n\nDid the agent work out what it needed (the NAIP collection, the box, the year) and go straight\nfor it, without wandering?\n\n- **1.0**: one imagery search with `collections: [\"naip\"]`, the given bbox and a datetime\n  range for the given year, then pages through results if `has_more` is true.\n- **0.5**: gets there, but with unneeded steps (geocoding a place whose bbox was already given,\n  listing every collection first, repeated near-identical searches).\n- **0.0**: never searches for imagery, or searches something unrelated (another collection, the\n  whole state, another year).\n\n## tool_choice\n\nDid it use the right tool with sensible arguments?\n\n- **1.0**: uses the imagery search tool (`stac.search_items`) with the given bbox, `naip` and the\n  year; optionally a dataset-discovery call to confirm NAIP exists.\n- **0.5**: uses the right tool but with a wrong or missing argument that it later fixes (no\n  datetime, bbox in the wrong order).\n- **0.0**: answers from memory, or uses tools that can't return NAIP item IDs.\n\n## error_recovery\n\nWhen a call failed (error result, timeout, unavailable server), did it react sensibly?\n\n- **1.0**: reads the error, corrects the call or switches to an equivalent tool, and continues.\n  Also 1.0 if no call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: repeats the same failing call until stopped, or gives up after the first error while\n  other options were available.\n\n## honesty\n\nIs the final answer honest about what was found?\n\n- **1.0**: returns only IDs that appeared in tool results, and says so (or returns an empty list)\n  if the search returned nothing.\n- **0.5**: returns real IDs but claims completeness it didn't check (stopped at the first page\n  while `has_more` was true).\n- **0.0**: invents item IDs, or returns IDs from another year or area as if they matched.\n",
+  "aoi_snapshot": {
+    "id": "us-nc-robeson",
+    "name": "Robeson County",
+    "state": "North Carolina",
+    "state_code": "NC",
+    "fips": "37155",
+    "bbox": [
+      -79.46151,
+      34.29934,
+      -78.80543,
+      34.95271
+    ],
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            -79.12835,
+            34.88294
+          ],
+          [
+            -79.19139,
+            34.83372
+          ],
+          [
+            -79.34883,
+            34.83885
+          ],
+          [
+            -79.35742,
+            34.81896
+          ],
+          [
+            -79.33086,
+            34.77397
+          ],
+          [
+            -79.46151,
+            34.63038
+          ],
+          [
+            -79.07121,
+            34.29934
+          ],
+          [
+            -79.03847,
+            34.31314
+          ],
+          [
+            -79.02711,
+            34.35307
+          ],
+          [
+            -79.00908,
+            34.35283
+          ],
+          [
+            -79.01161,
+            34.38089
+          ],
+          [
+            -78.96974,
+            34.39521
+          ],
+          [
+            -78.95978,
+            34.44298
+          ],
+          [
+            -78.90685,
+            34.45584
+          ],
+          [
+            -78.84634,
+            34.49981
+          ],
+          [
+            -78.86266,
+            34.56223
+          ],
+          [
+            -78.83605,
+            34.59342
+          ],
+          [
+            -78.80543,
+            34.6866
+          ],
+          [
+            -78.85425,
+            34.73549
+          ],
+          [
+            -78.88334,
+            34.81212
+          ],
+          [
+            -78.95486,
+            34.91327
+          ],
+          [
+            -79.03875,
+            34.95271
+          ],
+          [
+            -79.12835,
+            34.88294
+          ]
+        ]
+      ]
+    },
+    "tags": [
+      "has_solar"
+    ],
+    "template_params": {
+      "T1": {
+        "area_name": "Lumberton",
+        "area_bbox": [
+          -79.059,
+          34.568,
+          -78.959,
+          34.668
+        ]
+      }
+    },
+    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
+  }
+}

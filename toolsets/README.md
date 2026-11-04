@@ -9,8 +9,31 @@ file's sha256 as its version.
 | Tool set | Servers | Status |
 |---|---|---|
 | `T0` | `roda` | R0, live |
-| `T1` | `roda`, `stac`, `osm` (+ `clay-embeddings` in R2) | R1 |
-| `T1-faulty` | copy of T1 with injected failures, `test_only: true` | R1 |
+| `T1` | `roda`, `stac`, `osm` (+ `clay-embeddings` in R2) | R1, live |
+| `T1-faulty` | T1 with injected failures plus a dead `broken` server, `test_only: true` | R1, for J4 |
+
+## Capabilities
+
+| Capability | T0 | T1 |
+|---|---|---|
+| `dataset_discovery` | `roda.search_datasets`, `list_datasets`, `get_dataset_details`, `discover_by_organization`, `discover_by_license`, `find_related_datasets`, `search_stac_endpoints` | same |
+| `imagery_search` | — | `stac.search_items` |
+| `geocode` | — | `osm.openstreetmap_search_places` |
+| `embedding_similarity` | — | `clay-embeddings.similar_places` (R2) |
+
+No server in T0 or T1 gets AWS credentials.
+
+## T1-faulty (journey J4)
+
+| Server | Injected failure | Result of a call | Checked 2026-11-04 |
+|---|---|---|---|
+| `roda` | none | `ok` | yes |
+| `stac` | `HTTPS_PROXY`/`HTTP_PROXY` = `http://127.0.0.1:9` (connection refused) | `error` / `tool_error` in 0.4 s | yes |
+| `osm` | Nominatim and Overpass URLs = `http://10.255.255.1` (non-routable), `timeout_s: 0.5` | `timeout` / `tool_timeout` after 0.5 s | yes |
+| `broken` | `command: ["false"]` | the server is `unavailable`; a direct call returns `error` / `server_unavailable` | yes |
+
+`broken` never lists tools, so an agent can't call it; only a direct call (or a test) produces
+`server_unavailable`. The STAC and OSM tools are listed normally and fail when called.
 
 ## File format
 
@@ -110,10 +133,13 @@ sortby?, output_format?, catalog_url?)`, `estimate_data_size`, `get_queryables`,
   `catalog_url` searches the same catalog the key was built from.
 - `output_format: "json"` returns `{"mode": "json", "data": {"type": "item_list", "count", "items":
   [full STAC items], "meta": {..., "has_more"}}}`. The default is a text rendering.
-- Full STAC items are large (~3 KB each). `fields: ["id"]` keeps results small.
+- Full STAC items are large (~3 KB each).
+- **Quirk:** in 6.5.0, `search_items` with `fields` (e.g. `["id"]`) fails with "JSON ... does not
+  represent a STACObject", because the trimmed items no longer parse as STAC items. Don't suggest
+  `fields` in prompts.
 - NAIP years available (Planetary Computer, checked 2026-11-04): CA, TX, NC: 2012–2022 even years;
   AZ: 2010, 2013, 2015, 2017, 2019, 2021, 2023.
-- Planned capability map in T1: `imagery_search` = `stac.search_items`.
+- Capability in T1: `imagery_search` = `stac.search_items`. Log level: `STAC_MCP_LOG_LEVEL`.
 
 ### OSM (6 tools)
 
@@ -133,7 +159,7 @@ radius_meters, ...)`, `openstreetmap_query_bbox(within | south/west/north/east, 
   tool set: point them at an unreachable host).
 - Nominatim requests are spaced 1.05 s apart by the server.
 - Node ≥ 24 is required. The Docker image needs `WITH_NODE=true` and Node 24 (WS1).
-- Planned capability map in T1: `geocode` = `osm.openstreetmap_search_places`.
+- Capability in T1: `geocode` = `osm.openstreetmap_search_places`.
 - Fallback if this server becomes unusable:
   [jagan-shanmugam/open-streetmap-mcp](https://github.com/jagan-shanmugam/open-streetmap-mcp)
   (MIT, Python ≥ 3.13, `osm-mcp-server` on PyPI, last updated 2025-07).

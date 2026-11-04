@@ -247,3 +247,46 @@ def test_fixture_reference_is_self_consistent() -> None:
     ref = fixture_t1_reference()
     assert reference_hash(ref) == ref.version.split(":")[1]
     json.loads(ref.model_dump_json())
+
+
+def test_spot_check_records_who_and_when_without_changing_the_version(
+    lib: FileTaskLibrary,
+) -> None:
+    (ref,) = lib.build_references("T1", "us-zz-testland")
+    checked = lib.references.record_spot_check(
+        "T1", "us-zz-testland", ref.version, "Tester", note="compared with the STAC browser"
+    )
+    again = lib.get_reference("T1@us-zz-testland")
+    assert again.version == ref.version and again.checked_by == "Tester"
+    assert again.checked_at == checked.checked_at is not None
+    assert again.notes[-1] == "spot-check: compared with the STAC browser"
+    assert reference_hash(again) == ref.version.split(":")[1]
+    assert len(lib.references.versions("T1", "us-zz-testland")) == 1
+
+
+# -- the repository's own task library ---------------------------------------------------
+
+
+def test_repository_templates_instantiate_on_every_aoi() -> None:
+    repo = FileTaskLibrary()
+    assert len(repo.list_aois()) == 6
+    tags = {a.id: a.tags for a in repo.list_aois()}
+    assert sum("has_solar" in t for t in tags.values()) == 4
+    assert sum("no_solar" in t for t in tags.values()) == 2
+    for inst in repo.instances():
+        assert "{" + "aoi." not in inst.prompt  # every placeholder was filled
+        workflow = repo.resolve_workflow(repo.template(inst.template), repo.aoi(inst.aoi))
+        for c in workflow.argument_constraints:
+            assert c.value is not None or c.values
+
+
+def test_repository_references_are_consistent() -> None:
+    repo = FileTaskLibrary()
+    for inst in repo.instances():
+        try:
+            ref = repo.get_reference(inst.id)
+        except ConfigError:
+            continue  # not built yet
+        assert ref.instance_id == inst.id
+        assert reference_hash(ref) == ref.version.split(":")[1]
+        assert ref.output_reference

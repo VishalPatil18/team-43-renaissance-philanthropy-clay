@@ -1,15 +1,19 @@
 # T1: find NAIP imagery covering an AOI for a year (DD-030, architecture §14.2). Easy.
 # Placeholders: {aoi.name}, {aoi.state}, ... and the parameters below. Plain substitution only.
+# The search area is a 0.1 deg box around a named place in the county (aois.yaml
+# template_params.T1), not the whole county: a county has hundreds of NAIP items, more than an
+# agent can return in one answer.
 id: T1
 title: Find NAIP imagery covering an AOI for a year
 difficulty: easy
-parameters: [aoi, year]
+parameters: [aoi, year, area_name, area_bbox]
 defaults:
   year: 2022 # one year for every AOI; every R0/R1 county must have NAIP coverage for it
 system_prompt: |
   You are a geospatial data assistant. Use the tools provided. Return JSON only.
 prompt: |
-  Find all NAIP aerial imagery items covering {aoi.name} ({aoi.state}) for {year}.
+  Find all NAIP aerial imagery items for {year} that intersect the area around {area_name} in
+  {aoi.name}, {aoi.state}: bounding box {area_bbox} as [west, south, east, north] in WGS84.
   Return {"items": [<item id>, ...]}.
 output_schema:
   type: object

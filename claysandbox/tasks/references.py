@@ -5,7 +5,8 @@ JSON covers ``workflow``, ``output_reference`` and ``weights`` (keys sorted, no 
 ``n`` goes up by one only when that hash changes. Rebuilding identical content returns the
 existing version and writes nothing.
 
-Files: ``<root>/<template>/<aoi>/<version>.json``. An existing file is never overwritten.
+Files: ``<root>/<template>/<aoi>/<version>.json`` (``:`` written as ``-``). An existing file is
+never overwritten, except to record the human spot-check (``record_spot_check``).
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -106,6 +108,35 @@ class ReferenceStore:
         n = max((parse_version(r.version)[1] for r in refs), default=0) + 1
         return f"{template}.v{n}+sha256:{digest}", None
 
+    def record_spot_check(
+        self,
+        template: str,
+        aoi: str,
+        version: str,
+        checked_by: str,
+        checked_at: datetime | None = None,
+        note: str | None = None,
+    ) -> TaskReference:
+        """Record the human spot-check (FR-13.5) on an existing version.
+
+        This is the one change allowed to a stored reference: ``checked_by``, ``checked_at`` and a
+        note. None of them is part of the version hash, so the version stays valid.
+        """
+        ref = self.get(template, aoi, version)
+        notes = list(ref.notes) + ([f"spot-check: {note}"] if note else [])
+        updated = ref.model_copy(
+            update={
+                "checked_by": checked_by,
+                "checked_at": checked_at or datetime.now(UTC),
+                "notes": notes,
+            }
+        )
+        if reference_hash(updated) != reference_hash(ref):
+            raise ConfigError("spot-check must not change hashed content")
+        path = self._dir(template, aoi) / file_name(version)
+        path.write_text(_dump(updated), encoding="utf-8")
+        return updated
+
     def save(self, ref: TaskReference) -> Path:
         """Write a new version. Refuses to overwrite and checks the hash matches the content."""
         template, _, digest = parse_version(ref.version)
@@ -117,7 +148,10 @@ class ReferenceStore:
         if path.exists():
             raise ConfigError(f"refusing to overwrite existing reference {path}")
         path.parent.mkdir(parents=True, exist_ok=True)
-        text = json.dumps(ref.model_dump(mode="json"), indent=2, ensure_ascii=False) + "\n"
         with path.open("x", encoding="utf-8") as handle:
-            handle.write(text)
+            handle.write(_dump(ref))
         return path
+
+
+def _dump(ref: TaskReference) -> str:
+    return json.dumps(ref.model_dump(mode="json"), indent=2, ensure_ascii=False) + "\n"

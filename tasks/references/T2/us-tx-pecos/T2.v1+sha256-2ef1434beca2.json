@@ -1,0 +1,394 @@
+{
+  "schema_version": "1.0",
+  "template": "T2",
+  "aoi": "us-tx-pecos",
+  "instance_id": "T2@us-tx-pecos",
+  "version": "T2.v1+sha256:2ef1434beca2",
+  "method": "script",
+  "builder": "builders/t2_open_datasets.py",
+  "builder_sha256": "cb1ecf49c39bb53ddead8a7bc87d2183a882006a8cccff1be5c6f04e77251811",
+  "inputs": {
+    "registry": "https://github.com/awslabs/open-data-registry",
+    "commit": "40c4313ffd10948ee5193e14b7605996cccb3d1b",
+    "datasets_read": 1245,
+    "theme_tags": [
+      "aerial imagery",
+      "elevation",
+      "land cover",
+      "lidar",
+      "satellite imagery"
+    ],
+    "filter_version": 1,
+    "state": "Texas"
+  },
+  "built_at": "2026-11-04T16:48:44.298777Z",
+  "checked_by": "Vishal (agent-assisted)",
+  "checked_at": "2026-11-04T16:49:33.750966Z",
+  "notes": [
+    "Coverage is decided by keywords in each dataset's name and description (the registry has no coverage field), so the key has false positives and misses. T2 is scored by precision and recall@k; recall over the whole key is not meaningful.",
+    "method script: not hand-curated (Task Author decision, 2026-11-04).",
+    "spot-check: read the registry docs of naip (continental U.S.), usgs-lidar (3DEP, conterminous U.S.) and sentinel-2 (global): all correct. Known false positive: nasa-uars (atmospheric model data, no county coverage); the keyword key is noisy by design (method script)"
+  ],
+  "workflow": {
+    "required": [
+      "dataset_discovery"
+    ],
+    "forbidden": [],
+    "ordering": [
+      {
+        "kind": "before",
+        "before": "geocode",
+        "after": "dataset_discovery",
+        "optional_first": true
+      }
+    ],
+    "argument_constraints": [],
+    "expected_steps": 4,
+    "step_limit": 15,
+    "done": "output_matches_schema_nonempty",
+    "recovery": {
+      "recovered_penalty": 0.25
+    }
+  },
+  "output_reference": {
+    "datasets": [
+      "aster-l1t",
+      "capella_opendata",
+      "ccic",
+      "clay-v1-5-sentinel2",
+      "copernicus-dem",
+      "ctrees-agb-100m-global",
+      "dataforgood-fb-forests",
+      "dataforgood-fb-forestsv2",
+      "dataforgood-fb-hrsl",
+      "ebd-sentinel-1-global-coherence-backscatter",
+      "emc-built",
+      "epa-edde-v1",
+      "epa-edde-v2",
+      "esa-worldcover-vito",
+      "esa-worldcover-vito-composites",
+      "geonadir-fair-data",
+      "ghs-built-h",
+      "ghs-built-s",
+      "ghs-built-v",
+      "ghs-wup-built-s",
+      "glad-landsat-ard",
+      "glo-30-hand",
+      "io-lulc",
+      "its-live-data",
+      "lgnd-clay-v1-5-sentinel2",
+      "m3ed",
+      "modis-astraea",
+      "naip",
+      "nasa-aster",
+      "nasa-aster-ged",
+      "nasa-atdd",
+      "nasa-aura",
+      "nasa-ceres",
+      "nasa-csda",
+      "nasa-ecostress",
+      "nasa-emit",
+      "nasa-fldas",
+      "nasa-g-liht",
+      "nasa-gedi",
+      "nasa-gedi02a",
+      "nasa-gedil4aagbdensityv212056",
+      "nasa-gfsad",
+      "nasa-grace-da-dm",
+      "nasa-gsesa",
+      "nasa-hls",
+      "nasa-hlsl30",
+      "nasa-hlss30",
+      "nasa-hrac",
+      "nasa-hydroclimatology",
+      "nasa-jason-3",
+      "nasa-jpss",
+      "nasa-lance",
+      "nasa-landsat",
+      "nasa-landsat-8",
+      "nasa-landslide-project",
+      "nasa-master",
+      "nasa-mcd43a3",
+      "nasa-mcd43a4",
+      "nasa-misr",
+      "nasa-mod09a1",
+      "nasa-mod09ga",
+      "nasa-mod13q1",
+      "nasa-mod16a2",
+      "nasa-modis-aqua",
+      "nasa-multi-taste",
+      "nasa-myd09ga",
+      "nasa-nca-ldas",
+      "nasa-npp",
+      "nasa-npp-jpss",
+      "nasa-operal3dist-alert-hlsprovisionalv0",
+      "nasa-operal3dist-alert-hlsv1",
+      "nasa-operal3dist-ann-hlsv1",
+      "nasa-operal3dswx-hlsv1",
+      "nasa-power",
+      "nasa-prefire",
+      "nasa-roses",
+      "nasa-sentinel-1",
+      "nasa-sentinel-1adpgrdhigh",
+      "nasa-sentinel-1aslc",
+      "nasa-sentinel-1bdpgrdhigh",
+      "nasa-sentinel-1bslc",
+      "nasa-sentinel-2",
+      "nasa-sentinel-6",
+      "nasa-smerge",
+      "nasa-soil",
+      "nasa-swot",
+      "nasa-tempo",
+      "nasa-terra",
+      "nasa-toms",
+      "nasa-trmm",
+      "nasa-tropess",
+      "nasa-uars",
+      "nasa-usgs-themis-mosaics",
+      "nasa-viirs-jpss",
+      "nasa-viirs-snpp",
+      "nasa-wdts",
+      "nasa-weld",
+      "nasa-wldas",
+      "ndui",
+      "noaa-coastal-lidar",
+      "omi-no2-nasa",
+      "open-lidar-data",
+      "pgc-earthdem",
+      "radarsat-1",
+      "satellogic-earthview",
+      "seefar",
+      "sentinel-1",
+      "sentinel-1-rtc-indigo",
+      "sentinel-2",
+      "sentinel-2-l2a-cogs",
+      "sentinel-3",
+      "sentinel-s2-l2a-mosaic-120",
+      "sentinel5p",
+      "ssl4eo-multi-product-data",
+      "terrain-tiles",
+      "tessera",
+      "usgs-landsat",
+      "usgs-lidar",
+      "usgs_aqr",
+      "venus-l2a-cogs"
+    ],
+    "k": 10
+  },
+  "weights": {},
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "datasets"
+    ],
+    "properties": {
+      "datasets": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 10
+      }
+    }
+  },
+  "process_rubric": "# Process rubric: T2 (open datasets covering a county)\n\nThe agent was asked for up to 10 datasets in the Registry of Open Data on AWS that cover a US\ncounty and hold imagery, elevation/lidar or land-cover data, returned as `{\"datasets\": [slugs]}`.\nJudge **how** it worked; the output metric scores the list itself. Score each item from 0 to 1 and\ncite the trace event IDs your score is based on.\n\n## planning\n\nDid the agent plan searches that fit the request (themes × coverage)?\n\n- **1.0**: searches by theme (imagery, elevation, lidar, land cover) and checks coverage, for\n  example by reading dataset details or preferring datasets that say they are global or US-wide.\n- **0.5**: one broad search, then picks from its first page without checking coverage.\n- **0.0**: no dataset search, or searches unrelated to the themes.\n\n## tool_choice\n\nDid it use the dataset-discovery tools well?\n\n- **1.0**: `search_datasets` / `list_datasets` with theme keywords or tags, plus\n  `get_dataset_details` to confirm coverage where the description is unclear.\n- **0.5**: correct tools but poor arguments (one generic query such as \"data\").\n- **0.0**: uses tools that can't list registry datasets, or none.\n\n## error_recovery\n\nWhen a call failed, did it react sensibly?\n\n- **1.0**: reads the error, fixes the arguments or uses another discovery tool. Also 1.0 if no\n  call failed.\n- **0.5**: retries the same failing call once or twice, then moves on.\n- **0.0**: loops on the failing call, or gives up while other tools were available.\n\n## honesty\n\nIs the answer honest?\n\n- **1.0**: every slug came from a tool result; datasets whose coverage it couldn't confirm are left\n  out or flagged; returns fewer than 10 rather than padding.\n- **0.5**: real slugs, but includes datasets that the tool results show are limited to another\n  region.\n- **0.0**: invents slugs, or returns dataset names instead of slugs while claiming they are slugs.\n",
+  "aoi_snapshot": {
+    "id": "us-tx-pecos",
+    "name": "Pecos County",
+    "state": "Texas",
+    "state_code": "TX",
+    "fips": "48371",
+    "bbox": [
+      -103.58508,
+      30.05281,
+      -101.76838,
+      31.37131
+    ],
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            -102.20872,
+            30.59796
+          ],
+          [
+            -102.13841,
+            30.59752
+          ],
+          [
+            -102.13778,
+            30.65598
+          ],
+          [
+            -101.76838,
+            30.65294
+          ],
+          [
+            -101.77982,
+            30.68599
+          ],
+          [
+            -101.81005,
+            30.70239
+          ],
+          [
+            -101.81583,
+            30.75202
+          ],
+          [
+            -101.83876,
+            30.76333
+          ],
+          [
+            -101.83147,
+            30.80173
+          ],
+          [
+            -101.8499,
+            30.85687
+          ],
+          [
+            -101.8911,
+            30.89016
+          ],
+          [
+            -101.87898,
+            30.92173
+          ],
+          [
+            -101.91863,
+            30.93463
+          ],
+          [
+            -101.9841,
+            30.98734
+          ],
+          [
+            -102.01167,
+            30.97934
+          ],
+          [
+            -102.04918,
+            31.00364
+          ],
+          [
+            -102.1099,
+            30.99032
+          ],
+          [
+            -102.18089,
+            31.0167
+          ],
+          [
+            -102.18999,
+            31.00337
+          ],
+          [
+            -102.20203,
+            31.03103
+          ],
+          [
+            -102.28479,
+            31.03381
+          ],
+          [
+            -102.32989,
+            31.06834
+          ],
+          [
+            -102.40615,
+            31.08787
+          ],
+          [
+            -102.43028,
+            31.12927
+          ],
+          [
+            -102.42508,
+            31.17826
+          ],
+          [
+            -102.44209,
+            31.2127
+          ],
+          [
+            -102.52077,
+            31.26281
+          ],
+          [
+            -102.59649,
+            31.26401
+          ],
+          [
+            -102.67574,
+            31.33001
+          ],
+          [
+            -102.72487,
+            31.30842
+          ],
+          [
+            -102.73924,
+            31.2826
+          ],
+          [
+            -102.77441,
+            31.29532
+          ],
+          [
+            -102.82673,
+            31.26688
+          ],
+          [
+            -102.91373,
+            31.33901
+          ],
+          [
+            -103.01104,
+            31.37131
+          ],
+          [
+            -103.58508,
+            30.76647
+          ],
+          [
+            -102.56705,
+            30.05281
+          ],
+          [
+            -102.56694,
+            30.28327
+          ],
+          [
+            -102.34308,
+            30.28412
+          ],
+          [
+            -102.34299,
+            30.59876
+          ],
+          [
+            -102.20872,
+            30.59796
+          ]
+        ]
+      ]
+    },
+    "tags": [
+      "has_solar"
+    ],
+    "template_params": {
+      "T1": {
+        "area_name": "Fort Stockton",
+        "area_bbox": [
+          -102.929,
+          30.844,
+          -102.829,
+          30.944
+        ]
+      }
+    },
+    "source": "Census TIGERweb State_County layer 1, maxAllowableOffset=0.01, retrieved 2026-11-04"
+  }
+}

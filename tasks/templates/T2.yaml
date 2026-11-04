@@ -1,0 +1,35 @@
+# T2: open datasets covering an AOI (DD-030). Medium.
+# The answer key (tasks/builders/t2_open_datasets.py) is a script-built list of about 120 Registry
+# of Open Data datasets per county, so the agent is asked for at most 10 and output.t2 scores
+# precision and recall@k with k = 10 (stored in each reference as output_reference.k).
+id: T2
+title: List open datasets covering an AOI
+difficulty: medium
+parameters: [aoi]
+system_prompt: |
+  You are a geospatial data assistant. Use the tools provided. Return JSON only.
+prompt: |
+  List up to 10 open datasets in the Registry of Open Data on AWS whose coverage includes
+  {aoi.name}, {aoi.state}, and that contain satellite or aerial imagery, elevation or lidar data,
+  or land cover. Identify each dataset by its registry slug (the identifier in its registry URL).
+  Return {"datasets": [<slug>, ...]}.
+output_schema:
+  type: object
+  required: [datasets]
+  properties:
+    datasets: {type: array, items: {type: string}, maxItems: 10}
+workflow:
+  required: [dataset_discovery]
+  forbidden: []
+  ordering:
+    # If the agent geocodes the county, it should do so before searching for datasets.
+    - {before: geocode, after: dataset_discovery, optional_first: true}
+  argument_constraints: [] # RODA's search arguments have no constraint in the vocabulary
+  expected_steps: 4
+  step_limit: 15
+  done: output_matches_schema_nonempty
+  recovery: {recovered_penalty: 0.25}
+weights: {}
+output:
+  builder: builders/t2_open_datasets.py
+  metric: output.t2
