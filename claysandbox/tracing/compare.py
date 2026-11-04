@@ -18,7 +18,7 @@ import json
 import statistics
 from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -53,6 +53,34 @@ class TracerComparison(BaseModel):
     run_ids: list[str]
     tracers: list[TracerStats]
     notes: list[str] = Field(default_factory=list)
+
+    def to_measurement_comparison(self) -> dict[str, Any]:
+        """The same result in the shape of WS4's ``MeasurementComparison(kind="tracer")``.
+
+        Returned as a plain dict so this package need not import WS4's contract:
+        ``MeasurementComparison.model_validate(result.to_measurement_comparison())``.
+        Headline numbers are flat in ``values`` (``"<tracer>.<metric>"``); the full per-tracer
+        stats are in ``details``.
+        """
+        values: dict[str, float | None] = {}
+        for t in self.tracers:
+            for metric in (
+                "emit_ms_median",
+                "emit_ms_p95",
+                "events_written",
+                "events_lost",
+                "fidelity_pct",
+            ):
+                value = getattr(t, metric)
+                values[f"{t.tracer}.{metric}"] = None if value is None else float(value)
+        return {
+            "kind": "tracer",
+            "subjects": [t.tracer for t in self.tracers],
+            "n_runs": len(self.run_ids),
+            "values": values,
+            "details": {"run_ids": self.run_ids, "tracers": [t.model_dump() for t in self.tracers]},
+            "notes": list(self.notes),
+        }
 
 
 def compare_tracers(run_dirs: Iterable[str | Path], readers: FormatReaders) -> TracerComparison:

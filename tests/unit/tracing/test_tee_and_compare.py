@@ -175,3 +175,14 @@ def test_render_text_prints_overhead_loss_and_fidelity(tmp_path):
 def test_empty_input_is_an_error():
     with pytest.raises(ValueError):
         compare_tracers([], TRACE_FORMAT_READERS)
+
+
+def test_converts_to_the_shape_of_ws4s_measurement_comparison(tmp_path):
+    tee_run(tmp_path)
+    m = compare_tracers([tmp_path], TRACE_FORMAT_READERS).to_measurement_comparison()
+    assert set(m) == {"kind", "subjects", "n_runs", "values", "details", "notes"}
+    assert m["kind"] == "tracer" and m["subjects"] == ["jsonl", "otel"] and m["n_runs"] == 1
+    assert m["values"]["otel.fidelity_pct"] == 100.0 and m["values"]["jsonl.events_lost"] == 0.0
+    assert all(v is None or isinstance(v, float) for v in m["values"].values())
+    assert len(m["details"]["tracers"]) == 2
+    json.dumps(m)  # plain data: serialisable as is
