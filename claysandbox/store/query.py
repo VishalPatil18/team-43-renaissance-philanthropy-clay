@@ -14,8 +14,8 @@ missing key is NULL, and ``union_by_name`` style inference is never relied on):
 * ``assessments`` one row per assessment file: ``kind``, ``composite``, ``success``, ...
 * ``run_ends``    the ``run_end`` event of each ``trace.jsonl``: ``state`` and token totals.
 
-``template`` is the part of ``task_instance_id`` before the first ``:`` (for example
-``T1:us-ca-kern`` gives ``T1``). That ID convention belongs to WS2; adjust ``TEMPLATE_SEP``
+``template`` is the part of ``task_instance_id`` before the first ``@`` (for example
+``T1@us-ca-kern`` gives ``T1``). That ID convention belongs to WS2; adjust ``TEMPLATE_SEP``
 if it changes.
 
 Runs in read-only roots (``samples/``) and in the writable root are merged; the writable
@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 
     from .local import LocalRunStore
 
-TEMPLATE_SEP = ":"
+TEMPLATE_SEP = "@"
 
 # column name -> DuckDB type. Only these keys are read; anything else in the file is ignored.
 _MANIFEST_COLS = {

@@ -49,12 +49,15 @@ def test_demo_store_has_scored_terminal_runs(store_root: Path) -> None:
 
     store = LocalRunStore(store_root / "runs", store_root / "evals")
     runs = store.list_runs()
-    assert {"fixture-good_t1", "fixture-errors_t1", "fixture-loop_t1"} == set(runs)
+    assert {"fixture-good_t1", "fixture-errors_t1", "fixture-loop_t1"} == set(
+        store.list_eval_runs(demo.EVAL_ID)
+    )
     for run_id in runs:
         assert store.read_status(run_id).state in {"completed", "budget_stopped", "agent_failed"}
         kinds = {a["kind"] for a in store.list_assessments(run_id)}
         assert {"workflow", "output"} <= kinds, run_id
-    assert set(store.list_eval_runs(demo.EVAL_ID)) == set(runs)
+    assert len(runs) == 14
+    assert len(store.list_eval_runs("demo-compare")) == 11
 
 
 def test_demo_store_refuses_existing_folder(store_root: Path) -> None:
@@ -272,3 +275,29 @@ def test_committed_openapi_is_current() -> None:
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     assert mod.OUT.read_text() == mod.render(), "run scripts/export_openapi.py"
+
+
+def test_validation(client: TestClient) -> None:
+    response = client.get("/api/validation")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["source"] in {"samples/planted", "tests/fixtures/planted"}
+    expected = {
+        p.name
+        for p in (_ROOT / "tests/fixtures/planted/T1").iterdir()
+        if (p / "expected.json").is_file()
+    }
+    assert len(expected) == 8
+    assert set(body["report"]["detection_rate"]) == expected
+    assert all(flaw["detected"] for flaw in body["report"]["flaws"])
+    assert "/api/validation" in client.get("/openapi.json").json()["paths"]
+
+
+def test_demo_comparison_report(store_root: Path) -> None:
+    import json
+
+    report = json.loads((store_root / "evals/demo-compare/eval_report.json").read_text())
+    assert report["stats"]["comparisons"]
+    assert report["evaluator_comparison"]["n_runs"] == 11
+    assert report["variants"][0]["axis"] is None
+    assert report["variants"][0]["warning"]

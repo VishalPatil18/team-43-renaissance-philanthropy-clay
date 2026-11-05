@@ -3,8 +3,9 @@
 
 It holds the three hand-written fixture runs (``tests/fixtures/traces/{good_t1,errors_t1,
 loop_t1}``). Every run is scored by the deterministic ``workflow`` and ``output``
-evaluators, summarised, and marked terminal (which locks it like a real run). All runs belong
-to one eval with a stored ``eval_report.json`` built by ``build_eval_report_content``.
+evaluators, summarised, and marked terminal (which locks it like a real run).
+Both ``demo-eval`` and ``demo-compare`` contain fixture/demo data, not live results.
+The comparison eval adds planted flaws and workflow evaluator version comparisons.
 
 Usage::
 
@@ -23,7 +24,7 @@ from claysandbox.contracts.manifest import RunManifest
 from claysandbox.contracts.registry import resolve
 from claysandbox.contracts.task import TaskReference
 from claysandbox.contracts.trace import Trace, parse_event
-from claysandbox.evaluation.compare import build_eval_report_content
+from claysandbox.evaluation.compare import build_eval_report_content, compare_evaluators
 from claysandbox.platform import registry_bootstrap  # noqa: F401  (registers the evaluators)
 from claysandbox.store.local import LocalRunStore
 from claysandbox.summary.deterministic import DeterministicSummarizer
@@ -51,8 +52,38 @@ def build(out: Path) -> LocalRunStore:
         reference = TaskReference.model_validate_json((d / "reference.json").read_text())
         runs.append((manifest, lines, reference))
 
+    _write_eval(store, runs, EVAL_ID, {})
+    comparison_runs = []
+    sources = [(FIXTURES / name, f"compare-base-{name}", CONFIG) for name in FIXTURE_RUNS]
+    sources += [
+        (d, f"compare-var-{d.name}", "planted-flaws")
+        for d in sorted((ROOT / "tests/fixtures/planted/T1").iterdir())
+        if d.is_dir() and d.name != "good"
+    ]
+    for d, run_id, config in sources:
+        manifest = RunManifest.model_validate_json((d / "manifest.json").read_text())
+        manifest = manifest.model_copy(
+            update={
+                "run_id": run_id,
+                "eval_id": "demo-compare",
+                "config_name": config,
+            }
+        )
+        lines = [json.loads(x) for x in (d / "trace.jsonl").read_text().splitlines() if x]
+        for line in lines:
+            line["run_id"] = run_id
+            if line["type"] == "run_start":
+                line["config_name"] = config
+        reference = TaskReference.model_validate_json((d / "reference.json").read_text())
+        comparison_runs.append((manifest, lines, reference))
+    _write_eval(store, comparison_runs, "demo-compare", {"planted-flaws": {}}, compare=True)
+    return store
+
+
+def _write_eval(store, runs, eval_id, variants, *, compare=False):
     summarizer = DeterministicSummarizer()
-    evaluators = [resolve("evaluator", n)() for n in EVALUATORS]
+    names = (*EVALUATORS, "workflow@0") if compare else EVALUATORS
+    evaluators = [resolve("evaluator", n)() for n in names]
     manifests, assessments, states, totals = [], [], {}, {}
     for manifest, lines, reference in runs:
         directory = store.create_run(manifest.model_dump(mode="json"))
@@ -76,24 +107,36 @@ def build(out: Path) -> LocalRunStore:
         totals[manifest.run_id] = end.totals if end.type == "run_end" else {}
 
     store.create_eval(
-        EVAL_ID,
-        {"eval_id": EVAL_ID, "baseline": CONFIG, "variants": {}, "evaluators": list(EVALUATORS)},
+        eval_id,
+        {"eval_id": eval_id, "baseline": CONFIG, "variants": variants, "evaluators": list(names)},
     )
     store.write_eval_artifact(
-        EVAL_ID, "plan.json", json.dumps({"runs": [m.run_id for m in manifests]}, indent=2)
+        eval_id, "plan.json", json.dumps({"runs": [m.run_id for m in manifests]}, indent=2)
     )
     report = build_eval_report_content(
-        EVAL_ID,
+        eval_id,
         None,
         CONFIG,
-        {},
+        variants,
         manifests=manifests,
         assessments=assessments,
         run_states=states,
         totals=totals,
+        primary={"workflow": "workflow@1"} if compare else None,
+        evaluator_comparison=compare_evaluators(
+            {
+                f"workflow@{version}": [
+                    a
+                    for a in assessments
+                    if a.kind == "workflow" and a.evaluator.version == version
+                ]
+                for version in ("1", "0")
+            }
+        )
+        if compare
+        else None,
     )
-    store.write_eval_artifact(EVAL_ID, "eval_report.json", report.model_dump_json(indent=2))
-    return store
+    store.write_eval_artifact(eval_id, "eval_report.json", report.model_dump_json(indent=2))
 
 
 def main(argv: list[str] | None = None) -> int:

@@ -502,6 +502,27 @@
         },
         "summary": "Tasks"
       }
+    },
+    "/api/validation": {
+      "get": {
+        "description": "Deterministic evaluator validation against bundled planted traces.",
+        "operationId": "validation_api_validation_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Validation Api Validation Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Validation"
+      }
     }
   }
 }

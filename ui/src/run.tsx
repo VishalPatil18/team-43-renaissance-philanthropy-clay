@@ -41,6 +41,7 @@ export function AssessmentsView({rows,runId}:{rows:Assessment[];runId:string}) {
   return <div className="assessment-list">{rows.map(a=><article className="panel" key={a.assessment_id}>
     <div className="section-heading"><div><h2>{a.kind[0].toUpperCase()+a.kind.slice(1)} assessment</h2><p className="muted">{a.evaluator.name} · version {a.evaluator.version??'unknown'}</p></div><div className="composite"><span>Composite</span><Score value={a.composite}/></div></div>
     <p className="muted">Reference: {a.task_reference_version}. Evaluator cost: {fmt.usd(a.cost_usd)}.</p>
+    {a.repeats && a.repeats.length>0 && <p className="note">Judge scored {a.repeats.length} times: {a.repeats.map(v=>v.toFixed(2)).join(', ')} · spread {(Math.max(...a.repeats)-Math.min(...a.repeats)).toFixed(2)}</p>}
     {a.notes.map((n,i)=><p className="note" key={i}>{n}</p>)}
     {a.subscores.map(s=><section className="subscore" key={s.name}><div className="section-heading"><h3>{s.name.replaceAll('_',' ')}</h3><Score value={s.value}/></div><p className="muted">Weight {fmt.num(s.weight)}</p>{s.notes.map((n,i)=><p key={i}>{n}</p>)}<Evidence ids={s.evidence} runId={runId}/></section>)}
     {Object.keys(a.metrics).length>0 && <dl className="facts metrics">{Object.entries(a.metrics).map(([key,v])=><div key={key}><dt>{key.replaceAll('_',' ')}</dt><dd>{fmt.num(v)}</dd></div>)}</dl>}

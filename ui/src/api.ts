@@ -86,6 +86,7 @@ export interface Assessment {
   evidence: string[];
   notes: string[];
   cost_usd: number;
+  repeats?: number[] | null;
 }
 
 export interface AOI { id: string; name: string; state: string; bbox: number[]; geometry: { type: string; coordinates: unknown } | null }
@@ -108,12 +109,39 @@ export interface PairedComparison {
   p_adjusted: number | null; higher_is_better: boolean; verdict: string; warnings: string[];
 }
 
+export interface MeasurementComparison {
+  kind: 'evaluator' | 'tracer'; subjects: string[]; n_runs: number;
+  values: Record<string, number | null>; details?: Record<string, unknown>; notes: string[];
+}
+
 export interface EvalReport {
   eval_id: string;
   baseline: string;
   variants: { variant: string; axis: string | null; changed: string[]; warning: string | null }[];
-  stats: { configs: ConfigStats[]; comparisons: PairedComparison[]; alpha: number };
+  stats: { configs: ConfigStats[]; comparisons: PairedComparison[]; alpha: number; seed?: number; bootstrap_iterations?: number };
   warnings: string[];
+  paired_instances?: string[];
+  paired_instances_by_variant?: Record<string, string[]>;
+  exclusions?: Record<string, Record<string, number>>;
+  verdicts?: Record<string, string[]>;
+  run_links?: Record<string, string[]>;
+  tracer_comparison?: MeasurementComparison | null;
+  evaluator_comparison?: MeasurementComparison | null;
+}
+
+export interface FlawResult {
+  template: string; flaw: string; expected_drops: string[]; detected: boolean;
+  good_value: Record<string, number | null>; bad_value: Record<string, number | null>;
+  missing: string[]; unchecked: string[]; notes: string[];
+}
+
+export interface ValidationResponse {
+  source: string;
+  report: {
+    evaluators: string[]; flaws: FlawResult[]; detection_rate: Record<string, number>;
+    margin: number | null; margins: Record<string, number | null>; ci_halfwidth: number | null;
+    margin_exceeds_ci: boolean | null; llm_agreement: number | null; notes: string[];
+  };
 }
 
 export interface EvalDetail {

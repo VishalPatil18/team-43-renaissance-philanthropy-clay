@@ -26,7 +26,8 @@ from claysandbox.store import query as q
 from claysandbox.store.local import LocalRunStore
 from claysandbox.tasks.library import FileTaskLibrary
 
-UI_DIST = Path(__file__).resolve().parents[2] / "ui" / "dist"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+UI_DIST = REPO_ROOT / "ui" / "dist"
 LOCAL_AUTHORITY = re.compile(r"(?:127\.0\.0\.1|localhost|\[::1\])(?::([0-9]{1,5}))?", re.I)
 
 
@@ -63,6 +64,18 @@ class LocalOnly:
 
 def _read_json(path: Path) -> Any:
     return json.loads(path.read_text()) if path.is_file() else None
+
+
+@cache
+def _validation_result() -> dict:
+    from claysandbox.evaluation.validate import default_evaluators, validate
+
+    for source in ("samples/planted", "tests/fixtures/planted"):
+        planted = REPO_ROOT / source
+        if planted.is_dir():
+            report = validate(default_evaluators(), planted_root=planted)
+            return {"source": source, "report": report.model_dump(mode="json")}
+    raise HTTPException(404, "no planted validation fixtures available")
 
 
 def create_app(store_root: str | Path, ui_dist: str | Path = UI_DIST) -> FastAPI:
@@ -117,6 +130,11 @@ def create_app(store_root: str | Path, ui_dist: str | Path = UI_DIST) -> FastAPI
         dependencies=[Depends(check_store_boundary)],
     )
     app.add_middleware(LocalOnly)
+
+    @app.get("/api/validation")
+    def validation() -> dict:
+        """Deterministic evaluator validation against bundled planted traces."""
+        return _validation_result()
 
     @app.get("/api/runs")
     def runs(

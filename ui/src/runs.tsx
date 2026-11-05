@@ -1,4 +1,4 @@
-import { useApi, type RunRow } from './api.ts';
+import { useApi, type EvalDetail, type RunRow } from './api.ts';
 import { Chip, Empty, Link, Load, Score, fmt, navigate, useLocation } from './ui.tsx';
 
 const FILTERS = [
@@ -13,14 +13,29 @@ export function RunsScreen() {
   const { query } = useLocation();
   const active = new URLSearchParams();
   for (const f of FILTERS) { const v = query.get(f.key); if (v) active.set(f.key, v); }
+  // Optional evaluation scope (?eval=…&config=…), set by the Report and Comparison links.
+  const evalId = query.get('eval');
+  const config = query.get('config');
+  const scope = new URLSearchParams(active);
+  if (evalId) scope.set('eval_id', evalId);
   const all = useApi<RunRow[]>('/api/runs?limit=500');
-  const runs = useApi<RunRow[]>(`/api/runs?limit=500&${active}`);
+  const runs = useApi<RunRow[]>(`/api/runs?limit=500&${scope}`);
+  const evalDetail = useApi<EvalDetail>(evalId && config ? `/api/evals/${encodeURIComponent(evalId)}` : null);
+  const configRuns = config ? evalDetail.data?.report?.run_links?.[config] : undefined;
+  const missingRunList = !!(config && evalDetail.data && !configRuns);
 
+  const keepScope = (next: URLSearchParams) => {
+    if (evalId) next.set('eval', evalId);
+    if (config) next.set('config', config);
+    return next;
+  };
   const setFilter = (key: string, value: string) => {
     const next = new URLSearchParams(active);
     if (value) next.set(key, value); else next.delete(key);
+    keepScope(next);
     navigate(`/runs${next.size ? `?${next}` : ''}`, true);
   };
+  const shown = (rows: RunRow[]) => (configRuns ? rows.filter((r) => configRuns.includes(r.run_id)) : rows);
 
   return (
     <section aria-labelledby="runs-h">
@@ -42,15 +57,23 @@ export function RunsScreen() {
             </label>
           );
         })}
-        {active.size > 0 && (
+        {(active.size > 0 || evalId) && (
           <button type="button" className="btn-ghost" onClick={() => navigate('/runs', true)}>Clear filters</button>
         )}
       </form>
 
+      {evalId && (
+        <p className="note" role="status">
+          {config ? <>Showing runs of <b>{config}</b> in evaluation <b>{evalId}</b>.</> : <>Showing runs in evaluation <b>{evalId}</b>.</>}
+          {missingRunList && <> This report has no run list for {config}, so all of the evaluation's runs are shown.</>}
+          {' '}<Link href="/runs">Show all runs</Link>
+        </p>
+      )}
+
       <Load q={runs} what="runs">
-        {(rows) => rows.length === 0 ? (
-          <Empty title={active.size ? 'No runs match these filters' : 'No runs in this store yet'}>
-            {active.size
+        {(loaded) => { const rows = shown(loaded); return rows.length === 0 ? (
+          <Empty title={active.size || evalId ? 'No runs match these filters' : 'No runs in this store yet'}>
+            {active.size || evalId
               ? 'Clear a filter to widen the list.'
               : <>Build the demo store with <code>uv run python scripts/make_demo_store.py --out &lt;dir&gt;</code> and start the API with <code>--store &lt;dir&gt;</code>.</>}
           </Empty>
@@ -86,7 +109,7 @@ export function RunsScreen() {
               </tbody>
             </table>
           </div>
-        )}
+        ); }}
       </Load>
     </section>
   );

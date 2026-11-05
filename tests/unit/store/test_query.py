@@ -24,7 +24,7 @@ def make_run(
     run_id,
     *,
     eval_id="e1",
-    task="T1:kern",
+    task="T1@kern",
     model="nova-pro",
     harness="strands",
     state="completed",
@@ -67,7 +67,7 @@ def store(tmp_path):
 
 def test_runs_for_eval_joins_manifest_and_status(store):
     make_run(store, "r1", trial=1)
-    make_run(store, "r2", trial=0, task="T2:fresno", state="budget_stopped")
+    make_run(store, "r2", trial=0, task="T2@fresno", state="budget_stopped")
     make_run(store, "r3", eval_id="other")
     rows = runs_for_eval(store, "e1")
     assert [r["run_id"] for r in rows] == ["r2", "r1"]  # ordered by trial
@@ -114,7 +114,7 @@ def test_token_history_uses_only_completed_runs_of_that_model_and_template(store
     make_run(store, "r3", tokens=(2000, 200))
     make_run(store, "stopped", state="budget_stopped", tokens=(99999, 9999))
     make_run(store, "other-model", model="nova-lite", tokens=(7, 7))
-    make_run(store, "other-template", task="T2:x", tokens=(8, 8))
+    make_run(store, "other-template", task="T2@x", tokens=(8, 8))
     make_run(store, "other-harness", harness="converse", tokens=(500, 50))
     h = token_history(store, "T1", "nova-pro")
     assert h["n"] == 4  # r1, r2, r3 and other-harness
@@ -269,3 +269,9 @@ def test_the_store_works_without_duckdb_and_only_queries_need_it(tmp_path, monke
     with pytest.raises(ConfigError) as err:
         store.query("SELECT 1")
     assert err.value.kind == "missing_dependency" and "duckdb" in err.value.message
+
+
+def test_at_separator_template_and_token_history(store):
+    make_run(store, "regression", task="T1@us-ca-kern", tokens=(123, 45))
+    assert list_runs(store)[0]["template"] == "T1"
+    assert token_history(store, "T1", "nova-pro")["n"] == 1

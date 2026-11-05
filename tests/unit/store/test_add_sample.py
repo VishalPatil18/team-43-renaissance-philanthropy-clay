@@ -24,7 +24,7 @@ _spec.loader.exec_module(sample)
 MANIFEST = {
     "run_id": "run-1",
     "eval_id": "e1",
-    "task_instance_id": "T1:kern",
+    "task_instance_id": "T1@kern",
     "model": {"params": {"model_id": "nova-pro"}},
     "harness": {"name": "strands"},
 }
@@ -63,7 +63,7 @@ def test_adds_a_finished_run_with_its_sidecar_and_an_index_row(tmp_path, samples
     assert side["demonstrates"] == "clean T1 run, Kern County" and side["truncated_blobs"] == []
     index = (samples.parent / "README.md").read_text()
     assert (
-        "| run-1 | T1:kern | nova-pro / strands | completed | 3 | clean T1 run, Kern County |"
+        "| run-1 | T1@kern | nova-pro / strands | completed | 3 | clean T1 run, Kern County |"
         in index
     )
     assert "do not edit it by hand" in index
