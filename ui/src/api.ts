@@ -86,6 +86,7 @@ export interface Assessment {
   evidence: string[];
   notes: string[];
   cost_usd: number;
+  repeats?: number[] | null;
 }
 
 export interface AOI { id: string; name: string; state: string; bbox: number[]; geometry: { type: string; coordinates: unknown } | null }
@@ -108,12 +109,39 @@ export interface PairedComparison {
   p_adjusted: number | null; higher_is_better: boolean; verdict: string; warnings: string[];
 }
 
+export interface MeasurementComparison {
+  kind: 'evaluator' | 'tracer'; subjects: string[]; n_runs: number;
+  values: Record<string, number | null>; details?: Record<string, unknown>; notes: string[];
+}
+
 export interface EvalReport {
   eval_id: string;
   baseline: string;
   variants: { variant: string; axis: string | null; changed: string[]; warning: string | null }[];
-  stats: { configs: ConfigStats[]; comparisons: PairedComparison[]; alpha: number };
+  stats: { configs: ConfigStats[]; comparisons: PairedComparison[]; alpha: number; seed?: number; bootstrap_iterations?: number };
   warnings: string[];
+  paired_instances?: string[];
+  paired_instances_by_variant?: Record<string, string[]>;
+  exclusions?: Record<string, Record<string, number>>;
+  verdicts?: Record<string, string[]>;
+  run_links?: Record<string, string[]>;
+  tracer_comparison?: MeasurementComparison | null;
+  evaluator_comparison?: MeasurementComparison | null;
+}
+
+export interface FlawResult {
+  template: string; flaw: string; expected_drops: string[]; detected: boolean;
+  good_value: Record<string, number | null>; bad_value: Record<string, number | null>;
+  missing: string[]; unchecked: string[]; notes: string[];
+}
+
+export interface ValidationResponse {
+  source: string;
+  report: {
+    evaluators: string[]; flaws: FlawResult[]; detection_rate: Record<string, number>;
+    margin: number | null; margins: Record<string, number | null>; ci_halfwidth: number | null;
+    margin_exceeds_ci: boolean | null; llm_agreement: number | null; notes: string[];
+  };
 }
 
 export interface EvalDetail {
@@ -129,14 +157,38 @@ export interface TaskInstance { id: string; template: string; aoi: string; title
 
 export class ApiError extends Error {
   status: number;
-  constructor(status: number, message: string) { super(message); this.status = status; }
+  kind: string | null;
+  constructor(status: number, message: string, kind: string | null = null) { super(message); this.status = status; this.kind = kind; }
 }
+
+function detailText(detail: unknown): string | null {
+  if (typeof detail === 'string') return detail;
+  if (Array.isArray(detail)) return detail.map((d) => (typeof d?.msg === 'string' ? `${(d.loc ?? []).join('.')}: ${d.msg}` : JSON.stringify(d))).join('; ');
+  return null;
+}
+
+/** POST JSON and return the parsed reply; errors carry the API's ``kind`` when it sends one. */
+export async function post<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(body) });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new ApiError(res.status, detailText(data?.detail) ?? `${res.status} ${res.statusText}`, typeof data?.kind === 'string' ? data.kind : null);
+  return data as T;
+}
+
+export interface Estimate {
+  runs: number; total_usd: number; per_config: Record<string, number>; exceeds_eval_cap: boolean;
+  eval_cap_usd: number | null; notes: string[]; warnings: string[];
+}
+export interface LaunchResponse { eval_id: string; runs: number; status_url: string; events_url: string }
+export type PlanState = 'planned' | 'running' | 'infra_retry' | 'completed' | 'budget_stopped' | 'agent_failed' | 'infra_excluded' | 'skipped_eval_cap';
+export interface PlanRow { run_id: string; config_name: string; task_instance_id: string; trial_index: number; attempt: number; state: PlanState; error_kind?: string | null; cost_usd?: number; retry_of?: string }
+export interface EvalLiveStatus { eval_id: string; runs: PlanRow[]; counts: Record<string, number>; done: boolean; error: string | null; report: boolean }
 
 async function get<T>(path: string, signal?: AbortSignal): Promise<T> {
   const res = await fetch(path, { signal, headers: { Accept: 'application/json' } });
   if (!res.ok) {
     const body = await res.json().catch(() => null);
-    throw new ApiError(res.status, typeof body?.detail === 'string' ? body.detail : `${res.status} ${res.statusText}`);
+    throw new ApiError(res.status, detailText(body?.detail) ?? `${res.status} ${res.statusText}`, typeof body?.kind === 'string' ? body.kind : null);
   }
   return res.json() as Promise<T>;
 }

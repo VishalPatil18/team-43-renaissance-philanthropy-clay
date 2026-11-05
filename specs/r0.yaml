@@ -1,0 +1,15 @@
+name: r0
+tasks: {templates: [T1], aois: [us-ca-kern]}
+baseline:
+  name: novalite-strands
+  model: {name: bedrock, params: {model_id: 'us.amazon.nova-lite-v1:0'}}
+  harness: {name: strands}
+  toolset: T1
+  tracer: {name: jsonl}
+evaluators:
+  - {name: workflow, version: '1'}
+  - {name: output, version: '1'}
+summary: {name: deterministic}
+trials: 1
+budget:
+  run: {max_usd: 0.10, max_steps: 15, max_seconds: 240}

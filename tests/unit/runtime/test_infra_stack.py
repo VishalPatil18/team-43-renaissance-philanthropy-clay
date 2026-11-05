@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 from typing import Any
@@ -164,3 +165,102 @@ def test_no_model_context_means_no_bedrock_permission() -> None:
 )
 def test_bedrock_arns(model_ids: list[str], expected: list[str]) -> None:
     assert bedrock_arns(model_ids, "r", "a") == expected
+
+
+@pytest.fixture(scope="module")
+def web_template() -> Template:
+    app = cdk.App(context={**CONTEXT, "webUi": True, "cloudFrontPrefixListId": "pl-82a045eb"})
+    stack = ClaySandboxStack(
+        app, "WebTest", env=cdk.Environment(account="123456789012", region="us-west-2")
+    )
+    return Template.from_stack(stack)
+
+
+def test_web_ui_is_off_unless_asked(template: Template) -> None:
+    template.resource_count_is("AWS::CloudFront::Distribution", 0)
+    template.resource_count_is("AWS::ECS::Service", 0)
+
+
+def test_web_ui_serves_hosted_mode_with_a_generated_password(web_template: Template) -> None:
+    web_template.resource_count_is("AWS::ECS::Service", 1)
+    web_template.resource_count_is("AWS::SecretsManager::Secret", 1)
+    web_template.has_resource_properties(
+        "AWS::ECS::TaskDefinition",
+        {
+            "ContainerDefinitions": [
+                Match.object_like(
+                    {
+                        "Name": "web",
+                        "Command": ["serve", "--hosted", "--port", "8080", "--store", "/app/store"],
+                        "Secrets": [Match.object_like({"Name": "CLAYSANDBOX_UI_PASSWORD"})],
+                    }
+                )
+            ]
+        },
+    )
+
+
+def test_web_load_balancer_accepts_only_cloudfront(web_template: Template) -> None:
+    web_template.has_resource_properties(
+        "AWS::EC2::SecurityGroupIngress",
+        {"SourcePrefixListId": "pl-82a045eb", "FromPort": 80, "ToPort": 80},
+    )
+    rules = web_template.find_resources("AWS::EC2::SecurityGroupIngress").values()
+    assert not any(r["Properties"].get("CidrIp") == "0.0.0.0/0" for r in rules)
+    for group in web_template.find_resources("AWS::EC2::SecurityGroup").values():
+        for rule in group["Properties"].get("SecurityGroupIngress") or []:
+            assert rule.get("CidrIp") != "0.0.0.0/0"
+    web_template.has_resource_properties(
+        "AWS::CloudFront::Distribution",
+        {
+            "DistributionConfig": Match.object_like(
+                {
+                    "DefaultCacheBehavior": Match.object_like(
+                        {"ViewerProtocolPolicy": "redirect-to-https"}
+                    )
+                }
+            )
+        },
+    )
+    web_template.has_resource_properties(
+        "AWS::CloudFront::CachePolicy",
+        {
+            "CachePolicyConfig": Match.object_like(
+                {
+                    "DefaultTTL": 0,
+                    "ParametersInCacheKeyAndForwardedToOrigin": Match.object_like(
+                        {
+                            "HeadersConfig": {
+                                "HeaderBehavior": "whitelist",
+                                "Headers": ["Authorization"],
+                            }
+                        }
+                    ),
+                }
+            )
+        },
+    )
+
+
+def test_web_task_may_start_only_the_worker_task(web_template: Template) -> None:
+    policies = web_template.find_resources("AWS::IAM::Policy")
+    statements = {
+        s["Sid"]: s
+        for name, r in policies.items()
+        if "WebTaskTaskRole" in name
+        for s in r["Properties"]["PolicyDocument"]["Statement"]
+    }
+    assert set(statements) >= {"RunWorkerTasks", "WatchWorkerTasks", "PassWorkerRoles"}
+    assert statements["RunWorkerTasks"]["Action"] == "ecs:RunTask"
+    assert "bedrock:InvokeModel" not in json.dumps(statements)
+
+
+def test_web_redeploys_start_the_new_task_first(web_template: Template) -> None:
+    web_template.has_resource_properties(
+        "AWS::ECS::Service",
+        {
+            "DeploymentConfiguration": Match.object_like(
+                {"MinimumHealthyPercent": 100, "MaximumPercent": 200}
+            )
+        },
+    )

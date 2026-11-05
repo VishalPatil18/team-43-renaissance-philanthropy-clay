@@ -18,7 +18,10 @@ evals
 dev-docs
 docs
 tests
+# ...except the planted traces the Validation screen scores (GET /api/validation)
+!tests/fixtures/planted
 .env
 .env.*
 *.pem
 *.key
+runs-try

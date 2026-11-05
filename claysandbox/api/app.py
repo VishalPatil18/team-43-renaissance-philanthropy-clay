@@ -1,32 +1,41 @@
-"""Read-only HTTP API over a ``LocalRunStore`` for the UI prototype (arch §16, R3).
-
-Every route is a GET over files the store already has; nothing here writes to the store.
-It serves the built UI (``ui/dist``) at ``/`` and answers only requests whose ``Host`` and
-``Origin`` (when sent) are this machine, so another web page cannot read the store through
-the browser (DNS rebinding, cross-site fetch).
-"""
+"""Local HTTP API for browsing runs and launching evaluations."""
 
 from __future__ import annotations
 
+import asyncio
+import base64
+import binascii
 import json
+import logging
 import re
+import secrets
+import threading
+import time
+from collections import Counter
+from datetime import UTC, datetime
 from functools import cache
 from pathlib import Path
 from typing import Annotated, Any
 
-from fastapi import Depends, FastAPI, HTTPException, Query
-from fastapi.responses import FileResponse, PlainTextResponse
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, StreamingResponse
+from pydantic import ValidationError
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 from claysandbox.contracts.errors import ConfigError
+from claysandbox.contracts.ids import new_id
 from claysandbox.contracts.registry import list_components
+from claysandbox.contracts.spec import EvalSpec, NamedComponent
 from claysandbox.contracts.store import TERMINAL_STATES, RunLifecycle
 from claysandbox.contracts.task import TaskReference
+from claysandbox.platform import service
 from claysandbox.store import query as q
 from claysandbox.store.local import LocalRunStore
 from claysandbox.tasks.library import FileTaskLibrary
 
-UI_DIST = Path(__file__).resolve().parents[2] / "ui" / "dist"
+log = logging.getLogger("claysandbox.api")
+REPO_ROOT = Path(__file__).resolve().parents[2]
+UI_DIST = REPO_ROOT / "ui" / "dist"
 LOCAL_AUTHORITY = re.compile(r"(?:127\.0\.0\.1|localhost|\[::1\])(?::([0-9]{1,5}))?", re.I)
 
 
@@ -55,8 +64,75 @@ class LocalOnly:
                 or not _local_authority(hosts[0])
                 or len(origins) > 1
                 or (origins and not _local_authority(origins[0], origin=True))
+                or (
+                    scope["method"] == "POST"
+                    and not origins
+                    and any(
+                        k.lower() == b"sec-fetch-site" and v.lower() == b"cross-site"
+                        for k, v in scope["headers"]
+                    )
+                )
             ):
                 await PlainTextResponse("forbidden: local requests only", 403)(scope, receive, send)
+                return
+        await self.app(scope, receive, send)
+
+
+class Hosted:
+    """Settings for the hosted (AWS) mode: one shared login and Fargate-only launches."""
+
+    def __init__(
+        self,
+        password: str,
+        *,
+        username: str = "clay",
+        executor_params: dict[str, Any] | None = None,
+    ) -> None:
+        if len(password) < 12:
+            raise ValueError("the hosted UI password must be at least 12 characters")
+        self.username, self.password = username, password
+        self.executor_params = dict(executor_params or {})
+
+
+def _authorized(header: str, hosted: Hosted) -> bool:
+    scheme, _, value = header.partition(" ")
+    if scheme.lower() != "basic":
+        return False
+    try:
+        user, _, password = base64.b64decode(value, validate=True).decode().partition(":")
+    except (binascii.Error, UnicodeDecodeError):
+        return False
+    ok_user = secrets.compare_digest(user.encode(), hosted.username.encode())
+    ok_password = secrets.compare_digest(password.encode(), hosted.password.encode())
+    return ok_user and ok_password
+
+
+class SharedLogin:
+    """Hosted mode: HTTP Basic login on every route except ``/healthz``, plus same-origin POSTs.
+
+    Browsers send Basic credentials on every request to the site, so a POST is also refused
+    unless its Origin names this host (no cross-site form or fetch can launch an eval).
+    """
+
+    def __init__(self, app: ASGIApp, hosted: Hosted) -> None:
+        self.app, self.hosted = app, hosted
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] == "http" and scope["path"] != "/healthz":
+            headers = {k.lower(): v.decode("latin-1") for k, v in scope["headers"]}
+            if not _authorized(headers.get(b"authorization", ""), self.hosted):
+                response = PlainTextResponse(
+                    "login required",
+                    401,
+                    headers={"WWW-Authenticate": 'Basic realm="Clay sandbox", charset="UTF-8"'},
+                )
+                await response(scope, receive, send)
+                return
+            origin, host = headers.get(b"origin"), headers.get(b"host", "")
+            if scope["method"] not in ("GET", "HEAD") and (
+                origin is None or origin.split("://", 1)[-1] != host
+            ):
+                await PlainTextResponse("forbidden: cross-site request", 403)(scope, receive, send)
                 return
         await self.app(scope, receive, send)
 
@@ -65,8 +141,31 @@ def _read_json(path: Path) -> Any:
     return json.loads(path.read_text()) if path.is_file() else None
 
 
-def create_app(store_root: str | Path, ui_dist: str | Path = UI_DIST) -> FastAPI:
-    """App over the store at ``store_root`` (``runs/`` and ``evals/`` below it)."""
+def _parallel(spec: EvalSpec) -> dict[str, Any]:
+    n = spec.executor.params.get("max_parallel")
+    return {"max_parallel": min(int(n), 8)} if n else {}
+
+
+@cache
+def _validation_result() -> dict:
+    from claysandbox.evaluation.validate import default_evaluators, validate
+
+    for source in ("samples/planted", "tests/fixtures/planted"):
+        planted = REPO_ROOT / source
+        if planted.is_dir():
+            report = validate(default_evaluators(), planted_root=planted)
+            return {"source": source, "report": report.model_dump(mode="json")}
+    raise HTTPException(404, "no planted validation fixtures available")
+
+
+def create_app(
+    store_root: str | Path, ui_dist: str | Path = UI_DIST, *, hosted: Hosted | None = None
+) -> FastAPI:
+    """App over the store at ``store_root`` (``runs/`` and ``evals/`` below it).
+
+    Locally (the default) only loopback requests are served. With ``hosted`` (on AWS) every
+    route needs the shared login and every launch runs on Fargate.
+    """
     root = Path(store_root).resolve()
     if not (root / "runs").is_dir():
         # LocalRunStore would create the folder; a read-only API must not.
@@ -116,7 +215,157 @@ def create_app(store_root: str | Path, ui_dist: str | Path = UI_DIST) -> FastAPI
         version="0.1.0",
         dependencies=[Depends(check_store_boundary)],
     )
-    app.add_middleware(LocalOnly)
+    if hosted is None:
+        app.add_middleware(LocalOnly)
+    else:
+        app.add_middleware(SharedLogin, hosted=hosted)
+
+    @app.get("/healthz", include_in_schema=False)
+    def healthz() -> dict:
+        return {"ok": True}
+
+    launches: dict[str, dict[str, Any]] = {}
+    app.state.launches = launches
+    launch_lock = threading.Lock()
+
+    @app.exception_handler(ConfigError)
+    async def config_error(request: Request, exc: ConfigError) -> JSONResponse:
+        return JSONResponse({"detail": str(exc), "kind": exc.kind}, status_code=400)
+
+    async def json_only(request: Request) -> None:
+        content_type = request.headers.get("content-type", "").split(";", 1)[0].strip().lower()
+        if content_type != "application/json":
+            raise HTTPException(415, "Content-Type must be application/json")
+
+    def validated(body: dict) -> tuple[EvalSpec, dict]:
+        try:
+            spec = EvalSpec.model_validate(body.get("spec"))
+            if hosted is not None:  # the hosted server has no local workers: use Fargate
+                params = {**hosted.executor_params, **_parallel(spec)}
+                spec = spec.model_copy(
+                    update={"executor": NamedComponent(name="fargate", params=params)}
+                )
+        except ValidationError as exc:
+            raise HTTPException(422, str(exc)) from None
+        warnings = service.validate_spec(spec)
+        est = service.estimate(spec, root)
+        return spec, {
+            "runs": len(service.plan(spec, "estimate")),
+            **est.model_dump(
+                include={"total_usd", "per_config", "exceeds_eval_cap", "eval_cap_usd", "notes"}
+            ),
+            "warnings": warnings,
+        }
+
+    @app.post("/api/estimate", dependencies=[Depends(json_only)])
+    def estimate(body: dict) -> dict:
+        return validated(body)[1]
+
+    @app.post("/api/evals", status_code=202, dependencies=[Depends(json_only)], response_model=None)
+    def launch(body: dict) -> dict | JSONResponse:
+        if body.get("confirm") is not True:
+            raise ConfigError("confirm must be true to launch", kind="needs_confirm")
+        spec, est = validated(body)
+        if est["exceeds_eval_cap"]:
+            raise ConfigError("estimate exceeds the eval cap", kind="exceeds_eval_cap")
+        service.check_aws_credentials(spec)  # answer 400 now, not a failed eval later
+        eval_id = f"{spec.name}-{new_id()[-8:].lower()}"
+        directory = eval_dir(eval_id)
+
+        def run() -> None:
+            try:
+                service.run_eval(spec, store_dir=root, confirm=True, eval_id=eval_id)
+            except Exception as exc:
+                launches[eval_id]["error"] = str(exc)
+
+        with launch_lock:
+            if sum(entry["thread"].is_alive() for entry in launches.values()) >= 2:
+                return JSONResponse({"detail": "two evaluations are running", "kind": "busy"}, 409)
+            thread = threading.Thread(target=run, name=f"eval-{eval_id}", daemon=True)
+            launches[eval_id] = {
+                "thread": thread,
+                "error": None,
+                "started_at": datetime.now(UTC).isoformat(),
+            }
+            thread.start()
+        deadline = time.monotonic() + 5
+        while time.monotonic() < deadline:
+            if launches[eval_id]["error"] is not None:
+                raise HTTPException(400, launches[eval_id]["error"])
+            if (directory / "plan.json").is_file():
+                break
+            time.sleep(0.05)
+        return {
+            "eval_id": eval_id,
+            "runs": est["runs"],
+            "status_url": f"/api/evals/{eval_id}/status",
+            "events_url": f"/api/evals/{eval_id}/events",
+        }
+
+    @app.get("/api/evals/{eval_id}/status")
+    def eval_status(eval_id: str) -> dict:
+        directory = eval_dir(eval_id)
+        entry = launches.get(eval_id)
+        plan = _read_json(directory / "plan.json")
+        if plan is None and entry is None:
+            raise HTTPException(404, f"unknown eval {eval_id!r}")
+        rows = plan["runs"] if plan else []
+        counts = dict(Counter(row["state"] for row in rows))
+        return {
+            "eval_id": eval_id,
+            "runs": rows,
+            "counts": counts,
+            "done": not any(counts.get(state) for state in ("planned", "running", "infra_retry"))
+            and (entry is None or not entry["thread"].is_alive()),
+            "error": entry["error"] if entry else None,
+            "report": (directory / "eval_report.json").is_file(),
+        }
+
+    @app.get("/api/evals/{eval_id}/events", response_class=StreamingResponse)
+    def events(eval_id: str, request: Request) -> StreamingResponse:
+        eval_status(eval_id)
+        path = eval_dir(eval_id) / "plan.json"
+
+        async def stream():
+            deadline = time.monotonic() + 2 * 60 * 60
+            keepalive = time.monotonic()
+            previous = None
+            while time.monotonic() < deadline:
+                if await request.is_disconnected():
+                    return
+                check_store_boundary()
+                status = eval_status(eval_id)
+                stamp = (
+                    path.stat().st_mtime_ns if path.is_file() else None,
+                    status["error"],
+                    status["done"],
+                )
+                data = json.dumps(status)
+                if stamp != previous:
+                    yield f"event: status\ndata: {data}\n\n"
+                    previous = stamp
+                if status["done"]:
+                    yield f"event: done\ndata: {data}\n\n"
+                    return
+                if time.monotonic() - keepalive >= 15:
+                    yield ": keepalive\n\n"
+                    keepalive = time.monotonic()
+                await asyncio.sleep(0.5)
+
+        return StreamingResponse(
+            stream(),
+            media_type="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
+
+    @app.get("/api/schema/eval-spec")
+    def eval_spec_schema() -> dict:
+        return EvalSpec.model_json_schema()
+
+    @app.get("/api/validation")
+    def validation() -> dict:
+        """Deterministic evaluator validation against bundled planted traces."""
+        return _validation_result()
 
     @app.get("/api/runs")
     def runs(

@@ -7,6 +7,7 @@ requires-python = ">=3.12"
 dependencies = [
     "pydantic>=2.7",
     "boto3>=1.35",
+    "botocore[crt]",  # `aws login` credentials need the CRT extra
     "jsonschema>=4.22",
     "pyyaml>=6.0",
     "python-ulid>=2.7",
@@ -67,3 +68,6 @@ python_version = "3.12"
 strict = false
 ignore_missing_imports = true
 plugins = ["pydantic.mypy"]
+
+[project.scripts]
+clay-sandbox = "claysandbox.cli:main"

@@ -67,7 +67,7 @@ def write_good(tmp_path, *, reference=None, steps=3, name="good-src", extra_even
     run_id = "run-good"
     d = tmp_path / name
     d.mkdir()
-    events = [RunStart(task_instance_id="T1:kern", config_name="baseline")]
+    events = [RunStart(task_instance_id="T1@kern", config_name="baseline")]
     # event ids are "<run>:<seq>"; a tool call's parent is the model call before it
     events += [model()]  # seq 1
     events += [tool("geocode", "geocode", {"q": "Kern County"}, '{"bbox": [1, 2, 3, 4]}')]  # seq 2
@@ -95,7 +95,7 @@ def write_good(tmp_path, *, reference=None, steps=3, name="good-src", extra_even
         sink.emit(e)
     tracer.close()
     (d / "manifest.json").write_text(
-        json.dumps({"run_id": run_id, "eval_id": "e1", "task_instance_id": "T1:kern"})
+        json.dumps({"run_id": run_id, "eval_id": "e1", "task_instance_id": "T1@kern"})
     )
     (d / "reference.json").write_text(json.dumps(reference if reference is not None else REFERENCE))
     return d

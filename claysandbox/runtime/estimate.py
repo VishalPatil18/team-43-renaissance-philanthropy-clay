@@ -62,6 +62,17 @@ WHERE r.model_id = $model_id
 """
 
 
+# LocalRunStore.query loads manifests and run_end totals into memory, then turns file access off,
+# so its SQL must use those tables (store/query.py), not read_json on the run folders.
+STORE_TOKEN_HISTORY_SQL = """
+SELECT r.input_tokens AS input_tokens, r.output_tokens AS output_tokens
+FROM manifests m JOIN run_ends r USING (run_id)
+WHERE m.model_id = $model_id AND m.template = $template
+  AND ($harness = '' OR m.harness_name = $harness)
+  AND r.state = 'completed' AND r.input_tokens IS NOT NULL AND r.output_tokens IS NOT NULL
+"""
+
+
 def query_token_history(
     store: RunStore, template: str, model_id: str, harness: str | None
 ) -> list[tuple[int, int]]:
@@ -70,6 +81,12 @@ def query_token_history(
     if callable(helper):
         rows = helper(template=template, model_id=model_id, harness=harness)
         return [(int(i), int(o)) for i, o in rows]
+    if hasattr(store, "run_dir"):  # LocalRunStore: query its in-memory tables
+        rows = store.query(
+            STORE_TOKEN_HISTORY_SQL,
+            {"model_id": model_id, "template": template, "harness": harness or ""},
+        )
+        return [(int(r["input_tokens"]), int(r["output_tokens"])) for r in rows]
     root = str(getattr(store, "root", "runs"))
     if not _SAFE_ROOT.match(root):
         raise ConfigError(f"Unsafe store root for token history: {root!r}")

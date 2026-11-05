@@ -84,3 +84,37 @@ export function Empty({ title, children }: { title: string; children: ReactNode 
     </div>
   );
 }
+
+/** A confidence interval drawn to scale: a line from low to high and a dot at the estimate. */
+export function IntervalBar({ low, high, estimate, min = 0, max = 1, label }: {
+  low: number | null; high: number | null; estimate: number | null; min?: number; max?: number; label: string;
+}) {
+  if (estimate == null || !(max > min)) return <span className="muted">–</span>;
+  const W = 160, H = 18, pad = 6, x = (v: number) => pad + ((Math.min(max, Math.max(min, v)) - min) / (max - min)) * (W - 2 * pad);
+  const lo = low ?? estimate, hi = high ?? estimate;
+  return (
+    <svg className="ci-bar" viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img"
+      aria-label={`${label}: ${fmt.num(estimate)}, 95% interval ${fmt.num(low)} to ${fmt.num(high)}`}>
+      <line className="ci-track" x1={pad} x2={W - pad} y1={H / 2} y2={H / 2} />
+      <line className="ci-range" x1={x(lo)} x2={x(hi)} y1={H / 2} y2={H / 2} />
+      <circle className="ci-dot" cx={x(estimate)} cy={H / 2} r={4} />
+    </svg>
+  );
+}
+
+/** A paired effect against a zero line: left of centre favours the baseline, right the variant. */
+export function EffectBar({ effect, low, high, span, label }: {
+  effect: number | null; low: number | null; high: number | null; span: number; label: string;
+}) {
+  if (effect == null || !(span > 0)) return <span className="muted">–</span>;
+  const W = 180, H = 18, pad = 6, mid = W / 2, x = (v: number) => mid + (Math.max(-span, Math.min(span, v)) / span) * (mid - pad);
+  return (
+    <svg className="ci-bar" viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img"
+      aria-label={`${label}: effect ${fmt.num(effect)}, 95% interval ${fmt.num(low)} to ${fmt.num(high)}`}>
+      <line className="ci-track" x1={pad} x2={W - pad} y1={H / 2} y2={H / 2} />
+      <line className="ci-zero" x1={mid} x2={mid} y1={2} y2={H - 2} />
+      <line className="ci-range" x1={x(low ?? effect)} x2={x(high ?? effect)} y1={H / 2} y2={H / 2} />
+      <circle className="ci-dot" cx={x(effect)} cy={H / 2} r={4} />
+    </svg>
+  );
+}

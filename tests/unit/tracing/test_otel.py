@@ -21,7 +21,10 @@ def run(tmp_path, events=None, params=None):
     tracer = OtelTracer(params)
     tracer.open("r", tmp_path)
     sink = RunEventSink("r", tmp_path, tracer)
-    sent = [sink.emit(e) for e in (events if events is not None else scripted_events())]
+    if events is None:
+        events = scripted_events()
+        events[0] = events[0].model_copy(update={"task_instance_id": "T1@kern"})
+    sent = [sink.emit(e) for e in events]
     tracer.close()
     return tracer, sent
 
@@ -56,7 +59,7 @@ def test_every_event_is_a_child_of_one_root_run_span(tmp_path):
     assert len({s["traceId"] for s in all_spans}) == 1
     root = attrs(roots[0])
     assert root["clay.run_id"]["stringValue"] == "r"
-    assert root["clay.task_instance"]["stringValue"] == "T1:kern"
+    assert root["clay.task_instance"]["stringValue"] == "T1@kern"
     assert root["clay.config"]["stringValue"] == "fake-baseline"
 
 

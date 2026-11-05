@@ -8,13 +8,15 @@ from __future__ import annotations
 # WS4 (evaluation): workflow@0/@1, output and output.t1..t5, llm_process
 from claysandbox.evaluation import llm_process, output, workflow  # noqa: F401
 
+# WS3 (trace and store)
+from claysandbox.platform import custom as custom_query  # noqa: F401  (expect evaluator)
+
 # WS1 (runtime and cloud execution)
 from claysandbox.platform.executors import fargate  # noqa: F401
+from claysandbox.platform.executors import local as local_executor  # noqa: F401
 from claysandbox.runtime import pricing  # noqa: F401
 from claysandbox.runtime.harness import converse_loop, strands_harness  # noqa: F401
 from claysandbox.runtime.models import bedrock  # noqa: F401
-
-# WS3 (trace and store)
 from claysandbox.store import local, s3  # noqa: F401
 from claysandbox.summary import deterministic, llm  # noqa: F401
 
