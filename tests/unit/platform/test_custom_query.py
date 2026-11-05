@@ -151,3 +151,53 @@ def test_missing_aws_credentials_fail_once_before_any_run(tmp_path: Path, monkey
     assert exc.value.kind == "aws_credentials" and "aws login" in str(exc.value)
     assert not list((tmp_path / "runs").glob("*"))  # nothing was started
     service.check_aws_credentials(_spec())  # fake models need no AWS
+
+
+class FargateLike:
+    """Reports `running` when a run starts and a terminal status without cost, like Fargate."""
+
+    def __init__(self, store: LocalRunStore):
+        from claysandbox.platform import worker
+
+        self.store, self.worker = store, worker
+        self.started: list = []
+        self.new: list = []
+
+    def submit(self, requests):
+        self.new.extend(requests)
+
+    def poll(self):
+        from claysandbox.contracts.execution import RunStatus
+
+        out = [RunStatus(run_id=r.run_id, eval_id=r.eval_id, state="running") for r in self.new]
+        for r in self.started:
+            done = self.worker.run_one(r, self.store)
+            out.append(RunStatus(run_id=r.run_id, eval_id=r.eval_id, state=done.state))
+        self.started, self.new = self.new, []
+        return out
+
+
+def test_running_statuses_do_not_end_the_eval_and_cost_comes_from_the_trace(
+    tmp_path: Path, monkeypatch
+):
+    from claysandbox.contracts.execution import RunStatus
+
+    monkeypatch.setattr(service, "_executor", lambda spec, store: FargateLike(store))
+    seen: list[tuple[str, str]] = []
+    result = service.run_eval(
+        _spec(models=(LITE, PRO)),
+        store_dir=tmp_path,
+        confirm=True,
+        poll_seconds=0.01,
+        on_status=lambda r, s: seen.append((r, s)),
+    )
+    assert sorted(result.states.values()) == ["completed", "completed"]
+    assert [s for _, s in seen].count("running") == 2
+    plan = service.eval_status(result.eval_id, tmp_path)["runs"]
+    assert {r["state"] for r in plan} == {"completed"}
+    store = LocalRunStore(tmp_path / "runs", tmp_path / "evals")
+    run_id = result.run_ids[0]
+    end = [json.loads(x) for x in (store.run_dir(run_id) / "trace.jsonl").read_text().splitlines()]
+    want = end[-1]["totals"]["cost_usd"]
+    got = service._run_cost(RunStatus(run_id=run_id, eval_id="e", state="completed"), store)
+    assert got == want

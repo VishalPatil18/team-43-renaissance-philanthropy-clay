@@ -248,6 +248,26 @@ def _executor(spec: EvalSpec, store: LocalRunStore) -> Any:
     return LocalExecutor(params).bind(lambda req: worker.run_one(req, store))
 
 
+def _run_cost(status: RunStatus, store: LocalRunStore) -> float:
+    """Agent cost of a finished run: from the status, else from its trace's run_end totals.
+
+    The local worker reports it; a Fargate status (read from S3) does not, so the eval cap
+    reads the synced trace instead.
+    """
+    reported = (status.environment or {}).get("cost_usd")
+    if reported is not None:
+        return float(reported)
+    trace = store.run_dir(status.run_id) / "trace.jsonl"
+    try:
+        for line in reversed(trace.read_text().splitlines()):
+            event = json.loads(line)
+            if event.get("type") == "run_end":
+                return float((event.get("totals") or {}).get("cost_usd") or 0.0)
+    except (OSError, ValueError):
+        pass
+    return 0.0
+
+
 def check_aws_credentials(spec: EvalSpec) -> None:
     """Fail once, before any run starts, when Bedrock or Fargate would have no credentials.
 
@@ -345,14 +365,18 @@ def run_eval(
     while in_flight:
         time.sleep(poll_seconds)
         for status in executor.poll():
-            in_flight -= 1
             req = by_id[status.run_id]
+            if status.state == "running":  # started (Fargate reports this), not finished
+                if on_status:
+                    on_status(req.run_id, "running")
+                continue
+            in_flight -= 1
             if fargate:  # bring the finished run folder down from S3
                 try:
                     store.sync_down(f"runs/{status.run_id}/")  # type: ignore[attr-defined]
                 except Exception as exc:  # noqa: BLE001
                     log.warning("sync of %s failed: %s", status.run_id, exc)
-            cost = float((status.environment or {}).get("cost_usd") or 0.0)
+            cost = _run_cost(status, store)
             budget.add(cost)
             state = status.state
             if state == "infra_retry":

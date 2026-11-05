@@ -28,12 +28,12 @@ function App() {
     <header className="app-header">
       <Link href="/runs" className="brand"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor"/><path d="M8 8h8v8H8z" fill="none" stroke="currentColor"/></svg>Clay sandbox</Link>
       <nav aria-label="Main navigation">{[['/runs','Runs'],['/report','Report'],['/comparison','Comparison'],['/validation','Validation'],['/new-run','New Run']].map(([href,label])=><Link key={href} href={href} aria-current={active===href?'page':undefined}>{label}</Link>)}</nav>
-      <span className="prototype-label">Local sandbox</span>
+      <span className="prototype-label">Agent evaluation sandbox</span>
     </header>
     <main id="content" tabIndex={-1}>
       {path==='/' || path==='/runs' ? <RunsScreen/> : run && runId ? <RunScreen key={runId} runId={runId} tab={run[2]??'overview'}/> : path==='/report' || path==='/comparison' ? <EvalScreen comparison={path==='/comparison'}/> : live ? <EvalLiveScreen key={live[1]} evalId={decodeURIComponent(live[1])}/> : path==='/validation' ? <ValidationScreen/> : path==='/new-run' ? <NewRunScreen/> : <Empty title="Page not found"><Link href="/runs">Back to runs</Link></Empty>}
     </main>
-    <footer className="app-footer"><span>Clay agent evaluation sandbox</span><span>Local store · Local API only</span></footer>
+    <footer className="app-footer"><span>Clay agent evaluation sandbox</span><span>Runs, traces and reports from the sandbox store</span></footer>
   </>;
 }
 createRoot(document.getElementById('root')!).render(<StrictMode><App/></StrictMode>);

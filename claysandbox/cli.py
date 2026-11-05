@@ -28,6 +28,7 @@ def _parser():
             command.add_argument("--request", required=True)
         if name == "serve":
             command.add_argument("--port", type=int, default=8765)
+            command.add_argument("--hosted", action="store_true", help="AWS mode (web service)")
     query = commands.add_parser(
         "query", help="run your own question on one or more models and compare them"
     )
@@ -59,6 +60,12 @@ def _parser():
     query.add_argument("--name", help="evaluation name (default: from the question)")
     query.add_argument("--save-spec", metavar="PATH", help="also write the spec, to rerun it")
     query.add_argument("--estimate-only", action="store_true")
+    query.add_argument(
+        "--executor",
+        choices=("local", "fargate"),
+        default="local",
+        help="fargate runs each model in its own ECS task (needs infra/outputs.json)",
+    )
     query.add_argument("--confirm", action="store_true", help="needed for more than one run")
     query.add_argument("--store", default=".")
     commands.add_parser("validate-evaluator").add_argument("--planted")
@@ -71,7 +78,10 @@ def _execute(args):
     if args.command == "serve":
         from claysandbox.api.__main__ import main as serve
 
-        serve(["--store", args.store, "--port", str(args.port)])
+        serve(
+            ["--store", args.store, "--port", str(args.port)]
+            + (["--hosted"] if args.hosted else [])
+        )
         return 0
     if args.command == "registry":
         import claysandbox.platform.registry_bootstrap  # noqa: F401

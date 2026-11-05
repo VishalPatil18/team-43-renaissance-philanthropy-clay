@@ -9,7 +9,7 @@ export function EvalScreen({comparison}:{comparison:boolean}) {
   return <section><header className="page-head"><h1>{comparison?'Comparison':'Report'}</h1><p className="muted">{comparison?'Paired variant effects relative to the baseline. Uncertainty stays visible.':'Per-configuration results, with workflow, output and process metrics kept separate.'}</p></header>
   <Load q={evals} what="evaluations">{rows=>!rows.length ? <Empty title="No evaluations in this store">Seed the demo store or select a store with an evaluation report.</Empty>:<>
     <label className="field eval-picker"><span>Evaluation</span><select value={id} onChange={e=>navigate(`${comparison?'/comparison':'/report'}?eval=${encodeURIComponent(e.target.value)}`)}>{rows.map(e=><option key={e.eval_id} value={e.eval_id}>{e.eval_id} ({e.runs} runs)</option>)}</select></label>
-    <Load q={detail} what="evaluation">{d=>comparison ? <ComparisonView report={d.report}/> : <ReportView detail={d}/>}</Load>
+    <Load q={detail} what="evaluation">{d=>comparison ? <ComparisonView report={d.report} evalId={d.eval_id}/> : <ReportView detail={d}/>}</Load>
   </>}</Load></section>;
 }
 
@@ -43,14 +43,14 @@ export function ReportView({detail}:{detail:EvalDetail}) {
         <tbody>{metrics.map(([name,v])=>{const [lo,hi]=scaleFor(name,configs);return <tr key={name}><th scope="row">{name}</th><td>{fmt.num(v.estimate)}</td><td><IntervalBar low={v.low} high={v.high} estimate={v.estimate} min={lo} max={hi} label={name}/></td><td>{fmt.num(v.low)} to {fmt.num(v.high)}</td><td>{v.n}</td><td>{v.method.replaceAll('_',' ')}</td></tr>;})}</tbody></table></div>
       </section>;})}
     <MeasurementSection report={report}/>
-  </>:<Empty title="No aggregate report stored">Run-level assessments are available below. Build an evaluation report with the CLI to see configuration statistics.</Empty>}
+  </>:<Empty title="No aggregate report stored">The report is written when the evaluation finishes. If it is still running, <Link href={`/evals/${encodeURIComponent(evalId)}`}>open its live progress</Link>. Run-level assessments are available below.</Empty>}
   <section className="panel"><h2>Runs in this evaluation</h2><ul className="run-links">{detail.runs.map(r=><li key={r.run_id}><Link href={`/runs/${encodeURIComponent(r.run_id)}`}>{r.run_id}</Link><span className="muted">{r.state?.replaceAll('_',' ')??'Unknown state'}</span></li>)}</ul><p className="muted">{detail.assessments.length} recorded assessments. Open a run for evaluator notes and trace evidence.</p></section></>;
 }
 
-export function ComparisonView({report}:{report:EvalReport|null}) {
+export function ComparisonView({report,evalId:shownId}:{report:EvalReport|null;evalId?:string}) {
   const rows=report?.stats.comparisons??[];
   if(!rows.length) return <>
-    <Empty title="No paired comparisons yet">{report ? <>This evaluation contains the baseline only. Add a variant and paired task instances, then build a comparison report with the CLI.</> : <>No comparison report is stored for this evaluation. Build one with the CLI to see effects, confidence intervals and p-values.</>}</Empty>
+    <Empty title="No paired comparisons yet">{report ? <>This evaluation ran one configuration ({report.baseline}), so there is nothing to compare it with. Comparisons are made inside one evaluation: on New Run, list more models under “Compare with models” (or add variants to a spec), and each runs the same task alongside the baseline.</> : <>This evaluation has no report yet. It is written when the evaluation finishes{shownId ? <>; <Link href={`/evals/${encodeURIComponent(shownId)}`}>open its live progress</Link></> : null}.</>}</Empty>
     {report && <MeasurementSection report={report}/>}
   </>;
   const span:Record<string,number>={};

@@ -3,8 +3,12 @@
 from __future__ import annotations
 
 import asyncio
+import base64
+import binascii
 import json
+import logging
 import re
+import secrets
 import threading
 import time
 from collections import Counter
@@ -21,7 +25,7 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 from claysandbox.contracts.errors import ConfigError
 from claysandbox.contracts.ids import new_id
 from claysandbox.contracts.registry import list_components
-from claysandbox.contracts.spec import EvalSpec
+from claysandbox.contracts.spec import EvalSpec, NamedComponent
 from claysandbox.contracts.store import TERMINAL_STATES, RunLifecycle
 from claysandbox.contracts.task import TaskReference
 from claysandbox.platform import service
@@ -29,6 +33,7 @@ from claysandbox.store import query as q
 from claysandbox.store.local import LocalRunStore
 from claysandbox.tasks.library import FileTaskLibrary
 
+log = logging.getLogger("claysandbox.api")
 REPO_ROOT = Path(__file__).resolve().parents[2]
 UI_DIST = REPO_ROOT / "ui" / "dist"
 LOCAL_AUTHORITY = re.compile(r"(?:127\.0\.0\.1|localhost|\[::1\])(?::([0-9]{1,5}))?", re.I)
@@ -73,8 +78,72 @@ class LocalOnly:
         await self.app(scope, receive, send)
 
 
+class Hosted:
+    """Settings for the hosted (AWS) mode: one shared login and Fargate-only launches."""
+
+    def __init__(
+        self,
+        password: str,
+        *,
+        username: str = "clay",
+        executor_params: dict[str, Any] | None = None,
+    ) -> None:
+        if len(password) < 12:
+            raise ValueError("the hosted UI password must be at least 12 characters")
+        self.username, self.password = username, password
+        self.executor_params = dict(executor_params or {})
+
+
+def _authorized(header: str, hosted: Hosted) -> bool:
+    scheme, _, value = header.partition(" ")
+    if scheme.lower() != "basic":
+        return False
+    try:
+        user, _, password = base64.b64decode(value, validate=True).decode().partition(":")
+    except (binascii.Error, UnicodeDecodeError):
+        return False
+    ok_user = secrets.compare_digest(user.encode(), hosted.username.encode())
+    ok_password = secrets.compare_digest(password.encode(), hosted.password.encode())
+    return ok_user and ok_password
+
+
+class SharedLogin:
+    """Hosted mode: HTTP Basic login on every route except ``/healthz``, plus same-origin POSTs.
+
+    Browsers send Basic credentials on every request to the site, so a POST is also refused
+    unless its Origin names this host (no cross-site form or fetch can launch an eval).
+    """
+
+    def __init__(self, app: ASGIApp, hosted: Hosted) -> None:
+        self.app, self.hosted = app, hosted
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] == "http" and scope["path"] != "/healthz":
+            headers = {k.lower(): v.decode("latin-1") for k, v in scope["headers"]}
+            if not _authorized(headers.get(b"authorization", ""), self.hosted):
+                response = PlainTextResponse(
+                    "login required",
+                    401,
+                    headers={"WWW-Authenticate": 'Basic realm="Clay sandbox", charset="UTF-8"'},
+                )
+                await response(scope, receive, send)
+                return
+            origin, host = headers.get(b"origin"), headers.get(b"host", "")
+            if scope["method"] not in ("GET", "HEAD") and (
+                origin is None or origin.split("://", 1)[-1] != host
+            ):
+                await PlainTextResponse("forbidden: cross-site request", 403)(scope, receive, send)
+                return
+        await self.app(scope, receive, send)
+
+
 def _read_json(path: Path) -> Any:
     return json.loads(path.read_text()) if path.is_file() else None
+
+
+def _parallel(spec: EvalSpec) -> dict[str, Any]:
+    n = spec.executor.params.get("max_parallel")
+    return {"max_parallel": min(int(n), 8)} if n else {}
 
 
 @cache
@@ -89,8 +158,14 @@ def _validation_result() -> dict:
     raise HTTPException(404, "no planted validation fixtures available")
 
 
-def create_app(store_root: str | Path, ui_dist: str | Path = UI_DIST) -> FastAPI:
-    """App over the store at ``store_root`` (``runs/`` and ``evals/`` below it)."""
+def create_app(
+    store_root: str | Path, ui_dist: str | Path = UI_DIST, *, hosted: Hosted | None = None
+) -> FastAPI:
+    """App over the store at ``store_root`` (``runs/`` and ``evals/`` below it).
+
+    Locally (the default) only loopback requests are served. With ``hosted`` (on AWS) every
+    route needs the shared login and every launch runs on Fargate.
+    """
     root = Path(store_root).resolve()
     if not (root / "runs").is_dir():
         # LocalRunStore would create the folder; a read-only API must not.
@@ -140,7 +215,14 @@ def create_app(store_root: str | Path, ui_dist: str | Path = UI_DIST) -> FastAPI
         version="0.1.0",
         dependencies=[Depends(check_store_boundary)],
     )
-    app.add_middleware(LocalOnly)
+    if hosted is None:
+        app.add_middleware(LocalOnly)
+    else:
+        app.add_middleware(SharedLogin, hosted=hosted)
+
+    @app.get("/healthz", include_in_schema=False)
+    def healthz() -> dict:
+        return {"ok": True}
 
     launches: dict[str, dict[str, Any]] = {}
     app.state.launches = launches
@@ -158,6 +240,11 @@ def create_app(store_root: str | Path, ui_dist: str | Path = UI_DIST) -> FastAPI
     def validated(body: dict) -> tuple[EvalSpec, dict]:
         try:
             spec = EvalSpec.model_validate(body.get("spec"))
+            if hosted is not None:  # the hosted server has no local workers: use Fargate
+                params = {**hosted.executor_params, **_parallel(spec)}
+                spec = spec.model_copy(
+                    update={"executor": NamedComponent(name="fargate", params=params)}
+                )
         except ValidationError as exc:
             raise HTTPException(422, str(exc)) from None
         warnings = service.validate_spec(spec)

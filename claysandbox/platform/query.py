@@ -45,6 +45,7 @@ def build_spec(
     max_seconds: float = 240,
     eval_cap: float = 2.0,
     name: str | None = None,
+    executor: str = "local",
 ) -> EvalSpec:
     if not models:
         raise ConfigError("give at least one model", kind="invalid_spec")
@@ -78,7 +79,7 @@ def build_spec(
                 "run": {"max_steps": max_steps, "max_usd": max_usd, "max_seconds": max_seconds},
                 "eval": {"max_usd": eval_cap},
             },
-            "executor": {"name": "local", "params": {"max_parallel": min(4, len(models))}},
+            "executor": {"name": executor, "params": {"max_parallel": min(4, len(models))}},
         }
     )
 
@@ -154,6 +155,7 @@ def run_cli(args: Any, service: Any) -> int:
         max_seconds=args.max_seconds,
         eval_cap=args.eval_cap,
         name=args.name,
+        executor=args.executor,
     )
     for warning in service.validate_spec(spec):
         print(f"warning: {warning}", file=sys.stderr)

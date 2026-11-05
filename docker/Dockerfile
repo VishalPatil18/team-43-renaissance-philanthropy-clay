@@ -7,6 +7,17 @@
 # MCP servers are pre-installed at their pinned versions at build time, so nothing is installed
 # over the network at run time (run with UV_OFFLINE=1, which the image sets).
 # If a tool set uses `npx` servers, add: --build-arg WITH_NODE=true
+# The same image serves the web UI on AWS (`clay-sandbox serve --hosted`), so it builds ui/ too.
+
+# -- the web UI (static files only; Node is not needed at run time for this) -----------------
+FROM node:24-slim AS ui
+WORKDIR /ui
+COPY ui/package.json ui/package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY ui/ ./
+RUN npm run build
+
+# -- the runtime image -----------------------------------------------------------------------
 FROM python:3.12-slim
 
 ARG GIT_SHA=unknown
@@ -38,10 +49,11 @@ WORKDIR /app
 
 # Dependencies first, so code changes do not reinstall them.
 COPY --chown=clay:clay pyproject.toml uv.lock README.md ./
-RUN uv sync --frozen --no-dev --no-install-project
+RUN uv sync --frozen --no-dev --extra api --no-install-project
 
 COPY --chown=clay:clay . .
-RUN uv sync --frozen --no-dev
+RUN uv sync --frozen --no-dev --extra api
+COPY --from=ui --chown=clay:clay /ui/dist /app/ui/dist
 
 # Fill the MCP server caches (no-op until the tool sets exist), then forbid network installs.
 RUN python docker/preinstall_mcp.py toolsets
