@@ -18,9 +18,31 @@ class NamedComponent(BaseModel):
     params: dict[str, Any] = Field(default_factory=dict)
 
 
+class CustomTask(BaseModel):
+    """A free-form query run as its own task (``Q@<id>``), outside the task library.
+
+    It has no reference answer: it is scored only against ``expect`` (strings the final answer
+    must contain, e.g. item IDs or place names) by the ``expect`` evaluator, if any are given.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str = Field(pattern=r"^[a-z0-9][a-z0-9-]{0,47}$")
+    prompt: str = Field(min_length=1)
+    system_prompt: str | None = None
+    expect: list[str] = Field(default_factory=list)
+
+
 class TasksSpec(BaseModel):
+    """Library tasks (``templates`` x ``aois``) and/or custom queries.
+
+    Empty ``templates`` means every template, unless the spec has custom tasks: then it means
+    none, so a custom-only spec runs only its own queries.
+    """
+
     templates: list[str] = Field(default_factory=list)
     aois: str | list[str] = "all"
+    custom: list[CustomTask] = Field(default_factory=list)
 
 
 class ConfigSpec(BaseModel):

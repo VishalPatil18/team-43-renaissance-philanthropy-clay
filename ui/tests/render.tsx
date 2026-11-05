@@ -7,6 +7,8 @@ import { SiteMap } from '../src/site-map.tsx';
 import { ReportView, ComparisonView, MeasurementSection } from '../src/eval.tsx';
 import { ValidationView } from '../src/validation.tsx';
 import { SpecBuilder } from '../src/new-run.tsx';
+import { EvalLiveView, summarize } from '../src/eval-live.tsx';
+import { buildSpec, configName, splitLines } from '../src/spec.ts';
 import { Load } from '../src/ui.tsx';
 import type { Assessment, EvalDetail, EvalReport, ReferenceResponse, RunDetail, Trace, ValidationResponse } from '../src/api.ts';
 
@@ -54,7 +56,7 @@ test('report without aggregate data retains run assessment access',()=>{
 });
 test('spec builder labels configuration and preview with no execution control',()=>{
  const html=render(<SpecBuilder components={[{kind:'model',name:'bedrock',version:'1'},{kind:'harness',name:'strands',version:'1'},{kind:'toolset',name:'T1',version:'1'}]} tasks={[{id:'T1@us-ca-kern',template:'T1',aoi:'us-ca-kern',title:'Test task'}]}/>);
- assert.match(html,/Evaluation name/);assert.match(html,/readOnly=""/);assert.match(html,/Add a model ID/);assert.doesNotMatch(html,/>Launch|>Execute/);
+ assert.match(html,/Evaluation name/);assert.match(html,/readOnly=""/);assert.match(html,/Add a model ID/);assert.match(html,/>Estimate cost</);assert.match(html,/<button[^>]*disabled=""[^>]*>Launch evaluation</);assert.doesNotMatch(html,/I confirm this calls/);
 });
 test('load suppresses stale rows while a new request is pending and reports failures',()=>{
  const loading=render(<Load q={{loading:true,data:['stale']}} what="runs">{rows=><p>{rows[0]}</p>}</Load>);
@@ -95,4 +97,31 @@ test('validation shows detected and missed planted flaws',()=>{
 test('LLM judge repeats and their spread are shown',()=>{
  const html=render(<AssessmentsView rows={[{...assessment,kind:'process',repeats:[.8,.75,.82]}]} runId={trace.run_id}/>);
  assert.match(html,/Judge scored 3 times: 0.80, 0.75, 0.82 · spread 0.07/);
+});
+
+const liveStatus={eval_id:'e1',done:false,error:null,report:null,counts:{completed:1,running:1,infra_retry:1},runs:[
+  {run_id:'r1',config_name:'base',task_instance_id:'T1@us-ca-kern',trial_index:0,attempt:1,state:'infra_retry',cost_usd:0.01,retry_of:null,error_kind:'throttled'},
+  {run_id:'r2',config_name:'base',task_instance_id:'T1@us-ca-kern',trial_index:0,attempt:2,state:'completed',cost_usd:0.02,retry_of:'r1',error_kind:null},
+  {run_id:'r3',config_name:'warm',task_instance_id:'T1@us-ca-kern',trial_index:0,attempt:1,state:'running',cost_usd:null,retry_of:null,error_kind:null}]} as any;
+test('live eval progress counts a retried run once',()=>{
+  const s=summarize(liveStatus);assert.equal(s.total,2);assert.equal(s.finished,1);assert.equal(s.active,1);assert.ok(Math.abs(s.cost-0.03)<1e-9);
+  const html=render(<EvalLiveView status={liveStatus}/>);
+  assert.match(html,/1 of 2 runs finished · 1 running/);assert.match(html,/href="\/runs\/r2"/);assert.doesNotMatch(html,/href="\/runs\/r3"/);assert.doesNotMatch(html,/Open report/);
+  const done=render(<EvalLiveView status={{...liveStatus,done:true,report:{}}}/>);assert.match(done,/Open report/);assert.match(done,/\/comparison\?eval=e1/);
+});
+
+test('custom query spec: one custom task, expect evaluator, a variant per extra model',()=>{
+  const f={name:'q',template:'T1',aoi:'us-ca-kern',model:'bedrock',modelId:'us.amazon.nova-lite-v1:0',harness:'converse_loop',toolset:'T1',trials:1,steps:25,
+    compareModelIds:splitLines('us.amazon.nova-pro-v1:0\nus.amazon.nova-lite-v1:0'),custom:{prompt:'  Find NAIP items over Kern County, 2022! ',expect:splitLines('abc, Bakersfield')}};
+  const s=buildSpec(f) as any;
+  assert.deepEqual(s.tasks,{custom:[{id:'find-naip-items-over-kern-county',prompt:'Find NAIP items over Kern County, 2022!',expect:['abc','Bakersfield']}]});
+  assert.deepEqual(s.evaluators,[{name:'expect',version:'1'}]);
+  assert.equal(s.baseline.name,'nova-lite-v1');assert.deepEqual(s.variants,[{name:'nova-pro-v1',override:{model:{params:{model_id:'us.amazon.nova-pro-v1:0'}}}}]);
+  assert.equal(configName('us.anthropic.claude-sonnet-4-6:0'),'claude-sonnet-4-6');
+  const lib=buildSpec({...f,custom:null,compareModelIds:[]}) as any;
+  assert.deepEqual(lib.tasks,{templates:['T1'],aois:['us-ca-kern']});assert.equal(lib.baseline.name,'baseline');assert.equal(lib.variants,undefined);
+});
+test('new run offers a custom query mode',()=>{
+  const html=render(<SpecBuilder components={[{kind:'model',name:'bedrock',version:'1'},{kind:'harness',name:'strands',version:'1'},{kind:'toolset',name:'T1',version:'1'}]} tasks={[{id:'T1@us-ca-kern',template:'T1',aoi:'us-ca-kern',title:'Test task'}]}/>);
+  assert.match(html,/Custom query/);assert.match(html,/Library task/);assert.match(html,/Compare with models/);
 });

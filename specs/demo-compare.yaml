@@ -1,0 +1,25 @@
+name: demo-compare
+tasks:
+  templates: [T1, T4]
+  aois: [us-ca-kern, us-nv-clark, us-tx-pecos]
+baseline:
+  name: novapro-strands
+  model: {name: bedrock, params: {model_id: 'us.amazon.nova-pro-v1:0'}}
+  harness: {name: strands}
+  toolset: T1
+  tracer: {name: jsonl}
+variants:
+  - name: sonnet
+    override: {model: {params: {model_id: 'us.anthropic.claude-sonnet-4-6'}}}
+  - name: converse-loop
+    override: {harness: {name: converse_loop}}
+evaluators:
+  - {name: workflow, version: '1'}
+  - {name: output, version: '1'}
+summary: {name: deterministic}
+trials: 2
+seed: 42
+budget:
+  run: {max_steps: 15, max_usd: 0.20, max_seconds: 240}
+  eval: {max_usd: 8}
+executor: {name: local, params: {max_parallel: 3}}

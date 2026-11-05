@@ -1,27 +1,30 @@
-"""Read-only HTTP API over a ``LocalRunStore`` for the UI prototype (arch §16, R3).
-
-Every route is a GET over files the store already has; nothing here writes to the store.
-It serves the built UI (``ui/dist``) at ``/`` and answers only requests whose ``Host`` and
-``Origin`` (when sent) are this machine, so another web page cannot read the store through
-the browser (DNS rebinding, cross-site fetch).
-"""
+"""Local HTTP API for browsing runs and launching evaluations."""
 
 from __future__ import annotations
 
+import asyncio
 import json
 import re
+import threading
+import time
+from collections import Counter
+from datetime import UTC, datetime
 from functools import cache
 from pathlib import Path
 from typing import Annotated, Any
 
-from fastapi import Depends, FastAPI, HTTPException, Query
-from fastapi.responses import FileResponse, PlainTextResponse
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, StreamingResponse
+from pydantic import ValidationError
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 from claysandbox.contracts.errors import ConfigError
+from claysandbox.contracts.ids import new_id
 from claysandbox.contracts.registry import list_components
+from claysandbox.contracts.spec import EvalSpec
 from claysandbox.contracts.store import TERMINAL_STATES, RunLifecycle
 from claysandbox.contracts.task import TaskReference
+from claysandbox.platform import service
 from claysandbox.store import query as q
 from claysandbox.store.local import LocalRunStore
 from claysandbox.tasks.library import FileTaskLibrary
@@ -56,6 +59,14 @@ class LocalOnly:
                 or not _local_authority(hosts[0])
                 or len(origins) > 1
                 or (origins and not _local_authority(origins[0], origin=True))
+                or (
+                    scope["method"] == "POST"
+                    and not origins
+                    and any(
+                        k.lower() == b"sec-fetch-site" and v.lower() == b"cross-site"
+                        for k, v in scope["headers"]
+                    )
+                )
             ):
                 await PlainTextResponse("forbidden: local requests only", 403)(scope, receive, send)
                 return
@@ -130,6 +141,139 @@ def create_app(store_root: str | Path, ui_dist: str | Path = UI_DIST) -> FastAPI
         dependencies=[Depends(check_store_boundary)],
     )
     app.add_middleware(LocalOnly)
+
+    launches: dict[str, dict[str, Any]] = {}
+    app.state.launches = launches
+    launch_lock = threading.Lock()
+
+    @app.exception_handler(ConfigError)
+    async def config_error(request: Request, exc: ConfigError) -> JSONResponse:
+        return JSONResponse({"detail": str(exc), "kind": exc.kind}, status_code=400)
+
+    async def json_only(request: Request) -> None:
+        content_type = request.headers.get("content-type", "").split(";", 1)[0].strip().lower()
+        if content_type != "application/json":
+            raise HTTPException(415, "Content-Type must be application/json")
+
+    def validated(body: dict) -> tuple[EvalSpec, dict]:
+        try:
+            spec = EvalSpec.model_validate(body.get("spec"))
+        except ValidationError as exc:
+            raise HTTPException(422, str(exc)) from None
+        warnings = service.validate_spec(spec)
+        est = service.estimate(spec, root)
+        return spec, {
+            "runs": len(service.plan(spec, "estimate")),
+            **est.model_dump(
+                include={"total_usd", "per_config", "exceeds_eval_cap", "eval_cap_usd", "notes"}
+            ),
+            "warnings": warnings,
+        }
+
+    @app.post("/api/estimate", dependencies=[Depends(json_only)])
+    def estimate(body: dict) -> dict:
+        return validated(body)[1]
+
+    @app.post("/api/evals", status_code=202, dependencies=[Depends(json_only)], response_model=None)
+    def launch(body: dict) -> dict | JSONResponse:
+        if body.get("confirm") is not True:
+            raise ConfigError("confirm must be true to launch", kind="needs_confirm")
+        spec, est = validated(body)
+        if est["exceeds_eval_cap"]:
+            raise ConfigError("estimate exceeds the eval cap", kind="exceeds_eval_cap")
+        service.check_aws_credentials(spec)  # answer 400 now, not a failed eval later
+        eval_id = f"{spec.name}-{new_id()[-8:].lower()}"
+        directory = eval_dir(eval_id)
+
+        def run() -> None:
+            try:
+                service.run_eval(spec, store_dir=root, confirm=True, eval_id=eval_id)
+            except Exception as exc:
+                launches[eval_id]["error"] = str(exc)
+
+        with launch_lock:
+            if sum(entry["thread"].is_alive() for entry in launches.values()) >= 2:
+                return JSONResponse({"detail": "two evaluations are running", "kind": "busy"}, 409)
+            thread = threading.Thread(target=run, name=f"eval-{eval_id}", daemon=True)
+            launches[eval_id] = {
+                "thread": thread,
+                "error": None,
+                "started_at": datetime.now(UTC).isoformat(),
+            }
+            thread.start()
+        deadline = time.monotonic() + 5
+        while time.monotonic() < deadline:
+            if launches[eval_id]["error"] is not None:
+                raise HTTPException(400, launches[eval_id]["error"])
+            if (directory / "plan.json").is_file():
+                break
+            time.sleep(0.05)
+        return {
+            "eval_id": eval_id,
+            "runs": est["runs"],
+            "status_url": f"/api/evals/{eval_id}/status",
+            "events_url": f"/api/evals/{eval_id}/events",
+        }
+
+    @app.get("/api/evals/{eval_id}/status")
+    def eval_status(eval_id: str) -> dict:
+        directory = eval_dir(eval_id)
+        entry = launches.get(eval_id)
+        plan = _read_json(directory / "plan.json")
+        if plan is None and entry is None:
+            raise HTTPException(404, f"unknown eval {eval_id!r}")
+        rows = plan["runs"] if plan else []
+        counts = dict(Counter(row["state"] for row in rows))
+        return {
+            "eval_id": eval_id,
+            "runs": rows,
+            "counts": counts,
+            "done": not any(counts.get(state) for state in ("planned", "running", "infra_retry"))
+            and (entry is None or not entry["thread"].is_alive()),
+            "error": entry["error"] if entry else None,
+            "report": (directory / "eval_report.json").is_file(),
+        }
+
+    @app.get("/api/evals/{eval_id}/events", response_class=StreamingResponse)
+    def events(eval_id: str, request: Request) -> StreamingResponse:
+        eval_status(eval_id)
+        path = eval_dir(eval_id) / "plan.json"
+
+        async def stream():
+            deadline = time.monotonic() + 2 * 60 * 60
+            keepalive = time.monotonic()
+            previous = None
+            while time.monotonic() < deadline:
+                if await request.is_disconnected():
+                    return
+                check_store_boundary()
+                status = eval_status(eval_id)
+                stamp = (
+                    path.stat().st_mtime_ns if path.is_file() else None,
+                    status["error"],
+                    status["done"],
+                )
+                data = json.dumps(status)
+                if stamp != previous:
+                    yield f"event: status\ndata: {data}\n\n"
+                    previous = stamp
+                if status["done"]:
+                    yield f"event: done\ndata: {data}\n\n"
+                    return
+                if time.monotonic() - keepalive >= 15:
+                    yield ": keepalive\n\n"
+                    keepalive = time.monotonic()
+                await asyncio.sleep(0.5)
+
+        return StreamingResponse(
+            stream(),
+            media_type="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
+
+    @app.get("/api/schema/eval-spec")
+    def eval_spec_schema() -> dict:
+        return EvalSpec.model_json_schema()
 
     @app.get("/api/validation")
     def validation() -> dict:
